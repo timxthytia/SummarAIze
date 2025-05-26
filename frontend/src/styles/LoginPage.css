@@ -1,0 +1,55 @@
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: linear-gradient(to right, #667eea, #764ba2);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .login-card {
+    background-color: white;
+    padding: 3rem 2.5rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .login-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+  
+  .login-subtitle {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 2rem;
+  }
+  
+  .google-signin-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .google-signin-btn img {
+    height: 50px; /* Adjust depending on your PNG */
+    width: auto;
+    border-radius: 8px; /* Rounded corners for soft UI */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+  }
+  
+  .google-signin-btn:hover img {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  }
