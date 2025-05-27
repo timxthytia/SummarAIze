@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { useNavigate } from 'react-router-dom';
 import {
   auth,
@@ -6,55 +6,81 @@ import {
   signInWithPopup,
   db,
   doc,
-  setDoc, 
   getDoc
 } from '../services/firebase';
-
-import GoogleLogo from "../assets/GoogleLogo.png"
 import "../styles/RegisterPage.css";
+import GoogleLogo from "../assets/GoogleLogo.png";
+import { PiBrain } from "react-icons/pi";
+import { IoDocumentText } from "react-icons/io5";
+import { TbTestPipe } from "react-icons/tb";
+import { FaSave } from "react-icons/fa";
+import Navbar from '../components/Navbar';
+
 
 const RegisterPage = () => {
   const navigate = useNavigate();
 
-  const registerWithGoogle = async () => {
+  const signInWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      const userRef = doc(db, "users", user.uid);
-      const existingDoc = await getDoc(userRef);
+      // Check if user already exists in Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
 
-      // if account already exists
-      if (existingDoc.exists()) {
-        alert("Account already exists. Please log in instead.");
-        await auth.signOut();
-        return;
+      if (userDoc.exists()) {
+        alert("Account already exists. Redirecting to dashboard...");
+        navigate("/dashboard");
+      } else {
+        // Send to registration form / onboarding step
+        navigate("/onboarding"); // or wherever your app collects user info
       }
-
-      // if account NOT exist: add user-info to firestore db
-      await setDoc(userRef, {
-        uid: user.uid,
-        name: user.displayName,
-        email: user.email,
-        createdAt: new Date().toISOString(),
-      });
-
-      navigate("/dashboard");
     } catch (error) {
       console.error("Registration error", error);
-      alert("Failed to register. Please try again.");
+      alert("Registration failed. Please try again.");
     }
   };
 
   return (
+    <div className="home-container">
+  <Navbar />
     <div className="register-container">
+      <h1 className="slogan">Summarize<br />Smarter.<br />Learn Faster.</h1>
       <div className="register-card">
-        <h1 className="register-title">SummarAIze</h1>
-        <p className="register-subtitle">Welcome! Register here.</p>
-        <button className="google-signin-btn" onClick={registerWithGoogle}>
-            <img src={GoogleLogo} alt="Register with Google" />
+        <h1 className="register-title">Create Your Account</h1>
+        <p className="register-subtitle">Start simplifying your studies.</p>
+
+        <button className="google-signin-btn" onClick={signInWithGoogle}>
+          <img src={GoogleLogo} alt="Sign in with Google" />
         </button>
+
+        <p className="login-prompt">
+          Already have an account?{" "}
+          <button className="login-button" onClick={() => navigate("/login")}>
+            Log In
+          </button>
+        </p>
       </div>
+
+      <div className="feature-grid">
+        <div className="feature-item">
+          <IoDocumentText size={80} />
+          <p>Smart<br />Summaries</p>
+        </div>
+        <div className="feature-item">
+          <PiBrain size={80} />
+          <p>Visual<br />Mind Maps</p>
+        </div>
+        <div className="feature-item">
+          <TbTestPipe size={80} />
+          <p>Mock Test<br />Mode</p>
+        </div>
+        <div className="feature-item">
+          <FaSave size={80} />
+          <p>Save &<br />Export</p>
+        </div>
+      </div>
+    </div>
     </div>
   );
 };

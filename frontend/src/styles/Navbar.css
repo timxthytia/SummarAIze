@@ -1,0 +1,49 @@
+/* === Global box-sizing fix === */
+* {
+  box-sizing: border-box;
+}
+
+/* === Navbar Layout === */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;               /* ensures full width */
+  width: 100%;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* === Title === */
+.navbar-title {
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 3rem;
+}
+
+/* === Home Button === */
+.navbar-home {
+  background: none;
+  border: 2px solid white;
+  color: white;
+  padding: 0.5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.navbar-home:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
