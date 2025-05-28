@@ -66,6 +66,7 @@ const TextSummarizer = () => {
         setSummary(generatedSummary);
         setShowSaveOption(true);
 
+        /*
         await addDoc(collection(db, 'summaries'), {
           uid: user.uid,
           text: inputText,
@@ -73,6 +74,7 @@ const TextSummarizer = () => {
           type: summaryType,
           timestamp: serverTimestamp()
         });
+        */
 
       } else if (mode === 'file') {
         if (!selectedFile) {
@@ -101,6 +103,7 @@ const TextSummarizer = () => {
         setSummary(generatedSummary);
         setShowSaveOption(true);
 
+        /*
         await addDoc(collection(db, 'summaries'), {
           uid: user.uid,
           fileName: selectedFile.name,
@@ -109,6 +112,7 @@ const TextSummarizer = () => {
           type: summaryType,
           timestamp: serverTimestamp()
         });
+        */
       }
     } catch (err) {
       console.error("Error summarizing or saving:", err);

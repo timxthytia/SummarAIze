@@ -1,13 +1,6 @@
 import React from "react";
 import { useNavigate } from 'react-router-dom';
-import {
-  auth,
-  provider,
-  signInWithPopup,
-  db,
-  doc,
-  getDoc
-} from '../services/firebase';
+import { auth, provider, signInWithPopup, db, doc, getDoc, setDoc } from '../services/firebase';
 import "../styles/RegisterPage.css";
 import GoogleLogo from "../assets/GoogleLogo.png";
 import { PiBrain } from "react-icons/pi";
@@ -20,7 +13,7 @@ import Navbar from '../components/Navbar';
 const RegisterPage = () => {
   const navigate = useNavigate();
 
-  const signInWithGoogle = async () => {
+  const registerWithGoogle = async () => {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
@@ -32,8 +25,14 @@ const RegisterPage = () => {
         alert("Account already exists. Redirecting to dashboard...");
         navigate("/dashboard");
       } else {
-        // Send to registration form / onboarding step
-        navigate("/onboarding"); // or wherever your app collects user info
+        // Send to registration form 
+        // Create new user document in Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          name: user.displayName,
+          email: user.email,
+          createdAt: new Date()
+        });
+        navigate("/dashboard"); 
       }
     } catch (error) {
       console.error("Registration error", error);
@@ -50,7 +49,7 @@ const RegisterPage = () => {
         <h1 className="register-title">Create Your Account</h1>
         <p className="register-subtitle">Start simplifying your studies.</p>
 
-        <button className="google-signin-btn" onClick={signInWithGoogle}>
+        <button className="google-signin-btn" onClick={registerWithGoogle}>
           <img src={GoogleLogo} alt="Sign in with Google" />
         </button>
 

@@ -1,17 +1,64 @@
-# Python
+# ========================
+# 🐍 Python (Backend)
+# ========================
 __pycache__/
 *.pyc
 venv/
 
-# Node
+# ========================
+# 🧩 Node.js (Frontend + Backend)
+# ========================
 node_modules/
+.pnp
+.pnp.js
+
+# ========================
+# ⚙️ Build and Output
+# ========================
 build/
+build/Release
+coverage/
+.nyc_output/
+.dataconnect/
+.npm/
+bower_components/
+lib-cov/
 
-# System
-.DS_Store
+# ========================
+# 📦 Package logs
+# ========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+firebase-debug.log*
+firebase-debug.*.log*
 
-# Environment
+# ========================
+# 📂 Environment and Secrets
+# ========================
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.eslintcache
+.yarn-integrity
 
-# Ignore backend secrets
+# Backend-specific env
 backend/.env
+
+# ========================
+# 🛠️ System and Editor Files
+# ========================
+.DS_Store
+.lock-wscript
+.node_repl_history
+pids
+*.pid
+*.pid.lock
+
+# ========================
+# 🔥 Firebase
+# ========================
+.firebase/
+# .firebaserc  ← Uncomment if devs should use their own Firebase project
