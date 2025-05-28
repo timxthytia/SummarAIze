@@ -1,55 +1,120 @@
 .dashboard-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Arial', sans-serif;
   background: linear-gradient(to right, #667eea, #764ba2);
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .dashboard-card {
-  background-color: white;
-  padding: 3rem 2.5rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  background-color: #f5f7fa;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   text-align: center;
-  width: 100%;
-  max-width: 400px;
+  margin-bottom: 2rem;
 }
 
 .profile-pic {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  object-fit: cover;
   margin-bottom: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.dashboard-card h2 {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: #333;
-}
-
-.dashboard-card p {
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 2rem;
 }
 
 .logout-button {
-  background-color: #667eea;
-  color: white;
+  margin-top: 1rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #e63946;
+  color: #fff;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-size: 1rem;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.2s ease;
+  font-weight: bold;
 }
 
 .logout-button:hover {
-  background-color: #5a67d8;
-  transform: scale(1.05);
+  background-color: #d62828;
+}
+
+.summary-list {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.06);
+}
+
+.summary-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #fafafa;
+  transition: transform 0.2s;
+}
+
+.summary-card:hover {
+  transform: scale(1.01);
+  cursor: pointer;
+}
+
+.summary-card p {
+  margin: 0.5rem 0;
+}
+
+.delete-button {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background-color: #ff6b6b;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.delete-button:hover {
+  background-color: #fa5252;
+}
+
+/* Rename pop up */
+.rename-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.rename-modal {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  position: relative;
+  width: 300px;
+}
+
+.close-modal-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.7rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.confirm-rename-button {
+  margin-top: 1rem;
+  background-color: #4caf50;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
 }

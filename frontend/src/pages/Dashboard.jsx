@@ -1,34 +1,108 @@
 import React, { useEffect, useState } from 'react';
 import { getAuth, signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import '../styles/Dashboard.css'; // Optional if using custom CSS
+import { collection, deleteDoc, doc, onSnapshot, query, where, orderBy, updateDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import jsPDF from 'jspdf'; // For pdf download
+import { Document, Packer, Paragraph, TextRun } from 'docx'; // For docx download
+import '../styles/Dashboard.css'; 
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
-  const auth = getAuth();
+  const [summaries, setSummaries] = useState([]);
+  const [editTitles, setEditTitles] = useState({});
+  const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '' });
+  const [downloadFormat, setDownloadFormat] = useState('pdf');
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    return getAuth().onAuthStateChanged((user) => {
       if (user) {
         setUser(user);
+        console.log("User authenticated:", user.email);
+
+        const q = query(
+          collection(db, 'summaries'),
+          where('uid', '==', user.uid),
+          orderBy('timestamp', 'desc')
+        );
+
+        const unsubscribeSummaries = onSnapshot(q, (snapshot) => {
+          const summaryList = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          setSummaries(summaryList);
+        });
+
+        return () => {
+          unsubscribeSummaries();
+        };
       } else {
         navigate('/login'); // Redirect to /login if not logged in
       }
     });
-
-    return () => unsubscribe();
-  }, [auth, navigate]);
+  }, [navigate]);
 
   const handleLogout = () => {
-    signOut(auth).then(() => {
+    signOut(getAuth()).then(() => {
       navigate('/login');
     }).catch((error) => {
       console.error("Error signing out:", error);
     });
   };
 
-  if (!user) return null; // Optional loading state
+  const handleNavigate = (id) => {
+    navigate(`/summary/${id}`);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'summaries', id));
+    } catch (error) {
+      console.error('Error deleting summary:', error);
+    }
+  };
+
+  const handleRename = async () => {
+    const { id, title } = renameModal;
+    if (!title.trim()) return;
+    try {
+      await updateDoc(doc(db, 'summaries', id), { title });
+      setRenameModal({ visible: false, id: '', title: '' });
+    } catch (error) {
+      console.error('Error renaming summary:', error);
+    }
+  };
+
+  const handleDownload = (title, summary, format) => {
+    if (format === 'pdf') {
+      const doc = new jsPDF();
+      const lines = doc.splitTextToSize(summary, 180);
+      doc.text(lines, 10, 10);
+      doc.save(`${title || 'summary'}.pdf`);
+    } else if (format === 'docx') {
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: summary.split('\n').map(line =>
+            new Paragraph({
+              children: [new TextRun(line)],
+            })
+          ),
+        }],
+      });
+    
+      Packer.toBlob(doc).then(blob => {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${title || 'summary'}.docx`;
+        link.click();
+      });
+    }
+  };
+
+  if (!user) return;
 
   return (
     <div className="dashboard-container">
@@ -38,6 +112,88 @@ const Dashboard = () => {
         <p>Email: {user.email}</p>
         <button onClick={handleLogout} className="logout-button">Sign Out</button>
       </div>
+      <div className="summary-list">
+        <h3>Your Saved Summaries</h3>
+        {summaries.length === 0 ? (
+          <p>No summaries found.</p>
+        ) : (
+          summaries.map((summary) => (
+            <div key={summary.id} className="summary-card">
+              <div className="summary-card-header">
+                <select
+                  value={downloadFormat}
+                  onChange={(e) => setDownloadFormat(e.target.value)}
+                  className="download-format-select"
+                >
+                  <option value="pdf">PDF</option>
+                  <option value="docx">DOCX</option>
+                </select>
+                <button
+                  className="download-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload(summary.title, summary.summary, downloadFormat);
+                  }}
+                >
+                  Download
+                </button>
+              </div>
+              <div className="summary-link" onClick={() => handleNavigate(summary.id)}>
+                <p>
+                  <strong>Title:</strong> {summary.title || 'Untitled'}{' '}
+                  <button
+                    className="rename-trigger-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRenameModal({
+                        visible: true,
+                        id: summary.id,
+                        title: summary.title || ''
+                      });
+                    }}
+                  >
+                    Rename
+                  </button>
+                </p>
+                <p><strong>Type:</strong> {summary.type}</p>
+                <p><strong>Summary:</strong> {summary.summary}</p>
+                <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
+              </div>
+              <button onClick={() => handleDelete(summary.id)} className="delete-button">
+                Delete
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+      {renameModal.visible && (
+        <div className="rename-modal-overlay">
+          <div className="rename-modal">
+            <button
+              className="close-modal-button"
+              onClick={() => setRenameModal({ visible: false, id: '', title: '' })}
+            >
+              ×
+            </button>
+            <h3>Rename Summary</h3>
+            <input
+              type="text"
+              value={renameModal.title}
+              onChange={(e) =>
+                setRenameModal((prev) => ({ ...prev, title: e.target.value }))
+              }
+              placeholder="Enter new title"
+            />
+            <button
+              onClick={handleRename}
+              className="confirm-rename-button"
+              disabled={!renameModal.title.trim()}
+            >
+              Rename
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
