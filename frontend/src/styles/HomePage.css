@@ -1,0 +1,170 @@
+.home-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(-45deg, #547cf7, #28015c, #db5fb0);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
+  color: white;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+@keyframes animatedGradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* ======= Layout Split ======= */
+.home-split-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 3rem;
+  margin-top: 3rem;
+  padding: 0 2rem;
+  box-sizing: border-box;
+}
+
+/* ======= Left Content ======= */
+.home-left {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 1rem;
+  box-sizing: border-box;
+}
+
+.home-left section {
+  width: 100%;
+  text-align: left;
+}
+
+.home-about h1 {
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0.5rem 0;
+  color: #ffffff;
+}
+
+.home-about p {
+  font-size: 1.5rem;
+  font-weight: 300;
+  line-height: 1.3;
+  color: #ffffff;
+  margin: 0;
+}
+
+/* ======= Features List ======= */
+.home-features {
+  margin: 0;
+  width: 100%;
+}
+
+.home-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.home-features li {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #eeeeff;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1rem;
+  border-radius: 10px;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* ======= Right Content ======= */
+.home-right {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+.home-image-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.home-side-image {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ======= Buttons ======= */
+.home-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.home-button {
+  padding: 0.75rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.home-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+/* ======= General Section Styling (Scoped) ======= */
+.home-techstack {
+  width: 100%;
+  padding: 4rem 2rem 0;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.home-techstack h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.home-techstack p {
+  font-size: 1.1rem;
+  color: #ddddff;
+  line-height: 1.6;
+  max-width: 900px;
+  margin: 0 auto;
+}
