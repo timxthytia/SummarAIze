@@ -1,83 +1,136 @@
+/* ======= Background & Container ======= */
+@keyframes animatedGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .dashboard-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: 'Arial', sans-serif;
-  background: linear-gradient(to right, #667eea, #764ba2);
+  width: 100%;
+  min-height: 100vh;
+  padding: 6rem 2rem 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(-45deg, #5f27cd, #341f97, #833471);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
+  box-sizing: border-box;
+  color: white;
 }
 
-.dashboard-card {
-  background-color: #f5f7fa;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.profile-pic {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  margin-bottom: 1rem;
-}
-
-.logout-button {
-  margin-top: 1rem;
-  padding: 0.6rem 1.2rem;
-  background-color: #e63946;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.logout-button:hover {
-  background-color: #d62828;
-}
-
+/* ======= Summary List Section ======= */
 .summary-list {
-  background-color: #ffffff;
-  padding: 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.06);
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 1000px;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+  backdrop-filter: blur(10px);
 }
 
+.summary-list h3 {
+  margin-bottom: 1.5rem;
+  color: white;
+  font-size: 1.6rem;
+}
+
+/* ======= Summary Cards ======= */
 .summary-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background-color: #fafafa;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
   transition: transform 0.2s;
+  backdrop-filter: blur(5px);
 }
 
 .summary-card:hover {
   transform: scale(1.01);
-  cursor: pointer;
 }
 
 .summary-card p {
+  margin: 0.6rem 0;
+  color: white;
+}
+
+.summary-card strong {
+  font-weight: bold;
+}
+
+/* ======= Summary Content Layout ======= */
+.summary-content-row {
   margin: 0.5rem 0;
 }
 
-.delete-button {
-  margin-top: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  background-color: #ff6b6b;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
+.summary-copy-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background-color: rgba(255, 255, 255, 0.07);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  margin-top: 0.3rem;
+}
+
+.summary-snippet {
+  flex: 1;
+  cursor: pointer;
+  white-space: pre-wrap;
+  display: inline-block;
+  color: white;
+}
+
+/* ======= Buttons ======= */
+.download-button,
+.delete-button,
+.rename-trigger-button,
+.confirm-rename-button,
+.copy-button {
+  background-color: transparent;
+  color: white;
+  border: 2px solid white;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 0.9rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.delete-button:hover {
-  background-color: #fa5252;
+.copy-button {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
 }
 
-/* Rename pop up */
+.download-button:hover,
+.delete-button:hover,
+.rename-trigger-button:hover,
+.confirm-rename-button:hover,
+.copy-button:hover {
+  background-color: white;
+  color: #5f27cd;
+}
+
+.delete-button {
+  margin-top: 1rem;
+}
+
+/* ======= Format Selector ======= */
+.download-format-select {
+  background-color: white;
+  color: #1e1e1e;
+  border-radius: 8px;
+  padding: 0.3rem 0.6rem;
+  border: none;
+  font-weight: bold;
+  margin-right: 1rem;
+}
+
+/* ======= Rename Modal ======= */
 .rename-modal-overlay {
   position: fixed;
   top: 0;
@@ -92,11 +145,26 @@
 }
 
 .rename-modal {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 12px;
   position: relative;
   width: 300px;
+  text-align: center;
+}
+
+.rename-modal h3 {
+  margin-bottom: 1rem;
+  color: #5f27cd;
+}
+
+.rename-modal input {
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
 }
 
 .close-modal-button {
@@ -107,14 +175,78 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+  color: #555;
 }
 
-.confirm-rename-button {
-  margin-top: 1rem;
-  background-color: #4caf50;
-  color: white;
-  padding: 0.5rem 1rem;
+/* ======= Timestamp ======= */
+.summary-card small {
+  color: #ccc;
+}
+
+/* Delete Modal Overlay */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+/* Delete Modal Box */
+.delete-modal {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.25);
+  color: #5f27cd;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Buttons Container */
+.delete-modal-buttons {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+/* Yes Button */
+.delete-confirm-button {
+  background-color: #5f27cd;
   border: none;
-  border-radius: 6px;
+  color: white;
+  padding: 0.6rem 1.6rem;
+  border-radius: 8px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-confirm-button:hover {
+  background-color: #833471;
+}
+
+/* No Button */
+.delete-cancel-button {
+  background-color: transparent;
+  border: 2px solid #5f27cd;
+  color: #5f27cd;
+  padding: 0.6rem 1.6rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.delete-cancel-button:hover {
+  background-color: #5f27cd;
+  color: white;
 }

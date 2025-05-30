@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db, auth } from '../services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/SummaryDetail.css';
 
 const SummaryDetail = () => {
@@ -12,6 +14,14 @@ const SummaryDetail = () => {
   const [type, setType] = useState('');
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -25,7 +35,7 @@ const SummaryDetail = () => {
         setType(data.type);
         setLastSaved(data.timestamp?.toDate().toLocaleString());
       } else {
-        navigate('/dashboard'); // If not found
+        navigate('/dashboard');
       }
     };
 
@@ -44,16 +54,19 @@ const SummaryDetail = () => {
 
   return (
     <div className="summary-detail-container">
-      <h2>{title || 'Untitled'}</h2>
-      {lastSaved && <p><small>Last saved: {lastSaved}</small></p>}
-      <textarea
-        className="summary-textarea"
-        value={summary}
-        onChange={(e) => setSummary(e.target.value)}
-      />
-      <button onClick={handleSave} disabled={saving}>
-        {saving ? 'Saving...' : 'Save Changes'}
-      </button>
+      <NavbarLoggedin user={user} />
+      <div className="summary-detail-content">
+        <h2>{title || 'Untitled'}</h2>
+        {lastSaved && <p><small>Last saved: {lastSaved}</small></p>}
+        <textarea
+          className="summary-textarea"
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+        />
+        <button onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
     </div>
   );
 };
