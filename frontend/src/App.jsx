@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import HomePage from "./pages/Homepage";
+import Homepage from "./pages/Homepage";
 import Dashboard from "./pages/Dashboard";
 import Summarizer from "./pages/Summarizer";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -13,7 +13,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Homepage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route
