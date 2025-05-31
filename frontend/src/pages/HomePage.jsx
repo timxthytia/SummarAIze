@@ -8,19 +8,22 @@ import { FaSave } from "react-icons/fa";
 import HomeComputer from '../assets/HomeComputer.svg';
 import Navbar from '../components/Navbar';
 
-
 const Homepage = () => {
   const navigate = useNavigate();
 
   return (
     <div className="home-container">
-  <Navbar />
-    <div className="home-container">
+      <Navbar />
+
       <div className="home-split-section">
         <div className="home-left">
           <section className="home-about">
             <p>Your Personal Smart Study Companion</p>
-            <h1>Our Intelligent Technology<br />Provides Solutions and Services<br />Like No Other</h1>
+            <h1>
+              Our Intelligent Technology<br />
+              Provides Solutions and Services<br />
+              Like No Other
+            </h1>
           </section>
 
           <section className="home-features">
@@ -51,7 +54,6 @@ const Homepage = () => {
           <strong> OpenAI</strong>, and <strong>Tesseract OCR</strong> for full AI-powered performance and scalability.
         </p>
       </section>
-    </div>
     </div>
   );
 };

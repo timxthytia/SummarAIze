@@ -4,7 +4,6 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import Dashboard from "./pages/Dashboard";
-import Dashboard2 from "./pages/Dashboard2";
 import Summarizer from "./pages/Summarizer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SummaryDetail from "./pages/SummaryDetail";
@@ -22,14 +21,6 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/dashboard2"
-          element={
-            <ProtectedRoute>
-              <Dashboard2 />
             </ProtectedRoute>
           }
         />

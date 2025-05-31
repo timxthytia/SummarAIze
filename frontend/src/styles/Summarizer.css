@@ -1,87 +1,223 @@
+/* ======= Background & Container ======= */
 .summarizer-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background: linear-gradient(to right, #4facfe, #00f2fe);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  padding: 6rem 2rem 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(-45deg, #5f27cd, #341f97, #833471);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
+  color: white;
+  box-sizing: border-box;
+}
+
+@keyframes animatedGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ======= Summarizer Card ======= */
+.summarizer-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 3rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  color: white;
+  border: 2px solid white !important;
+  backdrop-filter: blur(10px);
+}
+
+/* ======= Title ======= */
+.summarizer-title {
+  font-size: 2.4rem;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* ======= Textarea & Input ======= */
+.input-textarea,
+.summary-title-input,
+.summary-select {
+  width: 100%;
+  background-color: #ffffff;
+  color: #1e1e1e;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+}
+
+.input-textarea {
+  height: 180px;
+  resize: vertical;
+}
+
+.input-textarea::placeholder,
+.summary-title-input::placeholder {
+  color: #888;
+}
+
+/* ======= File Upload Section ======= */
+.file-upload-section {
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.custom-file-upload {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border: 2px solid white;
+  border-radius: 12px;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease, color 0.3s ease;
+  text-align: center;
+}
+
+.custom-file-upload:hover {
+  background-color: white;
+  color: #5f27cd;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+/* ======= Mode Toggle ======= */
+.mode-toggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.mode-toggle button {
+  padding: 0.6rem 1.2rem;
+  border: 2px solid white;
+  border-radius: 12px;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.mode-toggle button.active {
+  background-color: white;
+  color: #5f27cd;
+}
+
+/* ======= Buttons ======= */
+.summarize-button,
+.save-summary-button {
+  background-color: transparent;
+  color: white;
+  border: 2px solid white;
+  padding: 0.8rem 1.6rem;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.summarize-button:hover,
+.save-summary-button:hover {
+  background-color: white;
+  color: #5f27cd;
+}
+
+.summarize-button:disabled,
+.save-summary-button:disabled {
+  background-color: #cccccc;
+  color: #666666;
+  border-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* ======= Summary Options ======= */
+.summary-options {
+  margin: 1.2rem 0;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* ======= Summary Output ======= */
+.summary-output {
+  margin-top: 2rem;
+  background: #ffffff;
+  padding: 1.8rem;
+  border-radius: 16px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #1e1e1e;
+  border: 1px solid #ccc;
+}
+
+.summary-output h2 {
+  margin-bottom: 1rem;
+  color: #5f27cd;
+}
+
+.summary-output ul {
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.summary-output li {
+  margin-bottom: 0.5rem;
+}
+
+/* ======= Save Section ======= */
+.save-summary-section {
+  margin-top: 1.5rem;
+}
+
+/* ======= Error Message ======= */
+.error-message {
+  color: #ff6b6b;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* ======= Accessibility ======= */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* ======= Responsive Design ======= */
+@media (max-width: 480px) {
+  .summarizer-card {
     padding: 2rem;
   }
-  
-  .summarizer-card {
-    background-color: #fff;
-    padding: 2.5rem;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    width: 100%;
-    max-width: 600px;
-  }
-  
+
   .summarizer-title {
-    font-size: 2rem;
-    color: #333;
-    margin-bottom: 1.5rem;
-    text-align: center;
+    font-size: 1.8rem;
   }
-  
+
   .input-textarea {
-    width: 100%;
-    height: 150px;
-    padding: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    resize: vertical;
-    font-size: 1rem;
-    margin-bottom: 1rem;
+    height: 140px;
+    font-size: 0.95rem;
   }
-  
-  .summary-options {
-    margin: 1rem 0;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+
+  .summarize-button,
+  .save-summary-button {
+    font-size: 0.95rem;
+    padding: 0.6rem 1.2rem;
   }
-  
-  .summary-select {
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-  }
-  
-  .summarize-button {
-    background-color: #667eea;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 1rem;
-    width: 100%;
-    margin-top: 1rem;
-    transition: background-color 0.3s ease;
-  }
-  
-  .summarize-button:hover {
-    background-color: #5a67d8;
-  }
-  
-  .error-message {
-    color: red;
-    margin-top: 1rem;
-    text-align: center;
-  }
-  
-  .summary-output {
-    margin-top: 2rem;
-    background: #f9f9f9;
-    padding: 1.5rem;
-    border-radius: 12px;
-    font-size: 1rem;
-    line-height: 1.6;
-  }
-  
-  .summary-output h2 {
-    margin-bottom: 1rem;
-    color: #333;
-  }
+}

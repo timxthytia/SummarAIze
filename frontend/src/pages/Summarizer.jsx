@@ -3,7 +3,7 @@ import axios from 'axios';
 import { db, auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-// import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/Summarizer.css';
 import DOMPurify from 'dompurify';
 
@@ -14,34 +14,24 @@ const TextSummarizer = () => {
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [error, setError] = useState('')
+  const [error, setError] = useState('');
   const [mode, setMode] = useState('text');
   const [selectedFile, setSelectedFile] = useState(null);
   const [showSaveOption, setShowSaveOption] = useState(false);
   const [title, setTitle] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Wait for auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        if (currentUser) {
-            setUser(currentUser);
-            console.log("User authenticated:", currentUser.email);
-        } else {
-            console.log("No user logged in.")
-        }
-      setAuthLoading(false); // Done loading user
+      setUser(currentUser);
+      setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
   const handleSummarize = async () => {
-    if (authLoading) {
-      alert("Authentication is still loading. Please wait a moment.");
-      return;
-    }
-    if (!user) {
-      alert("You must be logged in to generate and save summaries.");
+    if (authLoading || !user) {
+      alert("You must be logged in to use this feature.");
       return;
     }
 
@@ -53,7 +43,7 @@ const TextSummarizer = () => {
     try {
       if (mode === 'text') {
         if (!inputText.trim()) {
-          setError("Please enter some text to summarize.");
+          setError("Please enter some text.");
           setLoading(false);
           return;
         }
@@ -63,61 +53,30 @@ const TextSummarizer = () => {
           type: summaryType
         });
 
-        const generatedSummary = response.data.summary;
-        setSummary(generatedSummary);
+        setSummary(response.data.summary);
         setShowSaveOption(true);
-
-        /*
-        await addDoc(collection(db, 'summaries'), {
-          uid: user.uid,
-          text: inputText,
-          summary: generatedSummary,
-          type: summaryType,
-          timestamp: serverTimestamp()
-        });
-        */
 
       } else if (mode === 'file') {
         if (!selectedFile) {
-          setError("Please upload a file before summarizing.");
+          setError("Please upload a file.");
           setLoading(false);
           return;
         }
+
         const formData = new FormData();
-        /*
-        const storage = getStorage();
-        const storageRef = ref(storage, `uploads/${user.uid}/${Date.now()}_${selectedFile.name}`);
-        await uploadBytes(storageRef, selectedFile);
-        const fileURL = await getDownloadURL(storageRef);
-        */
-        
         formData.append('file', selectedFile);
         formData.append('type', summaryType);
 
         const response = await axios.post('http://localhost:8000/summarize-file', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
 
-        const generatedSummary = response.data.summary;
-        setSummary(generatedSummary);
+        setSummary(response.data.summary);
         setShowSaveOption(true);
-
-        /*
-        await addDoc(collection(db, 'summaries'), {
-          uid: user.uid,
-          fileName: selectedFile.name,
-          // fileURL, // Wanted store fileURL within Firestore but doesnt work for now
-          summary: generatedSummary,
-          type: summaryType,
-          timestamp: serverTimestamp()
-        });
-        */
       }
     } catch (err) {
-      console.error("Error summarizing or saving:", err);
-      setError('Failed to generate summary. Please try again.');
+      console.error(err);
+      setError("Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -134,74 +93,74 @@ const TextSummarizer = () => {
         type: summaryType,
         timestamp: serverTimestamp()
       });
-      alert('Summary saved to Dashboard!');
+      alert('Saved to Dashboard!');
       setTitle('');
       setShowSaveOption(false);
     } catch (err) {
-      console.error('Error saving summary:', err);
+      console.error(err);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file || !user) return;
-    setSelectedFile(file);
-  };
-
   return (
     <div className="summarizer-container">
+      <NavbarLoggedin />
       <div className="summarizer-card">
-        <h1 className="summarizer-title">Text Summarizer</h1>
+        <h1 className="summarizer-title">Generate Your Own Personalised Summaries</h1>
+
         <div className="mode-toggle">
-          <button
-            className={mode === 'text' ? 'active' : ''}
-            onClick={() => setMode('text')}>
+          <button className={mode === 'text' ? 'active' : ''} onClick={() => setMode('text')}>
             Text Mode
           </button>
-          <button
-            className={mode === 'file' ? 'active' : ''}
-            onClick={() => setMode('file')}>
+          <button className={mode === 'file' ? 'active' : ''} onClick={() => setMode('file')}>
             File Mode
           </button>
         </div>
 
-        {mode === 'text' && (
-          <>
-            <textarea
-              className="input-textarea"
-              placeholder="Enter text here..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-            />
-          </>
-        )}
-
-        {mode === 'file' && (
+        {mode === 'text' ? (
+          <textarea
+            className="input-textarea"
+            placeholder="Enter text here..."
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+          />
+        ) : (
           <div className="file-upload-section">
-            <label>Upload a PDF/DOCX:</label>
-            <input type="file" accept=".pdf,.docx" onChange={handleFileUpload} />
+            <label>Upload PDF/DOCX:</label><br />
+            <label className="custom-file-upload">
+              Choose File
+              <input
+                type="file"
+                accept=".pdf,.docx"
+                onChange={(e) => setSelectedFile(e.target.files[0])}
+              />
+            </label>
+            {selectedFile && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#ccc' }}>
+                {selectedFile.name}
+              </div>
+            )}
           </div>
         )}
 
-        <button className="summarize-button" onClick={handleSummarize} disabled={loading || authLoading}>
-          {loading ? 'Summarizing...' : 'Summarize'}
+        <button
+          className="summarize-button"
+          onClick={handleSummarize}
+          disabled={loading || authLoading}
+        >
+          {loading ? "Summarizing..." : "Summarize"}
         </button>
 
         <div className="summary-options">
           <label>Summary Type:</label>
           <select
-            className="summary-select"
             value={summaryType}
-            onChange={(e) => {
-              setSummaryType(e.target.value);
-              setSummary('');
-              setShowSaveOption(false);
-            }}
+            onChange={(e) => setSummaryType(e.target.value)}
+            className="summary-select"
           >
-            <option value="short">Short Paragraph</option>
-            <option value="long">Long Paragraph</option>
+            <option value="short">Short</option>
+            <option value="long">Long</option>
             <option value="bullet">Bullet Points</option>
           </select>
         </div>
@@ -211,7 +170,15 @@ const TextSummarizer = () => {
         {summary && (
           <div className="summary-output">
             <h2>Summary:</h2>
-            <div id="summary-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(summary) }} />
+            {summaryType === 'bullet' ? (
+              <ul>
+                {summary.split('\n').map((line, i) => (
+                  <li key={i}>{line.replace(/^[-•*]\s*/, '')}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>{summary}</p>
+            )}
           </div>
         )}
 
@@ -226,10 +193,10 @@ const TextSummarizer = () => {
             />
             <button
               onClick={handleSaveToFirestore}
-              disabled={!title.trim() || saving}
               className="save-summary-button"
+              disabled={saving}
             >
-              {saving ? 'Saving...' : 'Save to Dashboard'}
+              {saving ? "Saving..." : "Save to Dashboard"}
             </button>
           </div>
         )}

@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { getAuth, signOut } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { collection, deleteDoc, doc, onSnapshot, query, where, orderBy, updateDoc } from 'firebase/firestore';
+import {
+  collection, deleteDoc, doc, onSnapshot,
+  query, where, orderBy, updateDoc
+} from 'firebase/firestore';
 import { db } from '../services/firebase';
 import html2pdf from 'html2pdf.js';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
-import { saveAs } from 'file-saver';
 import DOMPurify from 'dompurify';
-import { mapToClosestDocxHighlight } from '../services/closestColor';
 import '../styles/Dashboard.css'; 
+import NavbarLoggedin from '../components/NavbarLoggedin';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [summaries, setSummaries] = useState([]);
-  const [editTitles, setEditTitles] = useState({});
   const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '' });
-  const [downloadFormat, setDownloadFormat] = useState('pdf');
+  const [downloadFormats, setDownloadFormats] = useState({});
+  const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '' }); 
   const navigate = useNavigate();
 
   useEffect(() => {
-    return getAuth().onAuthStateChanged((user) => {
+    const unsubscribeAuth = getAuth().onAuthStateChanged((user) => {
       if (user) {
         setUser(user);
-        console.log("User authenticated:", user.email);
 
         const q = query(
           collection(db, 'summaries'),
@@ -31,29 +31,18 @@ const Dashboard = () => {
         );
 
         const unsubscribeSummaries = onSnapshot(q, (snapshot) => {
-          const summaryList = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setSummaries(summaryList);
+          const summariesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setSummaries(summariesList);
         });
 
-        return () => {
-          unsubscribeSummaries();
-        };
+        return () => unsubscribeSummaries();
       } else {
-        navigate('/login'); // Redirect to /login if not logged in
+        navigate('/login');
       }
     });
-  }, [navigate]);
 
-  const handleLogout = () => {
-    signOut(getAuth()).then(() => {
-      navigate('/login');
-    }).catch((error) => {
-      console.error("Error signing out:", error);
-    });
-  };
+    return () => unsubscribeAuth();
+  }, [navigate]);
 
   const handleNavigate = (id) => {
     navigate(`/summary/${id}`);
@@ -62,6 +51,7 @@ const Dashboard = () => {
   const handleDelete = async (id) => {
     try {
       await deleteDoc(doc(db, 'summaries', id));
+      setDeleteConfirm({ visible: false, id: '' }); // Close modal after delete
     } catch (error) {
       console.error('Error deleting summary:', error);
     }
@@ -81,91 +71,60 @@ const Dashboard = () => {
   const handleDownload = async (title, summaryHTML, format) => {
     const container = document.createElement('div');
     container.innerHTML = DOMPurify.sanitize(summaryHTML);
-    console.log("Sanitized summary HTML:", container.innerHTML);
 
     if (format === 'pdf') {
-      html2pdf().from(container).save(`${title || 'summary'}.pdf`);
+      html2pdf()
+        .set({
+          margin: [10, 20],
+          filename: `${title || 'summary'}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        })
+        .from(container)
+        .save();
     } else if (format === 'docx') {
-      const parseNode = (node, inheritedStyle = {}) => {
-        const runs = [];
-
-        node.childNodes.forEach((child) => {
-          if (child.nodeType === Node.TEXT_NODE) {
-            const text = child.textContent;
-            if (text.trim()) {
-              const styleProps = {};
-              if (inheritedStyle.bold) styleProps.bold = true;
-              if (inheritedStyle.italics) styleProps.italics = true;
-              if (inheritedStyle.underline) styleProps.underline = inheritedStyle.underline;
-              if (inheritedStyle.color) styleProps.color = inheritedStyle.color;
-              if (inheritedStyle.strike) styleProps.strike = true;
-              if (inheritedStyle.highlight && typeof inheritedStyle.highlight === 'string') {
-                styleProps.highlight = inheritedStyle.highlight;
-              }
-              console.log("Creating TextRun with styleProps:", styleProps); // testing to see value of highlight
-              runs.push(new TextRun({ text, ...styleProps }));
-            }
-          } else if (child.nodeType === Node.ELEMENT_NODE) {
-            const currentStyle = { ...inheritedStyle };
-
-            if (['STRONG', 'B'].includes(child.nodeName)) currentStyle.bold = true;
-            if (['EM', 'I'].includes(child.nodeName)) currentStyle.italics = true;
-            if (child.nodeName === 'U') currentStyle.underline = {};
-            if (['STRIKE', 'S', 'DEL'].includes(child.nodeName)) currentStyle.strike = true;
-            const bg = child.style?.backgroundColor || '';
-            const highlightColor = mapToClosestDocxHighlight(bg);
-            if (highlightColor) {
-              currentStyle.highlight = highlightColor;
-            }
-            if (child.nodeName === 'SPAN' && child.style.color) {
-              const color = child.style.color;
-              if (color.startsWith('rgb')) {
-                const rgb = color.match(/\d+/g);
-                if (rgb && rgb.length === 3) {
-                  currentStyle.color = rgb
-                    .map((val) => parseInt(val).toString(16).padStart(2, '0'))
-                    .join('');
-                }
-              } else {
-                currentStyle.color = color.replace('#', '');
-              }
-            }
-
-            const childRuns = parseNode(child, currentStyle);
-            runs.push(...childRuns);
-          }
+      try {
+        const response = await fetch('http://localhost:8000/generate-docx', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            title,
+            html: container.innerHTML,
+          }),
         });
 
-        return runs;
-      };
+        if (!response.ok) throw new Error('Failed to generate DOCX');
 
-      const paragraphs = [];
-      container.childNodes.forEach((node) => {
-        const runs = parseNode(node);
-        if (runs.length > 0) {
-          paragraphs.push(new Paragraph({ children: runs }));
-        }
-      });
-
-      const doc = new Document({
-        sections: [{ properties: {}, children: paragraphs }],
-      });
-
-      const blob = await Packer.toBlob(doc);
-      saveAs(blob, `${title || 'summary'}.docx`);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${title || 'summary'}.docx`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Error downloading DOCX:', error);
+        alert('Failed to download DOCX file');
+      }
     }
   };
 
-  if (!user) return;
+  const openDeleteConfirm = (id) => {
+    setDeleteConfirm({ visible: true, id });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ visible: false, id: '' });
+  };
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-card">
-        <img className="profile-pic" src={user.photoURL} alt="Profile" />
-        <h2>Welcome, {user.displayName}!</h2>
-        <p>Email: {user.email}</p>
-        <button onClick={handleLogout} className="logout-button">Sign Out</button>
-      </div>
+      <NavbarLoggedin user={user} />
       <div className="summary-list">
         <h3>Your Saved Summaries</h3>
         {summaries.length === 0 ? (
@@ -175,8 +134,8 @@ const Dashboard = () => {
             <div key={summary.id} className="summary-card">
               <div className="summary-card-header">
                 <select
-                  value={downloadFormat}
-                  onChange={(e) => setDownloadFormat(e.target.value)}
+                  value={downloadFormats[summary.id] || 'pdf'}
+                  onChange={(e) => setDownloadFormats(prev => ({ ...prev, [summary.id]: e.target.value }))}
                   className="download-format-select"
                 >
                   <option value="pdf">PDF</option>
@@ -184,27 +143,22 @@ const Dashboard = () => {
                 </select>
                 <button
                   className="download-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(summary.title, summary.summary, downloadFormat);
-                  }}
+                  onClick={() =>
+                    handleDownload(summary.title, summary.summary, downloadFormats[summary.id] || 'pdf')
+                  }
                 >
                   Download
                 </button>
               </div>
+
               <div className="summary-link" onClick={() => handleNavigate(summary.id)}>
                 <p>
-                  <strong>Title:</strong> {summary.title || 'Untitled'}{' '}
+                  <strong>Title:</strong> {summary.title || 'Untitled'}
                   <button
                     className="rename-trigger-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRenameModal({
-                        visible: true,
-                        id: summary.id,
-                        title: summary.title || ''
-                      });
-                    }}
+                    onClick={() =>
+                      setRenameModal({ visible: true, id: summary.id, title: summary.title || '' })
+                    }
                   >
                     Rename
                   </button>
@@ -214,13 +168,19 @@ const Dashboard = () => {
                 <div dangerouslySetInnerHTML={{ __html: summary.summary }} />
                 <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
               </div>
-              <button onClick={() => handleDelete(summary.id)} className="delete-button">
+
+              <button
+                className="delete-button"
+                onClick={() => openDeleteConfirm(summary.id)}
+              >
                 Delete
               </button>
             </div>
           ))
         )}
       </div>
+
+      {/* Rename Modal */}
       {renameModal.visible && (
         <div className="rename-modal-overlay">
           <div className="rename-modal">
@@ -234,10 +194,8 @@ const Dashboard = () => {
             <input
               type="text"
               value={renameModal.title}
-              onChange={(e) =>
-                setRenameModal((prev) => ({ ...prev, title: e.target.value }))
-              }
-              placeholder="Enter new title"
+              onChange={(e) => setRenameModal(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="New title"
             />
             <button
               onClick={handleRename}
@@ -249,8 +207,21 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.visible && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <p>Are you sure you want to delete this summary?</p>
+            <div className="delete-modal-buttons">
+              <button className="delete-confirm-button" onClick={() => handleDelete(deleteConfirm.id)}>Yes</button>
+              <button className="delete-cancel-button" onClick={cancelDelete}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default Dashboard;

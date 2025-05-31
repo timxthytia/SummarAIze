@@ -1,29 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { getAuth, signOut } from 'firebase/auth';
+import React, { useState, useEffect } from 'react';
+import { getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { collection, deleteDoc, doc, onSnapshot, query, where, orderBy, updateDoc } from 'firebase/firestore';
+import {
+  collection, deleteDoc, doc, onSnapshot,
+  query, where, orderBy, updateDoc
+} from 'firebase/firestore';
 import { db } from '../services/firebase';
 import html2pdf from 'html2pdf.js';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
+import htmlToDocx from 'html-to-docx';
 import { saveAs } from 'file-saver';
 import DOMPurify from 'dompurify';
-import { mapToClosestDocxHighlight } from '../services/closestColor';
-import htmlToDocx from 'html-to-docx';
 import '../styles/Dashboard.css'; 
+import NavbarLoggedin from '../components/NavbarLoggedin';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [summaries, setSummaries] = useState([]);
-  const [editTitles, setEditTitles] = useState({});
   const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '' });
-  const [downloadFormat, setDownloadFormat] = useState('pdf');
+  const [downloadFormats, setDownloadFormats] = useState({});
+  const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '' }); 
   const navigate = useNavigate();
 
   useEffect(() => {
-    return getAuth().onAuthStateChanged((user) => {
+    const unsubscribeAuth = getAuth().onAuthStateChanged((user) => {
       if (user) {
         setUser(user);
-        console.log("User authenticated:", user.email);
 
         const q = query(
           collection(db, 'summaries'),
@@ -32,20 +33,17 @@ const Dashboard = () => {
         );
 
         const unsubscribeSummaries = onSnapshot(q, (snapshot) => {
-          const summaryList = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          setSummaries(summaryList);
+          const summariesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setSummaries(summariesList);
         });
 
-        return () => {
-          unsubscribeSummaries();
-        };
+        return () => unsubscribeSummaries();
       } else {
-        navigate('/login'); // Redirect to /login if not logged in
+        navigate('/login');
       }
     });
+
+    return () => unsubscribeAuth();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -63,6 +61,7 @@ const Dashboard = () => {
   const handleDelete = async (id) => {
     try {
       await deleteDoc(doc(db, 'summaries', id));
+      setDeleteConfirm({ visible: false, id: '' }); // Close modal after delete
     } catch (error) {
       console.error('Error deleting summary:', error);
     }
@@ -85,7 +84,15 @@ const Dashboard = () => {
     console.log("Sanitized summary HTML:", container.innerHTML);
 
     if (format === 'pdf') {
-      html2pdf().from(container).save(`${title || 'summary'}.pdf`);
+      html2pdf()
+      .set({
+        margin:       [10, 20],     
+        filename:     `${title || 'summary'}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      })
+      .from(container).save(`${title || 'summary'}.pdf`);
     } else if (format === 'docx') {
       const fileBuffer = await htmlToDocx(container.innerHTML, null, {
         table: { row: { cantSplit: true } },
@@ -100,27 +107,28 @@ const Dashboard = () => {
     }
   };
 
-  if (!user) return;
+  const openDeleteConfirm = (id) => {
+    setDeleteConfirm({ visible: true, id });
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm({ visible: false, id: '' });
+  };
 
   return (
     <div className="dashboard-container">
-      <div className="dashboard-card">
-        <img className="profile-pic" src={user.photoURL} alt="Profile" />
-        <h2>Welcome, {user.displayName}!</h2>
-        <p>Email: {user.email}</p>
-        <button onClick={handleLogout} className="logout-button">Sign Out</button>
-      </div>
+      <NavbarLoggedin user={user} />
       <div className="summary-list">
         <h3>Your Saved Summaries</h3>
         {summaries.length === 0 ? (
           <p>No summaries found.</p>
         ) : (
           summaries.map((summary) => (
-            <div key={summary.id} className="summary-card">
+            <div key={summary.id} className="summary-card" onClick={() => handleNavigate(summary.id)}>
               <div className="summary-card-header">
                 <select
-                  value={downloadFormat}
-                  onChange={(e) => setDownloadFormat(e.target.value)}
+                  value={downloadFormats[summary.id] || 'pdf'}
+                  onChange={(e) => setDownloadFormats(prev => ({ ...prev, [summary.id]: e.target.value }))}
                   className="download-format-select"
                 >
                   <option value="pdf">PDF</option>
@@ -128,27 +136,22 @@ const Dashboard = () => {
                 </select>
                 <button
                   className="download-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDownload(summary.title, summary.summary, downloadFormat);
-                  }}
+                  onClick={() =>
+                    handleDownload(summary.title, summary.summary, downloadFormats[summary.id] || 'pdf')
+                  }
                 >
                   Download
                 </button>
               </div>
-              <div className="summary-link" onClick={() => handleNavigate(summary.id)}>
+
+              <div className="summary-link">
                 <p>
-                  <strong>Title:</strong> {summary.title || 'Untitled'}{' '}
+                  <strong>Title:</strong> {summary.title || 'Untitled'}
                   <button
                     className="rename-trigger-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRenameModal({
-                        visible: true,
-                        id: summary.id,
-                        title: summary.title || ''
-                      });
-                    }}
+                    onClick={() =>
+                      setRenameModal({ visible: true, id: summary.id, title: summary.title || '' })
+                    }
                   >
                     Rename
                   </button>
@@ -158,13 +161,19 @@ const Dashboard = () => {
                 <div dangerouslySetInnerHTML={{ __html: summary.summary }} />
                 <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
               </div>
-              <button onClick={() => handleDelete(summary.id)} className="delete-button">
+
+              <button
+                className="delete-button"
+                onClick={() => openDeleteConfirm(summary.id)}
+              >
                 Delete
               </button>
             </div>
           ))
         )}
       </div>
+
+      {/* Rename Modal */}
       {renameModal.visible && (
         <div className="rename-modal-overlay">
           <div className="rename-modal">
@@ -178,10 +187,8 @@ const Dashboard = () => {
             <input
               type="text"
               value={renameModal.title}
-              onChange={(e) =>
-                setRenameModal((prev) => ({ ...prev, title: e.target.value }))
-              }
-              placeholder="Enter new title"
+              onChange={(e) => setRenameModal(prev => ({ ...prev, title: e.target.value }))}
+              placeholder="New title"
             />
             <button
               onClick={handleRename}
@@ -193,8 +200,21 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.visible && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <p>Are you sure you want to delete this summary?</p>
+            <div className="delete-modal-buttons">
+              <button className="delete-confirm-button" onClick={() => handleDelete(deleteConfirm.id)}>Yes</button>
+              <button className="delete-cancel-button" onClick={cancelDelete}>No</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default Dashboard;

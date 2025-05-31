@@ -3,7 +3,9 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { db, auth } from '../services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/SummaryDetail.css';
 
 const SummaryDetail = () => {
@@ -14,6 +16,14 @@ const SummaryDetail = () => {
   const [type, setType] = useState('');
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchSummary = async () => {
@@ -27,7 +37,7 @@ const SummaryDetail = () => {
         setType(data.type);
         setLastSaved(data.timestamp?.toDate().toLocaleString());
       } else {
-        navigate('/dashboard'); // If not found
+        navigate('/dashboard');
       }
     };
 
@@ -46,7 +56,8 @@ const SummaryDetail = () => {
 
   return (
     <div className="summary-detail-container">
-      <h2>{title || 'Untitled'}</h2>
+        <NavbarLoggedin user={user} />
+        <h2>{title || 'Untitled'}</h2>
       {lastSaved && <p><small>Last saved: {lastSaved}</small></p>}
       <ReactQuill
         className="summary-text-editor"
@@ -56,20 +67,21 @@ const SummaryDetail = () => {
         modules={{
           toolbar: [
             [{ header: [1, 2, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
+            ['bold', 'italic', 'underline'],
             [{ color: [] }, { background: [] }],
             [{ align: [] }],
             ['link', 'clean']
           ]
         }}
         formats={[
-          'header', 'bold', 'italic', 'underline', 'strike',
+          'header', 'bold', 'italic', 'underline',
           'color', 'background', 'align', 'link'
         ]}
       />
       <button onClick={handleSave} disabled={saving}>
         {saving ? 'Saving...' : 'Save Changes'}
       </button>
+      
     </div>
   );
 };
