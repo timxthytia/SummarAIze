@@ -8,6 +8,7 @@ import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { saveAs } from 'file-saver';
 import DOMPurify from 'dompurify';
 import { mapToClosestDocxHighlight } from '../services/closestColor';
+import htmlToDocx from 'html-to-docx';
 import '../styles/Dashboard.css'; 
 
 const Dashboard = () => {
@@ -86,72 +87,15 @@ const Dashboard = () => {
     if (format === 'pdf') {
       html2pdf().from(container).save(`${title || 'summary'}.pdf`);
     } else if (format === 'docx') {
-      const parseNode = (node, inheritedStyle = {}) => {
-        const runs = [];
-
-        node.childNodes.forEach((child) => {
-          if (child.nodeType === Node.TEXT_NODE) {
-            const text = child.textContent;
-            if (text.trim()) {
-              const styleProps = {};
-              if (inheritedStyle.bold) styleProps.bold = true;
-              if (inheritedStyle.italics) styleProps.italics = true;
-              if (inheritedStyle.underline) styleProps.underline = inheritedStyle.underline;
-              if (inheritedStyle.color) styleProps.color = inheritedStyle.color;
-              if (inheritedStyle.strike) styleProps.strike = true;
-              if (inheritedStyle.highlight && typeof inheritedStyle.highlight === 'string') {
-                styleProps.highlight = inheritedStyle.highlight;
-              }
-              console.log("Creating TextRun with styleProps:", styleProps); // testing to see value of highlight
-              runs.push(new TextRun({ text, ...styleProps }));
-            }
-          } else if (child.nodeType === Node.ELEMENT_NODE) {
-            const currentStyle = { ...inheritedStyle };
-
-            if (['STRONG', 'B'].includes(child.nodeName)) currentStyle.bold = true;
-            if (['EM', 'I'].includes(child.nodeName)) currentStyle.italics = true;
-            if (child.nodeName === 'U') currentStyle.underline = {};
-            if (['STRIKE', 'S', 'DEL'].includes(child.nodeName)) currentStyle.strike = true;
-            const bg = child.style?.backgroundColor || '';
-            const highlightColor = mapToClosestDocxHighlight(bg);
-            if (highlightColor) {
-              currentStyle.highlight = highlightColor;
-            }
-            if (child.nodeName === 'SPAN' && child.style.color) {
-              const color = child.style.color;
-              if (color.startsWith('rgb')) {
-                const rgb = color.match(/\d+/g);
-                if (rgb && rgb.length === 3) {
-                  currentStyle.color = rgb
-                    .map((val) => parseInt(val).toString(16).padStart(2, '0'))
-                    .join('');
-                }
-              } else {
-                currentStyle.color = color.replace('#', '');
-              }
-            }
-
-            const childRuns = parseNode(child, currentStyle);
-            runs.push(...childRuns);
-          }
-        });
-
-        return runs;
-      };
-
-      const paragraphs = [];
-      container.childNodes.forEach((node) => {
-        const runs = parseNode(node);
-        if (runs.length > 0) {
-          paragraphs.push(new Paragraph({ children: runs }));
-        }
+      const fileBuffer = await htmlToDocx(container.innerHTML, null, {
+        table: { row: { cantSplit: true } },
+        footer: true,
+        pageNumber: true,
       });
 
-      const doc = new Document({
-        sections: [{ properties: {}, children: paragraphs }],
+      const blob = new Blob([fileBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       });
-
-      const blob = await Packer.toBlob(doc);
       saveAs(blob, `${title || 'summary'}.docx`);
     }
   };

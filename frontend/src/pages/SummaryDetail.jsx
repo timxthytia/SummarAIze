@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
@@ -46,10 +48,24 @@ const SummaryDetail = () => {
     <div className="summary-detail-container">
       <h2>{title || 'Untitled'}</h2>
       {lastSaved && <p><small>Last saved: {lastSaved}</small></p>}
-      <textarea
-        className="summary-textarea"
+      <ReactQuill
+        className="summary-text-editor"
+        theme="snow"
         value={summary}
-        onChange={(e) => setSummary(e.target.value)}
+        onChange={setSummary}
+        modules={{
+          toolbar: [
+            [{ header: [1, 2, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            ['link', 'clean']
+          ]
+        }}
+        formats={[
+          'header', 'bold', 'italic', 'underline', 'strike',
+          'color', 'background', 'align', 'link'
+        ]}
       />
       <button onClick={handleSave} disabled={saving}>
         {saving ? 'Saving...' : 'Save Changes'}

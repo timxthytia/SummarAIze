@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 // import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import '../styles/Summarizer.css';
+import DOMPurify from 'dompurify';
 
 const TextSummarizer = () => {
   const [inputText, setInputText] = useState('');
@@ -193,7 +194,11 @@ const TextSummarizer = () => {
           <select
             className="summary-select"
             value={summaryType}
-            onChange={(e) => setSummaryType(e.target.value)}
+            onChange={(e) => {
+              setSummaryType(e.target.value);
+              setSummary('');
+              setShowSaveOption(false);
+            }}
           >
             <option value="short">Short Paragraph</option>
             <option value="long">Long Paragraph</option>
@@ -206,18 +211,7 @@ const TextSummarizer = () => {
         {summary && (
           <div className="summary-output">
             <h2>Summary:</h2>
-            {summaryType === 'bullet' ? (
-              <ul>
-                {summary
-                    .split('\n')
-                    .map((point, idx) => {
-                        const cleanPoint = point.replace(/^[-•*]\s*/, ''); // remove leading bullet
-                        return <li key={idx}>{cleanPoint}</li>;
-                })}
-              </ul>
-            ) : (
-              <p>{summary}</p>
-            )}
+            <div id="summary-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(summary) }} />
           </div>
         )}
 
