@@ -70,12 +70,12 @@ const SummaryDetail = () => {
             ['bold', 'italic', 'underline'],
             [{ color: [] }, { background: [] }],
             [{ align: [] }],
-            ['link', 'clean']
+            ['clean']
           ]
         }}
         formats={[
           'header', 'bold', 'italic', 'underline',
-          'color', 'background', 'align', 'link'
+          'color', 'background', 'align'
         ]}
       />
       <button onClick={handleSave} disabled={saving}>

@@ -44,6 +44,17 @@ const Dashboard = () => {
     return () => unsubscribeAuth();
   }, [navigate]);
 
+  useEffect(() => {
+    summaries.forEach((summary) => {
+      const container = document.getElementById(`summary-${summary.id}`);
+      if (container) {
+        container.querySelectorAll('.ql-align-center').forEach(el => el.style.textAlign = 'center');
+        container.querySelectorAll('.ql-align-right').forEach(el => el.style.textAlign = 'right');
+        container.querySelectorAll('.ql-align-left').forEach(el => el.style.textAlign = 'left');
+      }
+    });
+  }, [summaries]);
+
   const handleNavigate = (id) => {
     navigate(`/summary/${id}`);
   };
@@ -73,6 +84,16 @@ const Dashboard = () => {
     container.innerHTML = DOMPurify.sanitize(summaryHTML);
 
     if (format === 'pdf') {
+      // Apply inline text-align styles for Quill alignment classes
+      container.querySelectorAll('.ql-align-center').forEach(el => {
+        el.style.textAlign = 'center';
+      });
+      container.querySelectorAll('.ql-align-right').forEach(el => {
+        el.style.textAlign = 'right';
+      });
+      container.querySelectorAll('.ql-align-left').forEach(el => {
+        el.style.textAlign = 'left';
+      });
       html2pdf()
         .set({
           margin: [10, 20],
@@ -165,7 +186,7 @@ const Dashboard = () => {
                 </p>
                 <p><strong>Type:</strong> {summary.type}</p>
                 <p><strong>Summary:</strong></p>
-                <div dangerouslySetInnerHTML={{ __html: summary.summary }} />
+                <div id={`summary-${summary.id}`} dangerouslySetInnerHTML={{ __html: summary.summary }} />
                 <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
               </div>
 

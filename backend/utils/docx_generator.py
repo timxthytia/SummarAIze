@@ -1,13 +1,16 @@
+from docx.document import Document as DocxDocument
 from docx import Document
 from docx.shared import RGBColor
 from docx.enum.text import WD_UNDERLINE
-from bs4 import BeautifulSoup, NavigableString
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from bs4 import BeautifulSoup
+from bs4.element import NavigableString
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
 from docx.oxml.ns import qn
 from docx.enum.text import WD_COLOR_INDEX
 
-def add_html_to_docx(doc: Document, html: str):
+def add_html_to_docx(doc: DocxDocument, html: str):
 
     highlights_map = {
         'yellow': 7,
@@ -126,8 +129,8 @@ def add_html_to_docx(doc: Document, html: str):
             inline_styles = parse_style(el.attrs['style'])
             if 'color' in inline_styles:
                 style['color'] = inline_styles['color']
-            if 'background-color' in inline_styles:
-                style['highlight'] = inline_styles['background-color']
+            if 'highlight' in inline_styles:
+                style['highlight'] = inline_styles['highlight']
         return style
 
     def process_element(el, paragraph, current_style):
@@ -155,16 +158,32 @@ def add_html_to_docx(doc: Document, html: str):
     soup = BeautifulSoup(html, 'html.parser')
 
     for elem in soup.children:
-        if elem.name == 'p':
+        align = None
+        classes = getattr(elem, 'attrs', {}).get('class', [])
+        if 'ql-align-center' in classes:
+            align = WD_ALIGN_PARAGRAPH.CENTER
+        elif 'ql-align-right' in classes:
+            align = WD_ALIGN_PARAGRAPH.RIGHT
+        elif 'ql-align-left' in classes:
+            align = WD_ALIGN_PARAGRAPH.LEFT
+
+        if getattr(elem, "name", None) == 'p':
             p = doc.add_paragraph()
+            if align is not None:
+                p.alignment = align
             process_element(elem, p, {})
-        elif elem.name in ['h1', 'h2', 'h3']:
-            level = {'h1': 0, 'h2': 1, 'h3': 2}[elem.name]
+        elif getattr(elem, "name", None) in ['h1', 'h2', 'h3']:
+            name = getattr(elem, "name", None)
+            level = {'h1': 0, 'h2': 1, 'h3': 2}.get(name or '', 0)
             p = doc.add_heading(level=level)
+            if align is not None:
+                p.alignment = align
             process_element(elem, p, {})
-        elif elem.name in ['ul', 'ol']:
-            for li in elem.find_all('li'):
-                p = doc.add_paragraph(style='List Bullet' if elem.name == 'ul' else 'List Number')
+        elif getattr(elem, "name", None) in ['ul', 'ol']:
+            for li in getattr(elem, 'find_all', lambda *a, **k: [])('li'):
+                p = doc.add_paragraph(style='List Bullet' if getattr(elem, "name", None) == 'ul' else 'List Number')
+                if align is not None:
+                    p.alignment = align
                 process_element(li, p, {})
         elif isinstance(elem, NavigableString):
             if elem.strip():
