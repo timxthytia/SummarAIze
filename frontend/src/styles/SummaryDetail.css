@@ -1,65 +1,60 @@
-/* ======= Background & Container ======= */
 @keyframes animatedGradient {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  
-  .summary-detail-container {
-    width: 100%;
-    min-height: 100vh;
-    padding: 6rem 2rem 2rem;
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(-45deg, #5f27cd, #341f97, #833471);
-    background-size: 300% 300%;
-    animation: animatedGradient 15s ease-in-out infinite;
-    box-sizing: border-box;
-    color: white;
-  }
-  
-  /* ======= Editor Card ======= */
-  .summary-detail-card {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
-    border-radius: 16px;
-    padding: 2rem;
-    max-width: 900px;
-    margin: 0 auto;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-    backdrop-filter: blur(10px);
-  }
-  
-  /* ======= Title ======= */
-  .summary-detail-card h2 {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    font-weight: bold;
-  }
-  
-  /* ======= Quill Editor Wrapper ======= */
-  .summary-text-editor {
-    background: white;
-    color: black;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-top: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  /* ======= Save Button ======= */
-  .save-button {
-    background-color: white;
-    color: #5f27cd;
-    border: 2px solid white;
-    padding: 0.6rem 1.4rem;
-    font-size: 1rem;
-    font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  
-  .save-button:hover {
-    background-color: #5f27cd;
-    color: white;
-  }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.summary-detail-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 6rem 2rem 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(-45deg, #5f27cd, #341f97, #833471);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
+  box-sizing: border-box;
+  color: white;
+}
+
+.summary-detail-card {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(10px);
+}
+
+.summary-detail-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+}
+
+.summary-text-editor {
+  background: white;
+  color: black;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.save-button {
+  background-color: white;
+  color: #5f27cd;
+  border: 2px solid white;
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.save-button:hover {
+  background-color: #5f27cd;
+  color: white;
+}

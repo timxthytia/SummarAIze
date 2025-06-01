@@ -55,7 +55,6 @@ const TextSummarizer = () => {
 
         setSummary(response.data.summary);
         setShowSaveOption(true);
-
       } else if (mode === 'file') {
         if (!selectedFile) {
           setError("Please upload a file.");

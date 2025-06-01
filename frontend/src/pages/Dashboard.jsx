@@ -16,7 +16,7 @@ const Dashboard = () => {
   const [summaries, setSummaries] = useState([]);
   const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '' });
   const [downloadFormats, setDownloadFormats] = useState({});
-  const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '' }); 
+  const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,7 +62,7 @@ const Dashboard = () => {
   const handleDelete = async (id) => {
     try {
       await deleteDoc(doc(db, 'summaries', id));
-      setDeleteConfirm({ visible: false, id: '' }); // Close modal after delete
+      setDeleteConfirm({ visible: false, id: '' });
     } catch (error) {
       console.error('Error deleting summary:', error);
     }
@@ -84,7 +84,6 @@ const Dashboard = () => {
     container.innerHTML = DOMPurify.sanitize(summaryHTML);
 
     if (format === 'pdf') {
-      // Apply inline text-align styles for Quill alignment classes
       container.querySelectorAll('.ql-align-center').forEach(el => {
         el.style.textAlign = 'center';
       });
@@ -177,9 +176,10 @@ const Dashboard = () => {
                   <strong>Title:</strong> {summary.title || 'Untitled'}
                   <button
                     className="rename-trigger-button"
-                    onClick={() =>
-                      setRenameModal({ visible: true, id: summary.id, title: summary.title || '' })
-                    }
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRenameModal({ visible: true, id: summary.id, title: summary.title || '' });
+                    }}
                   >
                     Rename
                   </button>
@@ -201,7 +201,6 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Rename Modal */}
       {renameModal.visible && (
         <div className="rename-modal-overlay">
           <div className="rename-modal">
@@ -229,7 +228,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteConfirm.visible && (
         <div className="delete-modal-overlay">
           <div className="delete-modal">

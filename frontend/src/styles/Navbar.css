@@ -1,9 +1,7 @@
-/* === Global box-sizing fix === */
 * {
   box-sizing: border-box;
 }
 
-/* === Navbar Layout === */
 .navbar {
   position: fixed;
   top: 0;
@@ -22,14 +20,12 @@
   font-weight: 600;
 }
 
-/* === Title === */
 .navbar-title {
   cursor: pointer;
   white-space: nowrap;
   font-size: 3rem;
 }
 
-/* === Buttons (Home, Dashboard, Summarizer, Logout) === */
 .navbar-home {
   background: none;
   border: 2px solid white;
@@ -48,14 +44,12 @@
   transform: scale(1.05);
 }
 
-/* === Right Side Container (Buttons + Profile) === */
 .navbar-right {
   display: flex;
   align-items: center;
   gap: 1.2rem;
 }
 
-/* === Profile Section === */
 .navbar-user {
   display: flex;
   align-items: center;

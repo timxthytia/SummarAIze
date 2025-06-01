@@ -56,8 +56,8 @@ const SummaryDetail = () => {
 
   return (
     <div className="summary-detail-container">
-        <NavbarLoggedin user={user} />
-        <h2>{title || 'Untitled'}</h2>
+      <NavbarLoggedin user={user} />
+      <h2>{title || 'Untitled'}</h2>
       {lastSaved && <p><small>Last saved: {lastSaved}</small></p>}
       <ReactQuill
         className="summary-text-editor"
@@ -81,7 +81,6 @@ const SummaryDetail = () => {
       <button onClick={handleSave} disabled={saving}>
         {saving ? 'Saving...' : 'Save Changes'}
       </button>
-      
     </div>
   );
 };

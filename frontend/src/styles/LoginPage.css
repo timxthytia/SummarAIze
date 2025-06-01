@@ -1,4 +1,3 @@
-/* ========== Container ========== */
 .login-container {
   width: 100%;
   min-height: 100vh;
@@ -27,7 +26,6 @@
   }
 }
 
-/* ========== Slogan Text ========== */
 .slogan {
   font-size: 5rem;
   font-weight: 500;
@@ -37,7 +35,6 @@
   line-height: 1.3;
 }
 
-/* ========== Login Card ========== */
 .login-card {
   width: 90%;
   max-width: 500px;
@@ -53,7 +50,6 @@
   box-sizing: border-box;
 }
 
-/* ========== Title/Subtext ========== */
 .login-title {
   font-size: 2.2rem;
   margin-bottom: 0.5rem;
@@ -67,7 +63,6 @@
   margin-bottom: 1.2rem;
 }
 
-/* ========== Google Button ========== */
 .google-signin-btn {
   background: none;
   border: none;
@@ -93,7 +88,6 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* ========== Register Link ========== */
 .register-prompt {
   margin-top: 1.5rem;
   font-size: 0.95rem;
@@ -119,7 +113,7 @@
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1rem; /* reduced gap */
+  gap: 1rem;
   padding: 2rem 1rem;
   width: 100%;
   max-width: 1000px;
