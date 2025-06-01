@@ -10,7 +10,7 @@ import io
 
 app = FastAPI()
 
-origins = ["http://localhost:5173"]
+origins = ["http://localhost:5173", "https://orbital-summaraize.vercel.app"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
