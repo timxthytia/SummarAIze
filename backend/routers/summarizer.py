@@ -2,14 +2,14 @@
 from fastapi import APIRouter, UploadFile, File, Form
 from pydantic import BaseModel
 from utils.openai_client import client
-import fitz  # PyMuPDF
-import docx2txt # library to extract text from docx
+import fitz  
+import docx2txt 
 
 router = APIRouter()
 
 class SummarizeRequest(BaseModel):
     text: str
-    type: str  # 'short', 'long', 'bullet'
+    type: str 
 
 @router.post("/summarize")
 async def summarize(request: SummarizeRequest):
@@ -38,11 +38,14 @@ async def summarize(request: SummarizeRequest):
 async def summarize_file(file: UploadFile = File(...), type: str = Form(...)):
     content = ""
 
-    if file.filename.endswith(".pdf"):
+    if file.filename and file.filename.endswith(".pdf"):
         pdf_bytes = await file.read()
         pdf = fitz.open(stream=pdf_bytes, filetype="pdf")
-        content = "\n".join([page.get_text() for page in pdf])
-    elif file.filename.endswith(".docx"):
+        text_chunks = []
+        for page in pdf:
+            text_chunks.append(page.get_text())  # type: ignore
+        content = "\n".join(text_chunks)
+    elif file.filename and file.filename.endswith(".docx"):
         content = docx2txt.process(file.file)
     else:
         return {"error": "Unsupported file type"}

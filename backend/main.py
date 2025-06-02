@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from docx import Document
-from routers import summarizer  # later: add mindmap, test_mode
+from routers import summarizer 
 from utils.docx_generator import add_html_to_docx
 
 import io
@@ -19,17 +19,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register routes
 app.include_router(summarizer.router)
-
-# later:
-# app.include_router(mindmap.router)
-# app.include_router(test_mode.router)
 
 class DocxRequest(BaseModel):
     title: str
     html: str
 
+# Backend function to download docx with text-styles
 @app.post("/generate-docx")
 async def generate_docx(data: DocxRequest):
     try:
