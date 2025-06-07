@@ -14,9 +14,11 @@ import NavbarLoggedin from '../components/NavbarLoggedin';
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [summaries, setSummaries] = useState([]);
+  const [mindmaps, setMindmaps] = useState([]);
   const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '' });
   const [downloadFormats, setDownloadFormats] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '' });
+  const [view, setView] = useState('summaries');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,8 +27,7 @@ const Dashboard = () => {
         setUser(user);
 
         const q = query(
-          collection(db, 'summaries'),
-          where('uid', '==', user.uid),
+          collection(db, 'users', user.uid, 'summaries'),
           orderBy('timestamp', 'desc')
         );
 
@@ -35,7 +36,20 @@ const Dashboard = () => {
           setSummaries(summariesList);
         });
 
-        return () => unsubscribeSummaries();
+        const mindmapQuery = query(
+          collection(db, 'users', user.uid, 'mindmaps'),
+          orderBy('timestamp', 'desc')
+        );
+
+        const unsubscribeMindmaps = onSnapshot(mindmapQuery, (snapshot) => {
+          const mindmapList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setMindmaps(mindmapList);
+        });
+
+        return () => {
+          unsubscribeSummaries();
+          unsubscribeMindmaps();
+        };
       } else {
         navigate('/login');
       }
@@ -44,6 +58,7 @@ const Dashboard = () => {
     return () => unsubscribeAuth();
   }, [navigate]);
 
+  // For displaying text styles in dashboard
   useEffect(() => {
     summaries.forEach((summary) => {
       const container = document.getElementById(`summary-${summary.id}`);
@@ -55,27 +70,29 @@ const Dashboard = () => {
     });
   }, [summaries]);
 
-  const handleNavigate = (id) => {
-    navigate(`/summary/${id}`);
+  const handleNavigate = (id, isMindmap = false) => {
+    const basePath = isMindmap ? 'mindmap' : 'summary';
+    navigate(`/${basePath}/${user.uid}/${id}`);
   };
 
   const handleDelete = async (id) => {
     try {
-      await deleteDoc(doc(db, 'summaries', id));
+      const isMindmap = deleteConfirm.isMindmap;
+      await deleteDoc(doc(db, 'users', user.uid, isMindmap ? 'mindmaps' : 'summaries', id));
       setDeleteConfirm({ visible: false, id: '' });
     } catch (error) {
-      console.error('Error deleting summary:', error);
+      console.error(`Error deleting ${deleteConfirm.isMindmap ? 'mindmap' : 'summary'}:`, error);
     }
   };
 
   const handleRename = async () => {
-    const { id, title } = renameModal;
+    const { id, title, isMindmap } = renameModal;
     if (!title.trim()) return;
     try {
-      await updateDoc(doc(db, 'summaries', id), { title });
+      await updateDoc(doc(db, 'users', user.uid, isMindmap ? 'mindmaps' : 'summaries', id), { title });
       setRenameModal({ visible: false, id: '', title: '' });
     } catch (error) {
-      console.error('Error renaming summary:', error);
+      console.error(`Error renaming ${isMindmap ? 'mindmap' : 'summary'}:`, error);
     }
   };
 
@@ -145,61 +162,117 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <NavbarLoggedin user={user} />
-      <div className="summary-list">
-        <h3>Your Saved Summaries</h3>
-        {summaries.length === 0 ? (
-          <p>No summaries found.</p>
-        ) : (
-          summaries.map((summary) => (
-            <div key={summary.id} className="summary-card">
-              <div className="summary-card-header">
-                <select
-                  value={downloadFormats[summary.id] || 'pdf'}
-                  onChange={(e) => setDownloadFormats(prev => ({ ...prev, [summary.id]: e.target.value }))}
-                  className="download-format-select"
-                >
-                  <option value="pdf">PDF</option>
-                  <option value="docx">DOCX</option>
-                </select>
+      <div className="dashboard-toggle-buttons">
+        <button
+          className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
+          onClick={() => setView('summaries')}
+        >
+          Summaries
+        </button>
+        <button
+          className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
+          onClick={() => setView('mindmaps')}
+        >
+          Mind Maps
+        </button>
+      </div>
+
+      {view === 'summaries' && (
+        <div className="summary-list">
+          <h3>Your Saved Summaries</h3>
+          {summaries.length === 0 ? (
+            <p>No summaries found.</p>
+          ) : (
+            summaries.map((summary) => (
+              <div key={summary.id} className="summary-card">
+                <div className="summary-card-header">
+                  <select
+                    value={downloadFormats[summary.id] || 'pdf'}
+                    onChange={(e) => setDownloadFormats(prev => ({ ...prev, [summary.id]: e.target.value }))}
+                    className="download-format-select"
+                  >
+                    <option value="pdf">PDF</option>
+                    <option value="docx">DOCX</option>
+                  </select>
+                  <button
+                    className="download-button"
+                    onClick={() =>
+                      handleDownload(summary.title, summary.summary, downloadFormats[summary.id] || 'pdf')
+                    }
+                  >
+                    Download
+                  </button>
+                </div>
+
+                <div className="summary-link" onClick={() => handleNavigate(summary.id)}>
+                  <p>
+                    <strong>Title:</strong> {summary.title || 'Untitled'}
+                    <button
+                      className="rename-trigger-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenameModal({ visible: true, id: summary.id, title: summary.title || '' });
+                      }}
+                    >
+                      Rename
+                    </button>
+                  </p>
+                  <p><strong>Type:</strong> {summary.type}</p>
+                  <p><strong>Summary:</strong></p>
+                  <div id={`summary-${summary.id}`} dangerouslySetInnerHTML={{ __html: summary.summary }} />
+                  <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
+                </div>
+
                 <button
-                  className="download-button"
-                  onClick={() =>
-                    handleDownload(summary.title, summary.summary, downloadFormats[summary.id] || 'pdf')
-                  }
+                  className="delete-button"
+                  onClick={() => openDeleteConfirm(summary.id)}
                 >
-                  Download
+                  Delete
                 </button>
               </div>
+            ))
+          )}
+        </div>
+      )}
 
-              <div className="summary-link" onClick={() => handleNavigate(summary.id)}>
+      {view === 'mindmaps' && (
+        <>
+          {mindmaps.length === 0 ? (
+            <p>No mind maps found.</p>
+          ) : (
+            mindmaps.map((mindmap) => (
+              <div
+                key={mindmap.id}
+                className="mindmap-card"
+                onClick={() => handleNavigate(mindmap.id, true)}
+              >
                 <p>
-                  <strong>Title:</strong> {summary.title || 'Untitled'}
+                  <strong>Title:</strong> {mindmap.title || 'Untitled'}
                   <button
                     className="rename-trigger-button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setRenameModal({ visible: true, id: summary.id, title: summary.title || '' });
+                      setRenameModal({ visible: true, id: mindmap.id, title: mindmap.title || '', isMindmap: true });
                     }}
                   >
                     Rename
                   </button>
                 </p>
-                <p><strong>Type:</strong> {summary.type}</p>
-                <p><strong>Summary:</strong></p>
-                <div id={`summary-${summary.id}`} dangerouslySetInnerHTML={{ __html: summary.summary }} />
-                <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
+                <p><small>{mindmap.timestamp?.toDate().toLocaleString()}</small></p>
+                <button
+                  className="delete-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirm({ visible: true, id: mindmap.id, isMindmap: true });
+                  }}
+                >
+                  Delete
+                </button>
               </div>
-
-              <button
-                className="delete-button"
-                onClick={() => openDeleteConfirm(summary.id)}
-              >
-                Delete
-              </button>
-            </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </>
+      )}
 
       {renameModal.visible && (
         <div className="rename-modal-overlay">

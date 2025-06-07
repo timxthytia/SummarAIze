@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from docx import Document
-from routers import summarizer 
+from routers import summarizer, mindmap
 from utils.docx_generator import add_html_to_docx
 
 import io
@@ -20,6 +20,7 @@ app.add_middleware(
 )
 
 app.include_router(summarizer.router)
+app.include_router(mindmap.router)
 
 class DocxRequest(BaseModel):
     title: str
@@ -43,3 +44,5 @@ async def generate_docx(data: DocxRequest):
         return StreamingResponse(buffer, media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document", headers=headers)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+

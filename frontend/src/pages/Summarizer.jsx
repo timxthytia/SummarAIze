@@ -85,7 +85,7 @@ const TextSummarizer = () => {
     if (!user || !summary || !title.trim()) return;
     setSaving(true);
     try {
-      await addDoc(collection(db, 'summaries'), {
+      await addDoc(collection(db, 'users', user.uid, 'summaries'), {
         uid: user.uid,
         title,
         summary,

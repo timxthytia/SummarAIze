@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard";
 import Summarizer from "./pages/Summarizer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import SummaryDetail from "./pages/SummaryDetail";
+import MindmapGenerator from "./pages/MindmapGenerator";
+import MindmapDetail from "./pages/MindmapDetail";
 
 
 function App() {
@@ -33,10 +35,26 @@ function App() {
           }
         />
         <Route
-          path="/summary/:id"
+          path="/summary/:uid/:id"
           element={
             <ProtectedRoute>
               <SummaryDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mindmapgenerator"
+          element={
+            <ProtectedRoute>
+              <MindmapGenerator />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/mindmap/:uid/:id"
+          element={
+            <ProtectedRoute>
+              <MindmapDetail />
             </ProtectedRoute>
           }
         />

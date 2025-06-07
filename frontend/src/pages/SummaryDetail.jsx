@@ -9,7 +9,7 @@ import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/SummaryDetail.css';
 
 const SummaryDetail = () => {
-  const { id } = useParams();
+  const { uid, id } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
@@ -27,7 +27,7 @@ const SummaryDetail = () => {
 
   useEffect(() => {
     const fetchSummary = async () => {
-      const docRef = doc(db, 'summaries', id);
+      const docRef = doc(db, 'users', uid, 'summaries', id);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
@@ -42,11 +42,11 @@ const SummaryDetail = () => {
     };
 
     fetchSummary();
-  }, [id, navigate]);
+  }, [uid, id, navigate]);
 
   const handleSave = async () => {
     setSaving(true);
-    const docRef = doc(db, 'summaries', id);
+    const docRef = doc(db, 'users', uid, 'summaries', id);
     await updateDoc(docRef, {
       summary
     });
