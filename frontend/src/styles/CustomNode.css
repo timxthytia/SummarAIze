@@ -1,7 +1,7 @@
 /* Custom Node Styling */
 .custom-node {
-  padding: 12px 16px;
-  border: 2px solid #4A90E2;
+  padding: 6px 8px;
+  border: 3px solid #4A90E2;
   border-radius: 10px;
   background-color: #f0f8ff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -13,18 +13,23 @@
   align-items: center;
 }
 
-.custom-node-input {
+.custom-node-textarea {
   border: none;
   background: transparent;
   font-size: 14px;
   width: 100%;
   text-align: center;
   outline: none;
-  padding: 4px;
+  padding: 2px;
 }
 
 .custom-handle {
-  background-color: #4A90E2;
-  width: 10px;
-  height: 10px;
+  background-color: #000000;
+  width: 0.1px;
+  height: 0.1px;
+}
+
+.custom-node:hover {
+  background-color: #e6f2ff;
+  border-color: #357ABD;
 }

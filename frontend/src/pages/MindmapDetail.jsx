@@ -20,6 +20,7 @@ const MindmapDetail = () => {
   const [timestamp, setTimestamp] = useState('');
   const [user, setUser] = useState(null);
   const [deleteMode, setDeleteMode] = useState(false);
+  const [edgeModal, setEdgeModal] = useState({ visible: false, edgeId: '', label: '' });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -43,13 +44,49 @@ const MindmapDetail = () => {
             ...node.data,
             onChange: (newLabel) => {
               setNodes((nds) =>
-                nds.map((n) => n.id === node.id ? { ...n, data: { ...n.data, label: newLabel, onChange: n.data.onChange } } : n)
+                nds.map((n) =>
+                  n.id === node.id
+                    ? {
+                        ...n,
+                        data: {
+                          ...n.data,
+                          label: newLabel,
+                          onChange: n.data.onChange,
+                          onChangeColors: n.data.onChangeColors
+                        }
+                      }
+                    : n
+                )
               );
             },
-          },
+            onChangeColors: ({ bgColor, borderColor }) => {
+              setNodes((nds) =>
+                nds.map((n) =>
+                  n.id === node.id
+                    ? {
+                        ...n,
+                        data: {
+                          ...n.data,
+                          bgColor,
+                          borderColor,
+                          onChange: n.data.onChange,
+                          onChangeColors: n.data.onChangeColors
+                        }
+                      }
+                    : n
+                )
+              );
+            }
+          }
         }));
         setNodes(typedNodes);
-        setEdges(data.edges || []);
+        setEdges(
+          (data.edges || []).map(edge => ({
+            ...edge,
+            style: { stroke: '#000000', strokeWidth: 1.5 },
+            labelStyle: { fill: '#000000', fontWeight: '600' }
+          }))
+        );
         setTimestamp(data.timestamp?.toDate().toLocaleString() || '');
       } else {
         navigate('/dashboard');
@@ -68,7 +105,9 @@ const MindmapDetail = () => {
         type,
         position,
         data: {
-          label: data.label
+          label: data.label || '',
+          bgColor: data.bgColor || '#ffffff',
+          borderColor: data.borderColor || '#000000'
         }
       }));
 
@@ -85,13 +124,16 @@ const MindmapDetail = () => {
   };
 
   const onConnect = (params) => {
-    const label = prompt('Enter a label for this edge:');
-    const newEdge = {
-      ...params,
-      id: `e${params.source}-${params.target}-${Date.now()}`,
-      label: label || '',
-    };
-    setEdges((eds) => addEdge(newEdge, eds));
+    const newEdgeId = `e${params.source}-${params.target}-${Date.now()}`;
+    setEdgeModal({
+      visible: true,
+      edgeId: newEdgeId,
+      label: '',
+      connection: {
+        ...params,
+        id: newEdgeId
+      }
+    });
   };
 
   const handleNodeClick = (_, node) => {
@@ -104,15 +146,32 @@ const MindmapDetail = () => {
     if (deleteMode) {
       setEdges((eds) => eds.filter((e) => e.id !== edge.id));
     } else {
-      const newLabel = prompt('Edit edge label:', edge.label || '');
-      if (newLabel !== null) {
-        setEdges((eds) =>
-          eds.map((e) =>
-            e.id === edge.id ? { ...e, label: newLabel } : e
-          )
-        );
-      }
+      setEdgeModal({
+        visible: true,
+        edgeId: edge.id,
+        label: edge.label || ''
+      });
     }
+  };
+
+  const handleConfirmEdgeLabel = () => {
+    if (edgeModal.connection) {
+      const newEdge = {
+        ...edgeModal.connection,
+        id: edgeModal.edgeId,
+        label: edgeModal.label,
+        style: { stroke: '#000000', strokeWidth: 1.5 },
+        labelStyle: { fill: '#000000', fontWeight: '600' }
+      };
+      setEdges((eds) => addEdge(newEdge, eds));
+    } else {
+      setEdges((eds) =>
+        eds.map((e) =>
+          e.id === edgeModal.edgeId ? { ...e, label: edgeModal.label } : e
+        )
+      );
+    }
+    setEdgeModal({ visible: false, edgeId: '', label: '' });
   };
 
   const handleAddNode = () => {
@@ -122,11 +181,43 @@ const MindmapDetail = () => {
       type: 'custom',
       data: {
         label: 'New Node',
+        bgColor: '#ffffff',
+        borderColor: '#000000',
         onChange: (newLabel) => {
           setNodes((nds) =>
-            nds.map((n) => n.id === id ? { ...n, data: { ...n.data, label: newLabel, onChange: n.data.onChange } } : n)
+            nds.map((n) =>
+              n.id === id
+                ? {
+                    ...n,
+                    data: {
+                      ...n.data,
+                      label: newLabel,
+                      onChange: n.data.onChange,
+                      onChangeColors: n.data.onChangeColors
+                    }
+                  }
+                : n
+            )
           );
         },
+        onChangeColors: ({ bgColor, borderColor }) => {
+          setNodes((nds) =>
+            nds.map((n) =>
+              n.id === id
+                ? {
+                    ...n,
+                    data: {
+                      ...n.data,
+                      bgColor,
+                      borderColor,
+                      onChange: n.data.onChange,
+                      onChangeColors: n.data.onChangeColors
+                    }
+                  }
+                : n
+            )
+          );
+        }
       },
       position: { x: Math.random() * 250, y: Math.random() * 250 }
     };
@@ -136,14 +227,20 @@ const MindmapDetail = () => {
   return (
     <div className="summary-detail-container">
       <NavbarLoggedin user={user} />
-      <h2>{title}</h2>
+      <div className="page-content">
+        <h2>{title}</h2>
       {timestamp && <p><small>Created: {timestamp}</small></p>}
       <button onClick={handleAddNode} className="add-node-btn">
         Add Node
       </button>
       <button onClick={() => setDeleteMode(!deleteMode)} className="delete-mode-btn">
-        {deleteMode ? 'Exit Delete Mode' : 'Enter Delete Mode'}
+        {deleteMode ? 'Exit' : 'Delete Mode'}
       </button>
+      {deleteMode && (
+        <p style={{ color: '#d32f2f', fontSize: '14px', marginTop: '0.5rem' }}>
+          Click on nodes or edges you wish to delete
+        </p>
+      )}
       <div style={{ height: '600px', background: 'white', borderRadius: '10px', marginTop: '1rem' }}>
         <ReactFlowProvider>
           <ReactFlow
@@ -162,6 +259,33 @@ const MindmapDetail = () => {
       <button onClick={handleSaveChanges} className="save-btn">
         Save Changes
       </button>
+      {edgeModal.visible && (
+        <div className="rename-modal-overlay">
+          <div className="rename-modal">
+            <button
+              className="close-modal-button"
+              onClick={() => setEdgeModal({ visible: false, edgeId: '', label: '' })}
+            >
+              ×
+            </button>
+            <h3>{edgeModal.connection ? 'Create Edge Label' : 'Edit Edge Label'}</h3>
+            <input
+              type="text"
+              value={edgeModal.label}
+              onChange={(e) => setEdgeModal(prev => ({ ...prev, label: e.target.value }))}
+              placeholder="Edge label"
+            />
+            <button
+              onClick={handleConfirmEdgeLabel}
+              className="confirm-rename-button"
+              //disabled={!edgeModal.label.trim()}
+            >
+              {edgeModal.connection ? 'Create' : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 };

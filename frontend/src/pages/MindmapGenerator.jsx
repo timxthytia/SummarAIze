@@ -4,168 +4,144 @@ import NavbarLoggedin from '../components/NavbarLoggedin';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
 import ReactFlow, {
+  ReactFlowProvider,
+  addEdge,
   useNodesState,
   useEdgesState,
-  addEdge,
-  ReactFlowProvider
+  MarkerType
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import axios from 'axios';
 
 const MindmapGenerator = () => {
-    const [user, setUser] = useState(null);
-    const [inputText, setInputText] = useState('');
-    const [file, setFile] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [mapTitle, setMapTitle] = useState('');
-    const [nodes, setNodes, onNodesChange] = useNodesState([]);
-    const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [user, setUser] = useState(null);
+  const [inputText, setInputText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [mapTitle, setMapTitle] = useState('');
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-        setUser(currentUser);
-        });
-        return () => unsubscribe();
-    }, []);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
-    const handleGenerate = async () => {
-        if (!inputText.trim()) return;
+  const handleGenerate = async () => {
+    if (!inputText.trim()) return;
+    setLoading(true);
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/generate-mindmap`, {
+        text: inputText
+      });
 
-        setLoading(true);
-        setNodes([]);
-        setEdges([]);
+      const { nodes: genNodes, edges: genEdges } = response.data;
 
-        try {
-            const response = await fetch('http://localhost:8000/generate-mindmap', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: inputText }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to generate mind map');
+      setNodes(
+        genNodes.map((node, index) => {
+          const col = index % 4;
+          const row = Math.floor(index / 4);
+          return {
+            ...node,
+            position: {
+              x: col * 300,
+              y: row * 200
+            },
+            data: {
+              label: node.label
             }
+          };
+        })
+      );
 
-            const data = await response.json();
+      setEdges(genEdges.map(edge => ({
+        ...edge,
+        markerEnd: { type: MarkerType.ArrowClosed, color: '#000000' },
+        label: edge.label || ''
+      })));
+    } catch (err) {
+      console.error('Error generating mindmap:', err);
+      alert('Error generating mindmap.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            const gridSpacingX = 300;
-            const gridSpacingY = 200;
-            const nodesPerRow = 4;
+  const handleSaveMindmap = async () => {
+    if (!user || !mapTitle.trim() || nodes.length === 0) return;
+    try {
+      await addDoc(collection(db, 'users', user.uid, 'mindmaps'), {
+        title: mapTitle,
+        nodes,
+        edges,
+        uid: user.uid,
+        timestamp: serverTimestamp()
+      });
+      alert('Mindmap saved successfully!');
+      setMapTitle('');
+    } catch (err) {
+      console.error('Error saving mindmap:', err);
+      alert('Failed to save mindmap.');
+    }
+  };
 
-            const nodesWithPos = data.nodes.map((node, index) => {
-              const row = Math.floor(index / nodesPerRow);
-              const col = index % nodesPerRow;
-              return {
-                id: node.id,
-                data: { label: node.label },
-                position: {
-                  x: col * gridSpacingX,
-                  y: row * gridSpacingY
-                }
-              };
-            });
 
-            const edgesWithIds = data.edges.map((edge, index) => ({
-              id: edge.id || `e${edge.source}-${edge.target}-${index}`,
-              source: edge.source,
-              target: edge.target,
-              label: edge.label,
-            }));
+  return (
+    <ReactFlowProvider>
+      <div className="mindmap-generator-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <NavbarLoggedin user={user} />
+        <div className="page-content">
+            
+        </div>
+        <h1>Mind Map Generator</h1>
+        <textarea
+          placeholder="Enter your text here..."
+          value={inputText}
+          onChange={e => setInputText(e.target.value)}
+          rows={5}
+          style={{ width: '100%', maxWidth: '800px', marginBottom: '10px' }}
+        />
+        <button onClick={handleGenerate} disabled={loading} style={{ marginBottom: '1rem' }}>
+          {loading ? 'Generating...' : 'Generate Mind Map'}
+        </button>
 
-            setNodes(nodesWithPos);
-            setEdges(edgesWithIds);
-        } catch (error) {
-            console.error('Error generating mind map:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleSaveMindmap = async () => {
-      if (!mapTitle.trim() || !nodes.length || !user) return;
-      try {
-        await addDoc(collection(db, 'users', user.uid, 'mindmaps'), {
-          title: mapTitle,
-          nodes: nodes,
-          edges: edges,
-          timestamp: serverTimestamp(),
-          uid: user.uid
-        });
-        alert('Mind map saved successfully!');
-        setMapTitle('');
-      } catch (err) {
-        console.error('Error saving mindmap:', err);
-        alert('Failed to save mind map.');
-      }
-    };
-
-    const MindMapCanvas = () => {
-      return (
-        <div style={{ width: '100%', height: '600px' }}>
+        <div className='mindmap-flow-wrapper'>
           <ReactFlow
-            key={nodes.length}
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             fitView
-            nodesDraggable={false}
+            nodesDraggable={true}
             nodesConnectable={false}
             elementsSelectable={false}
-            edgesFocusable={false}
+            edgesFocusable={true}
             panOnDrag={true}
-            panOnScroll={true}
             zoomOnScroll={true}
             zoomOnPinch={true}
-            zoomOnDoubleClick={false}
             minZoom={0.2}
             maxZoom={2}
+            deleteKeyCode={null}
           />
         </div>
-      );
-    };
-    
-    return (
-      <ReactFlowProvider>
-        <div className="mindmap-generator-container">
-            <NavbarLoggedin user={user} />
-            <h1>Mind Map Generator</h1>
-            <textarea
-                placeholder="Enter your text here..."
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                className="mindmap-textarea"
-            />
+
+        {nodes.length > 0 && (
+          <div style={{ marginTop: '1rem' }}>
             <input
-                type="file"
-                accept=".pdf,.docx,.txt"
-                onChange={(e) => setFile(e.target.files[0])}
+              type="text"
+              placeholder="Enter mind map title..."
+              value={mapTitle}
+              onChange={e => setMapTitle(e.target.value)}
+              style={{ padding: '0.5rem', borderRadius: '8px', width: '60%', marginRight: '1rem' }}
             />
-            <button onClick={handleGenerate} disabled={loading}>
-                {loading ? 'Generating...' : 'Generate Mind Map'}
-            </button>
-            <div className="mindmap-output">
-              <MindMapCanvas />
-              {nodes.length > 0 && (
-                <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                    <input
-                    type="text"
-                    placeholder="Enter mind map title..."
-                    value={mapTitle}
-                    onChange={(e) => setMapTitle(e.target.value)}
-                    style={{ padding: '0.5rem', borderRadius: '8px', width: '60%', marginRight: '1rem' }}
-                    />
-                    <button onClick={handleSaveMindmap} className="generate-button">
-                    Save Mind Map
-                    </button>
-                </div>
-              )}
-            </div>
-        </div>
-      </ReactFlowProvider>
-    );
+            <button onClick={handleSaveMindmap}>Save Mind Map</button>
+          </div>
+        )}
+      </div>
+    </ReactFlowProvider>
+  );
 };
 
 export default MindmapGenerator;
