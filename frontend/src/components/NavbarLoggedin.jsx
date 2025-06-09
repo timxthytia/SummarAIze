@@ -20,6 +20,7 @@ const NavbarLoggedin = () => {
       </div>
       <div className="navbar-right">
         <div className="navbar-links">
+          <button className="navbar-home" onClick={() => navigate('/testmodeupload')}>Test Mode</button>
           <button className="navbar-home" onClick={() => navigate('/mindmapgenerator')}>Mindmap</button>
           <button className="navbar-home" onClick={() => navigate('/summarizer')}>Summarizer</button>
           <button className="navbar-home" onClick={handleLogout}>Logout</button>

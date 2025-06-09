@@ -7,6 +7,11 @@ import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestModeUpload.css';
 import axios from 'axios';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
+import { v4 as uuidv4 } from 'uuid';
+import { db } from '../services/firebase';
+import { doc, setDoc, collection } from 'firebase/firestore';
+import { getDocs } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -22,10 +27,41 @@ const TestModeUpload = () => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
 
+  const [paperTitle, setPaperTitle] = useState('');
+  const [questionsByPage, setQuestionsByPage] = useState({});
+  const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [questionFormData, setQuestionFormData] = useState({
+    type: 'MCQ',
+    marks: '',
+    correctAnswer: '',
+    correctAnswerFile: null,
+    multipleCorrect: false,
+  });
+  const [fileUrl, setFileUrl] = useState('');
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
+      // Fetch the user's latest test paper and set questionsByPage and fileUrl
+      if (currentUser) {
+        try {
+          const testPapersRef = collection(db, "users", currentUser.uid, "testpapers");
+          const querySnapshot = await getDocs(testPapersRef);
+          if (!querySnapshot.empty) {
+            const latestPaper = querySnapshot.docs[querySnapshot.docs.length - 1].data();
+            setQuestionsByPage(
+              latestPaper.questionsByPage.reduce((acc, pageData) => {
+                acc[pageData.page] = pageData.questions;
+                return acc;
+              }, {})
+            );
+            setFileUrl(latestPaper.fileUrl);
+          }
+        } catch (err) {
+          console.error("Error fetching user's test papers:", err);
+        }
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -98,11 +134,196 @@ const TestModeUpload = () => {
     setCurrentPage((prev) => Math.min(prev + 1, numPages));
   };
 
+  const openQuestionForm = () => {
+    setQuestionFormData({
+      id: null,
+      type: 'MCQ',
+      marks: '',
+      correctAnswer: '',
+      correctAnswerFile: null,
+      multipleCorrect: false,
+    });
+    setShowQuestionForm(true);
+  };
+
+  const closeQuestionForm = () => {
+    setShowQuestionForm(false);
+  };
+
+  const isFormValid = () => {
+    if (!questionFormData.marks || isNaN(Number(questionFormData.marks)) || Number(questionFormData.marks) < 0) {
+      return false;
+    }
+    if (questionFormData.type === 'MCQ' && !questionFormData.correctAnswer.trim()) {
+      return false;
+    }
+    if (questionFormData.type === 'Open-ended' && !questionFormData.correctAnswer.trim()) {
+      return false;
+    }
+    if (questionFormData.type === 'Other' && !questionFormData.correctAnswerFile) {
+      return false;
+    }
+    return true;
+  };
+
+  const parseCorrectAnswer = (data) => {
+    if (data.type === 'MCQ') {
+      return data.multipleCorrect
+        ? data.correctAnswer.split(',').map((a) => a.trim().toUpperCase())
+        : data.correctAnswer.trim().toUpperCase();
+    }
+    if (data.type === 'Open-ended') {
+      return data.correctAnswer.trim();
+    }
+    if (data.type === 'Other') {
+      return data.correctAnswerFile;
+    }
+  };
+
+  const handleSaveQuestion = () => {
+    if (!isFormValid()) return;
+
+    setQuestionsByPage((prev) => {
+      const pageQuestions = prev[currentPage] || [];
+      let newQuestions;
+      if (questionFormData.id) {
+        // edit existing
+        newQuestions = pageQuestions.map((q) =>
+          q.id === questionFormData.id
+            ? { ...questionFormData, correctAnswer: parseCorrectAnswer(questionFormData) }
+            : q
+        );
+      } else {
+        // add new
+        newQuestions = [
+          ...pageQuestions,
+          { ...questionFormData, id: uuidv4(), correctAnswer: parseCorrectAnswer(questionFormData) },
+        ];
+      }
+      return { ...prev, [currentPage]: newQuestions };
+    });
+    setShowQuestionForm(false);
+  };
+
+  const handleDeleteQuestion = (page, id) => {
+    setQuestionsByPage((prev) => {
+      const pageQuestions = prev[page] || [];
+      const filtered = pageQuestions.filter((q) => q.id !== id);
+      return { ...prev, [page]: filtered };
+    });
+  };
+
+  const handleEditQuestion = (page, question) => {
+    setQuestionFormData({
+      ...question,
+      multipleCorrect: Array.isArray(question.correctAnswer),
+      correctAnswer: Array.isArray(question.correctAnswer)
+        ? question.correctAnswer.join(',')
+        : question.correctAnswer,
+      correctAnswerFile: question.correctAnswerFile || null,
+    });
+    setShowQuestionForm(true);
+  };
+
+  // Submit test paper to Firestore
+  const handleSubmitTestPaper = async () => {
+    if (!paperTitle.trim() || !pdfData || !user) {
+      setError("Missing paper title, PDF data, or user not logged in.");
+      return;
+    }
+
+    const paperId = uuidv4();
+    const testPaperRef = doc(collection(db, "users", user.uid, "testpapers"), paperId);
+    const storage = getStorage();
+
+    let fileUrl = "";
+    try {
+      // Upload the test paper file to Firebase Storage
+      const fileRef = ref(storage, `testpapers/${user.uid}/${paperId}/${selectedFile.name}`);
+      await uploadBytes(fileRef, selectedFile);
+      fileUrl = await getDownloadURL(fileRef);
+      setFileUrl(fileUrl);
+    } catch (err) {
+      console.error("Error uploading test paper file:", err);
+      setError("Failed to upload test paper file.");
+      return;
+    }
+
+    try {
+      // Map and upload "Other" type answers if needed
+      const questions = await Promise.all(
+        Object.entries(questionsByPage).map(async ([page, questionList]) => {
+          const resolvedQuestions = await Promise.all(
+            questionList.map(async (q) => {
+              let correctAnswer = q.correctAnswer;
+              if (q.type === "Other" && q.correctAnswer instanceof File) {
+                try {
+                  const answerRef = ref(
+                    storage,
+                    `testpapers/${user.uid}/${paperId}/answers/${q.correctAnswer.name}`
+                  );
+                  await uploadBytes(answerRef, q.correctAnswer);
+                  const url = await getDownloadURL(answerRef);
+                  correctAnswer = {
+                    name: q.correctAnswer.name,
+                    url,
+                  };
+                } catch (err) {
+                  console.error("Error uploading answer file:", err);
+                  setError("Failed to upload answer file.");
+                  throw err;
+                }
+              }
+              return {
+                id: q.id,
+                type: q.type,
+                marks: q.marks,
+                correctAnswer,
+                multipleCorrect: q.multipleCorrect || false,
+              };
+            })
+          );
+          return {
+            page: Number(page),
+            questions: resolvedQuestions,
+          };
+        })
+      );
+
+      await setDoc(testPaperRef, {
+        paperTitle,
+        uploadedAt: new Date().toISOString(),
+        numPages,
+        fileName: selectedFile.name,
+        fileUrl,
+        questionsByPage: questions,
+      });
+      alert("Test paper submitted successfully!");
+    } catch (err) {
+      console.error("Error submitting test paper:", err);
+      setError("Failed to submit test paper to Firestore.");
+    }
+  };
+
   return (
     <div className="upload-container">
       <NavbarLoggedin />
+      <main></main>
       <div className="upload-card">
         <h1 className="upload-title">Upload Past-Year Test Paper</h1>
+
+        <div className="title-input-section">
+          <label htmlFor="paperTitle">Test Paper Title:</label>
+          <input
+            id="paperTitle"
+            type="text"
+            placeholder="Enter test paper title"
+            value={paperTitle}
+            onChange={(e) => setPaperTitle(e.target.value)}
+            required
+          />
+        </div>
+
         <div className="file-upload-section">
           <label>Upload PDF/DOCX:</label><br />
           <label className="custom-file-upload">
@@ -122,7 +343,7 @@ const TestModeUpload = () => {
         {error && <div className="error-message">{error}</div>}
 
         {selectedFile && pdfData && (
-          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+          <div>
             <Document
               file={pdfData}
               onLoadSuccess={onDocumentLoadSuccess}
@@ -135,7 +356,7 @@ const TestModeUpload = () => {
             >
               <Page pageNumber={currentPage} />
             </Document>
-            <div style={{ marginTop: '1rem' }}>
+            <div>
               <button onClick={goToPreviousPage} disabled={currentPage <= 1}>
                 Previous
               </button>
@@ -146,6 +367,205 @@ const TestModeUpload = () => {
                 Next
               </button>
             </div>
+
+            <div className="question-panel">
+              <h3>Questions on Page {currentPage}</h3>
+              {(questionsByPage[currentPage] || []).length === 0 && (
+                <p>No questions added for this page.</p>
+              )}
+              <ul>
+                {(questionsByPage[currentPage] || []).map((q) => (
+                  <li key={q.id}>
+                    <strong>{q.type}</strong> — Marks: {q.marks} — Correct Answer{q.multipleCorrect ? 's' : ''}:&nbsp;
+                    {q.type === 'Other' ? (
+                      q.correctAnswer?.url ? (
+                        <a
+                          href={q.correctAnswer.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: '#81d4fa',
+                            textDecoration: 'underline',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {q.correctAnswer.name || 'PDF/DOCX file'}
+                        </a>
+                      ) : q.correctAnswer instanceof File ? (
+                        <a
+                          href={URL.createObjectURL(q.correctAnswer)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: '#81d4fa',
+                            textDecoration: 'underline',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {q.correctAnswer.name}
+                        </a>
+                      ) : (
+                        <span style={{ color: '#ccc', fontStyle: 'italic' }}>
+                          {q.correctAnswer?.name || 'PDF/DOCX file (not uploaded)'}
+                        </span>
+                      )
+                    ) : (
+                      Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer
+                    )}
+                    <button
+                      onClick={() => handleDeleteQuestion(currentPage, q.id)}
+                      className="delete-question-button"
+                      aria-label="Delete question"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => handleEditQuestion(currentPage, q)}
+                      className="edit-question-button"
+                      aria-label="Edit question"
+                    >
+                      Edit
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => openQuestionForm()} className="add-question-button">
+                + Add Question
+              </button>
+
+              {showQuestionForm && (
+                <div
+                  className="question-form"
+                >
+                  <h4>{questionFormData.id ? 'Edit Question' : 'New Question'}</h4>
+
+                  <label>
+                    Question Type:
+                    <select
+                      value={questionFormData.type}
+                      onChange={(e) =>
+                        setQuestionFormData((prev) => ({
+                          ...prev,
+                          type: e.target.value,
+                          correctAnswer: '',
+                          correctAnswerFile: null,
+                          multipleCorrect: false,
+                        }))
+                      }
+                    >
+                      <option value="MCQ">MCQ</option>
+                      <option value="Open-ended">Open-ended</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </label>
+                  <br />
+
+                  <label>
+                    Marks:
+                    <input
+                      type="number"
+                      min="0"
+                      value={questionFormData.marks}
+                      onChange={(e) =>
+                        setQuestionFormData((prev) => ({ ...prev, marks: e.target.value }))
+                      }
+                    />
+                  </label>
+
+                  {questionFormData.type === 'MCQ' && (
+                    <>
+                      <label>
+                        Correct Answer(s) (comma-separated):
+                        <input
+                          type="text"
+                          placeholder="E.g. A,B"
+                          value={questionFormData.correctAnswer}
+                          onChange={(e) =>
+                            setQuestionFormData((prev) => ({
+                              ...prev,
+                              correctAnswer: e.target.value.toUpperCase(),
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={questionFormData.multipleCorrect}
+                          onChange={(e) =>
+                            setQuestionFormData((prev) => ({
+                              ...prev,
+                              multipleCorrect: e.target.checked,
+                            }))
+                          }
+                        />
+                        Multiple correct options
+                      </label>
+                    </>
+                  )}
+
+                  {(questionFormData.type === 'Open-ended') && (
+                    <label>
+                      Correct Answer:
+                      <input
+                        type="text"
+                        value={questionFormData.correctAnswer}
+                        onChange={(e) =>
+                          setQuestionFormData((prev) => ({ ...prev, correctAnswer: e.target.value }))
+                        }
+                      />
+                    </label>
+                  )}
+
+                  {questionFormData.type === 'Other' && (
+                    <div className="file-upload-wrapper">
+                      <label htmlFor="correctAnswerFile">Upload Correct Answer File (PDF/DOCX):</label>
+                      <label className="custom-file-upload">
+                        Choose File
+                        <input
+                          id="correctAnswerFile"
+                          type="file"
+                          accept=".pdf,.docx"
+                          onChange={(e) =>
+                            setQuestionFormData((prev) => ({ ...prev, correctAnswerFile: e.target.files[0] }))
+                          }
+                        />
+                      </label>
+                      {questionFormData.correctAnswerFile && (
+                        <span className="selected-filename">{questionFormData.correctAnswerFile.name}</span>
+                      )}
+                    </div>
+                  )}
+
+                  <div>
+                    <button onClick={handleSaveQuestion} disabled={!isFormValid()}>
+                      Save Question
+                    </button>
+                    <button onClick={closeQuestionForm}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Submit Test Paper Button */}
+        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <button onClick={handleSubmitTestPaper} className="submit-testpaper-button">
+            Submit Test Paper
+          </button>
+        </div>
+        {fileUrl && (
+          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#4fc3f7', textDecoration: 'underline' }}
+            >
+              View Uploaded Test Paper
+            </a>
           </div>
         )}
       </div>

@@ -4,12 +4,16 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import Homepage from "./pages/Homepage";
 import Dashboard from "./pages/Dashboard";
-import Summarizer from "./pages/Summarizer";
 import ProtectedRoute from "./components/ProtectedRoute";
+
+import Summarizer from "./pages/Summarizer";
 import SummaryDetail from "./pages/SummaryDetail";
+
 import MindmapGenerator from "./pages/MindmapGenerator";
 import MindmapDetail from "./pages/MindmapDetail";
+
 import TestModeUpload from "./pages/TestModeUpload";
+import TestPaperDetail from "./pages/TestPaperDetail";
 
 
 function App() {
@@ -64,6 +68,14 @@ function App() {
           element={
             <ProtectedRoute>
               <TestModeUpload />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/testpaperdetail/:uid/:id"
+          element={
+            <ProtectedRoute>
+              <TestPaperDetail />
             </ProtectedRoute>
           }
         />

@@ -92,9 +92,7 @@ const MindmapGenerator = () => {
     <ReactFlowProvider>
       <div className="mindmap-generator-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
         <NavbarLoggedin user={user} />
-        <div className="page-content">
-            
-        </div>
+        <main></main>
         <h1>Mind Map Generator</h1>
         <textarea
           placeholder="Enter your text here..."

@@ -8,16 +8,19 @@ import {
 import { db } from '../services/firebase';
 import html2pdf from 'html2pdf.js';
 import DOMPurify from 'dompurify';
-import '../styles/Dashboard.css'; 
+import '../styles/Dashboard.css';
 import NavbarLoggedin from '../components/NavbarLoggedin';
+import { getStorage, ref, deleteObject } from 'firebase/storage';
+import { getDoc } from 'firebase/firestore';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [summaries, setSummaries] = useState([]);
   const [mindmaps, setMindmaps] = useState([]);
-  const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '' });
+  const [testpapers, setTestpapers] = useState([]);
+const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false });
   const [downloadFormats, setDownloadFormats] = useState({});
-  const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '' });
+const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isMindmap: false, isTestpaper: false });
   const [view, setView] = useState('summaries');
   const navigate = useNavigate();
 
@@ -46,9 +49,20 @@ const Dashboard = () => {
           setMindmaps(mindmapList);
         });
 
+        const testpaperQuery = query(
+          collection(db, 'users', user.uid, 'testpapers'),
+          orderBy('uploadedAt', 'desc')
+        );
+
+        const unsubscribeTestpapers = onSnapshot(testpaperQuery, (snapshot) => {
+          const paperList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setTestpapers(paperList);
+        });
+
         return () => {
           unsubscribeSummaries();
           unsubscribeMindmaps();
+          unsubscribeTestpapers();
         };
       } else {
         navigate('/login');
@@ -70,32 +84,83 @@ const Dashboard = () => {
     });
   }, [summaries]);
 
-  const handleNavigate = (id, isMindmap = false) => {
-    const basePath = isMindmap ? 'mindmap' : 'summary';
+  const handleNavigate = (id, isMindmap = false, isTestpaper = false) => {
+    let basePath = 'summary';
+    if (isMindmap) basePath = 'mindmap';
+    else if (isTestpaper) basePath = 'testpaperdetail';
+
     navigate(`/${basePath}/${user.uid}/${id}`);
   };
 
   const handleDelete = async (id) => {
     try {
       const isMindmap = deleteConfirm.isMindmap;
-      await deleteDoc(doc(db, 'users', user.uid, isMindmap ? 'mindmaps' : 'summaries', id));
-      setDeleteConfirm({ visible: false, id: '' });
+      const isTestpaper = deleteConfirm.isTestpaper;
+      const docPath = isMindmap ? 'mindmaps' : isTestpaper ? 'testpapers' : 'summaries';
+      const docRef = doc(db, 'users', user.uid, docPath, id);
+
+      // Only for testpapers: delete associated files from Storage
+      if (isTestpaper) {
+        const paperDoc = await getDoc(docRef);
+        if (paperDoc.exists()) {
+          const data = paperDoc.data();
+          const storage = getStorage();
+
+          // Delete test paper file
+          if (data.fileName) {
+            const fileRef = ref(storage, `testpapers/${user.uid}/${id}/${data.fileName}`);
+            await deleteObject(fileRef).catch(err =>
+              console.warn('Failed to delete test paper file:', err)
+            );
+          }
+
+          // Delete "Other" type answer files
+          if (Array.isArray(data.questionsByPage)) {
+            for (const pageData of data.questionsByPage) {
+              for (const question of pageData.questions) {
+                if (question.type === 'Other' && question.correctAnswer?.url) {
+                  const answerFileName = question.correctAnswer.name;
+                  const answerRef = ref(storage, `testpapers/${user.uid}/${id}/answers/${answerFileName}`);
+                  await deleteObject(answerRef).catch(err =>
+                    console.warn('Failed to delete answer file:', err)
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+
+      await deleteDoc(docRef);
+      setDeleteConfirm({ visible: false, id: '', isMindmap: false, isTestpaper: false });
     } catch (error) {
-      console.error(`Error deleting ${deleteConfirm.isMindmap ? 'mindmap' : 'summary'}:`, error);
+      const type = deleteConfirm.isMindmap ? 'mindmap' : deleteConfirm.isTestpaper ? 'testpaper' : 'summary';
+      console.error(`Error deleting ${type}:`, error);
     }
   };
 
   const handleRename = async () => {
-    const { id, title, isMindmap } = renameModal;
+    const { id, title, isMindmap, isTestpaper } = renameModal;
     if (!title.trim()) return;
     try {
-      await updateDoc(doc(db, 'users', user.uid, isMindmap ? 'mindmaps' : 'summaries', id), { title });
-      setRenameModal({ visible: false, id: '', title: '' });
+      const updatePayload = {};
+      if (isTestpaper) updatePayload.paperTitle = title;
+      else updatePayload.title = title;
+
+      await updateDoc(
+        doc(db, 'users', user.uid, isMindmap ? 'mindmaps' : isTestpaper ? 'testpapers' : 'summaries', id),
+        updatePayload
+      );
+      setRenameModal({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false });
     } catch (error) {
-      console.error(`Error renaming ${isMindmap ? 'mindmap' : 'summary'}:`, error);
+      let type = 'summary';
+      if (isMindmap) type = 'mindmap';
+      else if (isTestpaper) type = 'testpaper';
+      console.error(`Error renaming ${type}:`, error);
     }
   };
 
+  // Exporting as PDF/ DOCX documents
   const handleDownload = async (title, summaryHTML, format) => {
     const container = document.createElement('div');
     container.innerHTML = DOMPurify.sanitize(summaryHTML);
@@ -152,16 +217,18 @@ const Dashboard = () => {
   };
 
   const openDeleteConfirm = (id) => {
-    setDeleteConfirm({ visible: true, id });
+    setDeleteConfirm({ visible: true, id, isMindmap: false, isTestpaper: false });
   };
 
   const cancelDelete = () => {
-    setDeleteConfirm({ visible: false, id: '' });
+    setDeleteConfirm({ visible: false, id: '', isMindmap: false, isTestpaper: false });
   };
+
 
   return (
     <div className="dashboard-container">
       <NavbarLoggedin user={user} />
+      <main>
       <div className="dashboard-toggle-buttons">
         <button
           className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
@@ -174,6 +241,12 @@ const Dashboard = () => {
           onClick={() => setView('mindmaps')}
         >
           Mind Maps
+        </button>
+        <button
+          className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
+          onClick={() => setView('testpapers')}
+        >
+          Test Papers
         </button>
       </div>
 
@@ -274,16 +347,63 @@ const Dashboard = () => {
         </>
       )}
 
+      {view === 'testpapers' && (
+        <div className="testpaper-list">
+          <h3>Your Uploaded Test Papers</h3>
+          {testpapers.length === 0 ? (
+            <p>No test papers found.</p>
+          ) : (
+            testpapers.map((paper) => (
+              <div
+                key={paper.id}
+                className="testpaper-card"
+                onClick={() => handleNavigate(paper.id, false, true)}
+                style={{ cursor: 'pointer' }}
+              >
+                <p><strong>Title:</strong> {paper.paperTitle}</p>
+                <p><strong>File:</strong> {paper.fileName}</p>
+                <p><strong>Pages:</strong> {paper.numPages}</p>
+                <p><small>{new Date(paper.uploadedAt).toLocaleString()}</small></p>
+                <button
+                  className="rename-trigger-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setRenameModal({ visible: true, id: paper.id, title: paper.paperTitle || '', isTestpaper: true, isMindmap: false });
+                  }}
+                >
+                  Rename
+                </button>
+                <button
+                  className="delete-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setDeleteConfirm({ visible: true, id: paper.id, isTestpaper: true, isMindmap: false });
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       {renameModal.visible && (
         <div className="rename-modal-overlay">
           <div className="rename-modal">
             <button
               className="close-modal-button"
-              onClick={() => setRenameModal({ visible: false, id: '', title: '' })}
+              onClick={() => setRenameModal({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false })}
             >
               ×
             </button>
-            <h3>Rename Summary</h3>
+            <h3>
+              {renameModal.isMindmap
+                ? 'Rename Mind Map'
+                : renameModal.isTestpaper
+                  ? 'Rename Test Paper'
+                  : 'Rename Summary'}
+            </h3>
             <input
               type="text"
               value={renameModal.title}
@@ -304,7 +424,13 @@ const Dashboard = () => {
       {deleteConfirm.visible && (
         <div className="delete-modal-overlay">
           <div className="delete-modal">
-            <p>Are you sure you want to delete this summary?</p>
+            <p>
+              {deleteConfirm.isMindmap
+                ? 'Are you sure you want to delete this mind map?'
+                : deleteConfirm.isTestpaper
+                  ? 'Are you sure you want to delete this test paper?'
+                  : 'Are you sure you want to delete this summary?'}
+            </p>
             <div className="delete-modal-buttons">
               <button className="delete-confirm-button" onClick={() => handleDelete(deleteConfirm.id)}>Yes</button>
               <button className="delete-cancel-button" onClick={cancelDelete}>No</button>
@@ -312,6 +438,7 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+    </main>
     </div>
   );
 }

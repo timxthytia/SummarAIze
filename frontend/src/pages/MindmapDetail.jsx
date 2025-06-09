@@ -227,65 +227,65 @@ const MindmapDetail = () => {
   return (
     <div className="summary-detail-container">
       <NavbarLoggedin user={user} />
-      <div className="page-content">
+      <main className="page-content">
         <h2>{title}</h2>
-      {timestamp && <p><small>Created: {timestamp}</small></p>}
-      <button onClick={handleAddNode} className="add-node-btn">
-        Add Node
-      </button>
-      <button onClick={() => setDeleteMode(!deleteMode)} className="delete-mode-btn">
-        {deleteMode ? 'Exit' : 'Delete Mode'}
-      </button>
-      {deleteMode && (
-        <p style={{ color: '#d32f2f', fontSize: '14px', marginTop: '0.5rem' }}>
-          Click on nodes or edges you wish to delete
-        </p>
-      )}
-      <div style={{ height: '600px', background: 'white', borderRadius: '10px', marginTop: '1rem' }}>
-        <ReactFlowProvider>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={handleNodeClick}
-            onEdgeClick={handleEdgeClick}
-            fitView
-            nodeTypes={nodeTypes}
-          />
-        </ReactFlowProvider>
-      </div>
-      <button onClick={handleSaveChanges} className="save-btn">
-        Save Changes
-      </button>
-      {edgeModal.visible && (
-        <div className="rename-modal-overlay">
-          <div className="rename-modal">
-            <button
-              className="close-modal-button"
-              onClick={() => setEdgeModal({ visible: false, edgeId: '', label: '' })}
-            >
-              ×
-            </button>
-            <h3>{edgeModal.connection ? 'Create Edge Label' : 'Edit Edge Label'}</h3>
-            <input
-              type="text"
-              value={edgeModal.label}
-              onChange={(e) => setEdgeModal(prev => ({ ...prev, label: e.target.value }))}
-              placeholder="Edge label"
+        {timestamp && <p><small>Created: {timestamp}</small></p>}
+        <button onClick={handleAddNode} className="add-node-btn">
+          Add Node
+        </button>
+        <button onClick={() => setDeleteMode(!deleteMode)} className="delete-mode-btn">
+          {deleteMode ? 'Exit' : 'Delete Mode'}
+        </button>
+        {deleteMode && (
+          <p style={{ color: '#d32f2f', fontSize: '14px', marginTop: '0.5rem' }}>
+            Click on nodes or edges you wish to delete
+          </p>
+        )}
+        <div style={{ height: '600px', background: 'white', borderRadius: '10px', marginTop: '1rem' }}>
+          <ReactFlowProvider>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={handleNodeClick}
+              onEdgeClick={handleEdgeClick}
+              fitView
+              nodeTypes={nodeTypes}
             />
-            <button
-              onClick={handleConfirmEdgeLabel}
-              className="confirm-rename-button"
-              //disabled={!edgeModal.label.trim()}
-            >
-              {edgeModal.connection ? 'Create' : 'Save'}
-            </button>
-          </div>
+          </ReactFlowProvider>
         </div>
-      )}
-      </div>
+        <button onClick={handleSaveChanges} className="save-btn">
+          Save Changes
+        </button>
+        {edgeModal.visible && (
+          <div className="rename-modal-overlay">
+            <div className="rename-modal">
+              <button
+                className="close-modal-button"
+                onClick={() => setEdgeModal({ visible: false, edgeId: '', label: '' })}
+              >
+                ×
+              </button>
+              <h3>{edgeModal.connection ? 'Create Edge Label' : 'Edit Edge Label'}</h3>
+              <input
+                type="text"
+                value={edgeModal.label}
+                onChange={(e) => setEdgeModal(prev => ({ ...prev, label: e.target.value }))}
+                placeholder="Edge label"
+              />
+              <button
+                onClick={handleConfirmEdgeLabel}
+                className="confirm-rename-button"
+                //disabled={!edgeModal.label.trim()}
+              >
+                {edgeModal.connection ? 'Create' : 'Save'}
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };

@@ -27,7 +27,6 @@ async def generate_mindmap(request: MindMapRequest):
             messages=[{"role": "user", "content": prompt}],
             temperature=0.5,
         )
-
         content = response.choices[0].message.content
         if content is None:
             raise HTTPException(status_code=500, detail="OpenAI returned no content.")
