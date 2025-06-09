@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from docx import Document
-from routers import summarizer, mindmap
+from routers import summarizer, mindmap, testmode
 from utils.docx_generator import add_html_to_docx
 
 import io
@@ -21,6 +21,7 @@ app.add_middleware(
 
 app.include_router(summarizer.router)
 app.include_router(mindmap.router)
+app.include_router(testmode.router)
 
 class DocxRequest(BaseModel):
     title: str

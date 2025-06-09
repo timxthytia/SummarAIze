@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import SummaryDetail from "./pages/SummaryDetail";
 import MindmapGenerator from "./pages/MindmapGenerator";
 import MindmapDetail from "./pages/MindmapDetail";
+import TestModeUpload from "./pages/TestModeUpload";
 
 
 function App() {
@@ -55,6 +56,14 @@ function App() {
           element={
             <ProtectedRoute>
               <MindmapDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/testmodeupload"
+          element={
+            <ProtectedRoute>
+              <TestModeUpload />
             </ProtectedRoute>
           }
         />
