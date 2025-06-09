@@ -5,7 +5,7 @@ import { auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestModeUpload.css';
-import { renderAsync } from 'docx-preview';
+import axios from 'axios';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
@@ -16,7 +16,6 @@ const TestModeUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileType, setFileType] = useState(null);
   const [pdfData, setPdfData] = useState(null);
-  const [docxTextPages, setDocxTextPages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
   const [authLoading, setAuthLoading] = useState(true);
@@ -36,13 +35,12 @@ const TestModeUpload = () => {
     setCurrentPage(1);
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     setError('');
     setSelectedFile(null);
     setFileType(null);
     setPdfData(null);
-    setDocxTextPages([]);
     setCurrentPage(1);
     setNumPages(0);
 
@@ -58,43 +56,35 @@ const TestModeUpload = () => {
       reader.onload = (event) => {
         const arrayBuffer = event.target.result;
         setPdfData(arrayBuffer);
+        setSelectedFile(file);
       };
       reader.onerror = () => {
         setError('Failed to read PDF file.');
       };
       reader.readAsArrayBuffer(file);
-      setSelectedFile(file);
     } else if (
       type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
       file.name.endsWith('.docx')
     ) {
-      // Read DOCX file as ArrayBuffer and extract text
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          const arrayBuffer = event.target.result;
-          // Create a temporary element to render docx content
-          const container = document.createElement('div');
-          await renderAsync(arrayBuffer, container);
-          // Extract text content from rendered container
-          const text = container.innerText || container.textContent || '';
-          // Split text into pages by WORDS_PER_PAGE
-          const words = text.split(/\s+/).filter(Boolean);
-          const pages = [];
-          for (let i = 0; i < words.length; i += WORDS_PER_PAGE) {
-            pages.push(words.slice(i, i + WORDS_PER_PAGE).join(' '));
-          }
-          setDocxTextPages(pages);
-          setNumPages(pages.length);
-          setSelectedFile(file);
-        } catch (err) {
-          setError('Failed to parse DOCX file.');
-        }
-      };
-      reader.onerror = () => {
-        setError('Failed to read DOCX file.');
-      };
-      reader.readAsArrayBuffer(file);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/convert-docx-to-pdf`, formData, {
+          responseType: 'blob',
+        });
+
+        const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        setPdfData(pdfUrl);
+        setSelectedFile(file);
+        setCurrentPage(1);
+        setNumPages(0);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to convert DOCX to PDF.');
+      }
     } else {
       setError('Unsupported file type. Please upload PDF or DOCX.');
     }
@@ -131,7 +121,7 @@ const TestModeUpload = () => {
         </div>
         {error && <div className="error-message">{error}</div>}
 
-        {selectedFile && fileType === 'application/pdf' && pdfData && (
+        {selectedFile && pdfData && (
           <div style={{ marginTop: '2rem', textAlign: 'center' }}>
             <Document
               file={pdfData}
@@ -146,25 +136,6 @@ const TestModeUpload = () => {
               <Page pageNumber={currentPage} />
             </Document>
             <div style={{ marginTop: '1rem' }}>
-              <button onClick={goToPreviousPage} disabled={currentPage <= 1}>
-                Previous
-              </button>
-              <span style={{ margin: '0 1rem' }}>
-                Page {currentPage} of {numPages}
-              </span>
-              <button onClick={goToNextPage} disabled={currentPage >= numPages}>
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-
-        {selectedFile && (fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || selectedFile.name.endsWith('.docx')) && docxTextPages.length > 0 && (
-          <div style={{ marginTop: '2rem' }}>
-            <div style={{ whiteSpace: 'pre-wrap', textAlign: 'left', border: '1px solid #ccc', padding: '1rem', maxHeight: '600px', overflowY: 'auto' }}>
-              {docxTextPages[currentPage - 1]}
-            </div>
-            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
               <button onClick={goToPreviousPage} disabled={currentPage <= 1}>
                 Previous
               </button>

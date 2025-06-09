@@ -3,6 +3,12 @@ from fastapi import APIRouter, UploadFile, File, Form
 from utils.parser import parse_test_paper  # You will need to implement this function
 import fitz
 import docx2txt
+import os
+import uuid
+import subprocess
+from fastapi.responses import FileResponse
+from fastapi import UploadFile, File
+from utils.docx_to_pdf import convert_docx_to_pdf
 
 router = APIRouter()
 
@@ -32,3 +38,22 @@ async def upload_test_paper(file: UploadFile = File(...), title: str = Form(...)
         return {"error": f"Failed to parse test paper: {str(e)}"}
 
     return {"questions": questions, "title": title}
+
+
+# DOCX to PDF conversion endpoint
+@router.post("/convert-docx-to-pdf")
+async def convert_docx_endpoint(file: UploadFile = File(...)):
+    UPLOAD_DIR = "uploads"
+    PDF_DIR = "converted_pdfs"
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    os.makedirs(PDF_DIR, exist_ok=True)
+
+    file_id = str(uuid.uuid4())
+    docx_path = os.path.join(UPLOAD_DIR, f"{file_id}.docx")
+
+    with open(docx_path, "wb") as f:
+        f.write(await file.read())
+
+    pdf_path = convert_docx_to_pdf(docx_path, PDF_DIR)
+
+    return FileResponse(pdf_path, media_type="application/pdf", filename=os.path.basename(pdf_path))
