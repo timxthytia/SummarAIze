@@ -87,11 +87,10 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
   const handleNavigate = (id, isMindmap = false, isTestpaper = false) => {
     let basePath = 'summary';
     if (isMindmap) basePath = 'mindmap';
-    else if (isTestpaper) basePath = 'testpaperdetail';
-
     navigate(`/${basePath}/${user.uid}/${id}`);
   };
 
+  // Delete files from firestore
   const handleDelete = async (id) => {
     try {
       const isMindmap = deleteConfirm.isMindmap;
@@ -139,6 +138,7 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
     }
   };
 
+  // Rename files saved in firestore
   const handleRename = async () => {
     const { id, title, isMindmap, isTestpaper } = renameModal;
     if (!title.trim()) return;
@@ -309,7 +309,8 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
       )}
 
       {view === 'mindmaps' && (
-        <>
+        <div className="mindmap-list">
+          <h3>Your Saved Mindmaps</h3>
           {mindmaps.length === 0 ? (
             <p>No mind maps found.</p>
           ) : (
@@ -344,7 +345,7 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
               </div>
             ))
           )}
-        </>
+        </div>
       )}
 
       {view === 'testpapers' && (
@@ -357,13 +358,8 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
               <div
                 key={paper.id}
                 className="testpaper-card"
-                onClick={() => handleNavigate(paper.id, false, true)}
-                style={{ cursor: 'pointer' }}
               >
                 <p><strong>Title:</strong> {paper.paperTitle}</p>
-                <p><strong>File:</strong> {paper.fileName}</p>
-                <p><strong>Pages:</strong> {paper.numPages}</p>
-                <p><small>{new Date(paper.uploadedAt).toLocaleString()}</small></p>
                 <button
                   className="rename-trigger-button"
                   onClick={(e) => {
@@ -373,6 +369,38 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
                 >
                   Rename
                 </button>
+                <p><strong>File:</strong> {paper.fileName}</p>
+                <p><strong>Pages:</strong> {paper.numPages}</p>
+                <p><small>{new Date(paper.uploadedAt).toLocaleString()}</small></p>
+                <div className="testpaper-actions">
+                  <button
+                    className="edit-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/testpaperdetail/${user.uid}/${paper.id}`);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="review-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/testpaperreview/${user.uid}/${paper.id}`);
+                    }}
+                  >
+                    Review
+                  </button>
+                  <button
+                    className="attempt-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/testpaperattempt/${user.uid}/${paper.id}`);
+                    }}
+                  >
+                    Start Attempt
+                  </button>
+                </div>
                 <button
                   className="delete-button"
                   onClick={(e) => {

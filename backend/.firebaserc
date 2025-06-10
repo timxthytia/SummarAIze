@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "summaraize-c3fb6"
-  }
+    "default": "summaraize-c3fb6",
+    "dev": "summaraize-c3fb6"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -27,7 +27,26 @@
   backdrop-filter: blur(10px);
 }
 
+.mindmap-list,
+.testpaper-list {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 1000px;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  border: 2px solid white;
+  backdrop-filter: blur(10px);
+}
+
 .summary-list h3 {
+  margin-bottom: 1.5rem;
+  color: white;
+  font-size: 1.6rem;
+}
+
+.mindmap-list h3,
+.testpaper-list h3 {
   margin-bottom: 1.5rem;
   color: white;
   font-size: 1.6rem;
@@ -43,7 +62,24 @@
   backdrop-filter: blur(5px);
 }
 
+.mindmap-card,
+.testpaper-card {
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s;
+  backdrop-filter: blur(5px);
+}
+
 .summary-card:hover {
+  transform: scale(1.01);
+  cursor: pointer;
+}
+
+.mindmap-card:hover,
+.testpaper-card:hover {
   transform: scale(1.01);
   cursor: pointer;
 }
@@ -53,7 +89,18 @@
   color: white;
 }
 
+.mindmap-card p,
+.testpaper-card p {
+  margin: 0.6rem 0;
+  color: white;
+}
+
 .summary-card strong {
+  font-weight: bold;
+}
+
+.mindmap-card strong,
+.testpaper-card strong {
   font-weight: bold;
 }
 
@@ -173,6 +220,11 @@
 }
 
 .summary-card small {
+  color: #ccc;
+}
+
+.mindmap-card small,
+.testpaper-card small {
   color: #ccc;
 }
 

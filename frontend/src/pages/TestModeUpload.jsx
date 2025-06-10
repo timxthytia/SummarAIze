@@ -31,6 +31,8 @@ const TestModeUpload = () => {
   const [questionsByPage, setQuestionsByPage] = useState({});
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [questionFormData, setQuestionFormData] = useState({
+    id: null,
+    questionNumber: '',
     type: 'MCQ',
     marks: '',
     correctAnswer: '',
@@ -43,25 +45,6 @@ const TestModeUpload = () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       setAuthLoading(false);
-      // Fetch the user's latest test paper and set questionsByPage and fileUrl
-      if (currentUser) {
-        try {
-          const testPapersRef = collection(db, "users", currentUser.uid, "testpapers");
-          const querySnapshot = await getDocs(testPapersRef);
-          if (!querySnapshot.empty) {
-            const latestPaper = querySnapshot.docs[querySnapshot.docs.length - 1].data();
-            setQuestionsByPage(
-              latestPaper.questionsByPage.reduce((acc, pageData) => {
-                acc[pageData.page] = pageData.questions;
-                return acc;
-              }, {})
-            );
-            setFileUrl(latestPaper.fileUrl);
-          }
-        } catch (err) {
-          console.error("Error fetching user's test papers:", err);
-        }
-      }
     });
     return () => unsubscribe();
   }, []);
@@ -74,6 +57,8 @@ const TestModeUpload = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     setError('');
+    setQuestionsByPage({});
+    setFileUrl('');
     setSelectedFile(null);
     setFileType(null);
     setPdfData(null);
@@ -137,6 +122,7 @@ const TestModeUpload = () => {
   const openQuestionForm = () => {
     setQuestionFormData({
       id: null,
+      questionNumber: '',
       type: 'MCQ',
       marks: '',
       correctAnswer: '',
@@ -216,6 +202,7 @@ const TestModeUpload = () => {
   const handleEditQuestion = (page, question) => {
     setQuestionFormData({
       ...question,
+      questionNumber: question.questionNumber || '',
       multipleCorrect: Array.isArray(question.correctAnswer),
       correctAnswer: Array.isArray(question.correctAnswer)
         ? question.correctAnswer.join(',')
@@ -277,6 +264,7 @@ const TestModeUpload = () => {
               return {
                 id: q.id,
                 type: q.type,
+                questionNumber: q.questionNumber || '',
                 marks: q.marks,
                 correctAnswer,
                 multipleCorrect: q.multipleCorrect || false,
@@ -376,7 +364,7 @@ const TestModeUpload = () => {
               <ul>
                 {(questionsByPage[currentPage] || []).map((q) => (
                   <li key={q.id}>
-                    <strong>{q.type}</strong> — Marks: {q.marks} — Correct Answer{q.multipleCorrect ? 's' : ''}:&nbsp;
+                    <strong>{q.questionNumber}</strong>. {q.type} — Marks: {q.marks} — Correct Answer{q.multipleCorrect ? 's' : ''}:&nbsp;
                     {q.type === 'Other' ? (
                       q.correctAnswer?.url ? (
                         <a
@@ -410,7 +398,12 @@ const TestModeUpload = () => {
                         </span>
                       )
                     ) : (
-                      Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer
+                      <span
+                        className="open-ended-answer"
+                        title={Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer}
+                      >
+                        {Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer}
+                      </span>
                     )}
                     <button
                       onClick={() => handleDeleteQuestion(currentPage, q.id)}
@@ -438,6 +431,17 @@ const TestModeUpload = () => {
                   className="question-form"
                 >
                   <h4>{questionFormData.id ? 'Edit Question' : 'New Question'}</h4>
+
+                  <label>
+                    Question Number (e.g. 2a, 3bii):
+                    <input
+                      type="text"
+                      value={questionFormData.questionNumber}
+                      onChange={(e) =>
+                        setQuestionFormData((prev) => ({ ...prev, questionNumber: e.target.value }))
+                      }
+                    />
+                  </label>
 
                   <label>
                     Question Type:
