@@ -1,0 +1,69 @@
+.test-grading-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+}
+
+.grading-page-block {
+  margin-bottom: 40px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.grading-question-block {
+  border: 1px solid #ccc;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 6px;
+}
+
+.grading-question-block p {
+  margin: 5px 0;
+}
+
+.grading-question-block a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.grading-question-block label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.grading-question-block input[type="number"] {
+  width: 80px;
+  padding: 5px;
+  margin-top: 5px;
+  border: 1px solid #999;
+  border-radius: 4px;
+}
+
+.grading-summary {
+  margin-top: 30px;
+  padding: 15px;
+  border-top: 2px solid #333;
+  text-align: right;
+}
+
+.grading-summary p {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.grading-summary button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.grading-summary button:hover {
+  background-color: #0056b3;
+}

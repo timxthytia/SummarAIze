@@ -67,7 +67,7 @@ const TestPaperDetail = () => {
       return answers.every(ans => options.includes(ans));
     }
 
-    if (question.type === 'Open-Ended' && (!question.correctAnswer || question.correctAnswer.trim() === '')) return false;
+    if (question.type === 'Open-ended' && (!question.correctAnswer || question.correctAnswer.trim() === '')) return false;
     if (question.type === 'Other' && !question.correctAnswer && !otherAnswerFile) return false;
 
     return true;
@@ -175,7 +175,7 @@ const TestPaperDetail = () => {
 
       return !answers.every(ans => options.includes(ans));
     }
-    if (newQuestion.type === 'Open-Ended') {
+    if (newQuestion.type === 'Open-ended') {
       return !newQuestion.correctAnswer || newQuestion.correctAnswer.trim() === '';
     }
     if (newQuestion.type === 'Other') {
@@ -292,7 +292,7 @@ const TestPaperDetail = () => {
                 />
                 <select value={newQuestion.type} onChange={(e) => setNewQuestion({ ...newQuestion, type: e.target.value })}>
                   <option value="MCQ">MCQ</option>
-                  <option value="Open-Ended">Open-Ended</option>
+                  <option value="Open-ended">Open-Ended</option>
                   <option value="Other">Other</option>
                 </select>
                 <input

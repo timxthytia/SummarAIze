@@ -16,6 +16,7 @@ import TestModeUpload from "./pages/TestModeUpload";
 import TestPaperDetail from "./pages/TestPaperDetail";
 import TestAttemptSetup from "./pages/TestAttemptSetup";
 import TestAttempt from "./pages/TestAttempt";
+import TestGrading from "./pages/TestGrading";
 
 
 function App() {
@@ -94,6 +95,14 @@ function App() {
           element={
             <ProtectedRoute>
               <TestAttempt />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/testattempt/:uid/:id/:attemptId/grade"
+          element={
+            <ProtectedRoute>
+              <TestGrading />
             </ProtectedRoute>
           }
         />

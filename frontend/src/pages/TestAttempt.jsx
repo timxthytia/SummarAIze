@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { doc, getDoc, collection, setDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestAttempt.css';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -62,14 +63,52 @@ const TestAttempt = () => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const handleSubmit = () => {
-    setTimerActive(false);
-    navigate(`/testpaperattempt/${uid}/${id}/grade`, {
-      state: {
-        answers,
+  const handleSubmit = async () => {
+    try {
+      setTimerActive(false);
+
+      const attemptRef = collection(db, 'users', uid, 'testpapers', id, 'attempts');
+      const newAttempt = doc(attemptRef);
+      const attemptId = newAttempt.id;
+
+      const processedAnswers = {};
+
+      for (const q of testpaper?.questionsByPage?.flatMap(p => p.questions) || []) {
+        const answer = answers[q.id];
+        if (answer === undefined) continue;
+
+        if (q.type === 'Other' && answer instanceof File) {
+          const storageRef = ref(
+            storage,
+            `testpapers/${uid}/${id}/attempts/${attemptId}/answers/${q.id}/${answer.name}`
+          );
+          await uploadBytes(storageRef, answer);
+          const url = await getDownloadURL(storageRef);
+          processedAnswers[q.id] = { name: answer.name, url };
+        } else {
+          processedAnswers[q.id] = answer;
+        }
+      }
+
+      await setDoc(newAttempt, {
+        answers: processedAnswers,
         timeTaken: duration * 60 - timeLeft,
-      },
-    });
+        graded: false,
+        timestamp: serverTimestamp(),
+      });
+
+      navigate(`/testattempt/${uid}/${id}/${attemptId}/grade`, {
+        state: {
+          answers: processedAnswers,
+          timeTaken: duration * 60 - timeLeft,
+          attemptId,
+          testpaper,
+        },
+      });
+    } catch (err) {
+      console.error('Error submitting attempt:', err);
+      alert('Failed to submit test.');
+    }
   };
 
   const pageQuestions = testpaper?.questionsByPage?.find(p => p.page === currentPage)?.questions || [];
@@ -130,7 +169,7 @@ const TestAttempt = () => {
                 </div>
               )}
 
-              {q.type === 'Open-Ended' && (
+              {q.type === 'Open-ended' && (
                 <div className="open-ended-answer">
                   <textarea
                     rows={4}
