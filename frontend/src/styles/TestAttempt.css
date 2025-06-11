@@ -1,0 +1,125 @@
+
+.test-attempt-container {
+  padding: 2rem;
+  font-family: 'Arial', sans-serif;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+main {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.timer {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #dc3545;
+  margin-bottom: 1rem;
+  text-align: right;
+}
+
+.pdf-viewer {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
+}
+
+.pdf-page {
+  display: flex;
+  justify-content: center;
+}
+
+.pdf-page-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.question-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.question-block {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid white;
+  border-radius: 8px;
+}
+
+.mcq-answer label {
+  display: inline-block;
+  margin-right: 1rem;
+  font-size: 1rem;
+}
+
+.open-ended-answer {
+  width: 100%;
+}
+
+.open-ended-answer textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+  color: #333;
+  transition: border-color 0.2s ease;
+}
+
+.open-ended-answer textarea:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.other-answer {
+  width: 100%;
+}
+
+.other-answer input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #333;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.other-answer input[type="file"]:hover,
+.other-answer input[type="file"]:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.submit-button {
+  display: block;
+  margin: 2rem auto 0;
+  padding: 0.75rem 2rem;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+}

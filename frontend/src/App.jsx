@@ -14,6 +14,8 @@ import MindmapDetail from "./pages/MindmapDetail";
 
 import TestModeUpload from "./pages/TestModeUpload";
 import TestPaperDetail from "./pages/TestPaperDetail";
+import TestAttemptSetup from "./pages/TestAttemptSetup";
+import TestAttempt from "./pages/TestAttempt";
 
 
 function App() {
@@ -76,6 +78,22 @@ function App() {
           element={
             <ProtectedRoute>
               <TestPaperDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/testattemptsetup/:uid/:id"
+          element={
+            <ProtectedRoute>
+              <TestAttemptSetup />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/testattempt/:uid/:id/exam"
+          element={
+            <ProtectedRoute>
+              <TestAttempt />
             </ProtectedRoute>
           }
         />

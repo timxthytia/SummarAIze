@@ -37,7 +37,7 @@ const TestModeUpload = () => {
     marks: '',
     correctAnswer: '',
     correctAnswerFile: null,
-    multipleCorrect: false,
+    options: '',
   });
   const [fileUrl, setFileUrl] = useState('');
 
@@ -127,7 +127,7 @@ const TestModeUpload = () => {
       marks: '',
       correctAnswer: '',
       correctAnswerFile: null,
-      multipleCorrect: false,
+      options: '',
     });
     setShowQuestionForm(true);
   };
@@ -136,27 +136,45 @@ const TestModeUpload = () => {
     setShowQuestionForm(false);
   };
 
-  const isFormValid = () => {
-    if (!questionFormData.marks || isNaN(Number(questionFormData.marks)) || Number(questionFormData.marks) < 0) {
+  // Validates MCQ options and correct answers (case-insensitive, spacing-insensitive)
+  const isFormValid = (question) => {
+    if (!question.marks || isNaN(Number(question.marks)) || Number(question.marks) < 0) {
       return false;
     }
-    if (questionFormData.type === 'MCQ' && !questionFormData.correctAnswer.trim()) {
+
+    if (question.type === 'MCQ') {
+      if (!question.options || question.options.trim() === '') return false;
+      if (!question.correctAnswer || question.correctAnswer.length === 0) return false;
+
+      const options = question.options
+        .split(',')
+        .map(opt => opt.trim().toUpperCase());
+
+      const answers = question.correctAnswer
+        .split(',')
+        .map(ans => ans.trim().toUpperCase())
+        .filter(Boolean);
+
+      const allAnswersValid = answers.every(ans => options.includes(ans));
+      if (!allAnswersValid) return false;
+    }
+
+    if (question.type === 'Open-ended' && (!question.correctAnswer || question.correctAnswer.trim() === '')) {
       return false;
     }
-    if (questionFormData.type === 'Open-ended' && !questionFormData.correctAnswer.trim()) {
+
+    if (question.type === 'Other' && !question.correctAnswerFile) {
       return false;
     }
-    if (questionFormData.type === 'Other' && !questionFormData.correctAnswerFile) {
-      return false;
-    }
+
     return true;
   };
 
   const parseCorrectAnswer = (data) => {
     if (data.type === 'MCQ') {
-      return data.multipleCorrect
-        ? data.correctAnswer.split(',').map((a) => a.trim().toUpperCase())
-        : data.correctAnswer.trim().toUpperCase();
+      return data.correctAnswer
+        .split(',')
+        .map((a) => a.trim().toUpperCase());
     }
     if (data.type === 'Open-ended') {
       return data.correctAnswer.trim();
@@ -167,23 +185,38 @@ const TestModeUpload = () => {
   };
 
   const handleSaveQuestion = () => {
-    if (!isFormValid()) return;
+    if (!isFormValid(questionFormData)) return;
 
     setQuestionsByPage((prev) => {
       const pageQuestions = prev[currentPage] || [];
       let newQuestions;
       if (questionFormData.id) {
-        // edit existing
+        // Ediut existing questions
         newQuestions = pageQuestions.map((q) =>
           q.id === questionFormData.id
-            ? { ...questionFormData, correctAnswer: parseCorrectAnswer(questionFormData) }
+            ? {
+                ...questionFormData,
+                correctAnswer: parseCorrectAnswer(questionFormData),
+                options:
+                  questionFormData.type === 'MCQ'
+                    ? questionFormData.options?.split(',').map(opt => opt.trim().toUpperCase())
+                    : undefined,
+              }
             : q
         );
       } else {
-        // add new
+        // Add new questions
         newQuestions = [
           ...pageQuestions,
-          { ...questionFormData, id: uuidv4(), correctAnswer: parseCorrectAnswer(questionFormData) },
+          {
+            ...questionFormData,
+            id: uuidv4(),
+            correctAnswer: parseCorrectAnswer(questionFormData),
+            options:
+              questionFormData.type === 'MCQ'
+                ? questionFormData.options?.split(',').map(opt => opt.trim().toUpperCase())
+                : undefined,
+          },
         ];
       }
       return { ...prev, [currentPage]: newQuestions };
@@ -203,11 +236,11 @@ const TestModeUpload = () => {
     setQuestionFormData({
       ...question,
       questionNumber: question.questionNumber || '',
-      multipleCorrect: Array.isArray(question.correctAnswer),
       correctAnswer: Array.isArray(question.correctAnswer)
         ? question.correctAnswer.join(',')
         : question.correctAnswer,
       correctAnswerFile: question.correctAnswerFile || null,
+      options: Array.isArray(question.options) ? question.options.join(',') : (question.options || ''),
     });
     setShowQuestionForm(true);
   };
@@ -237,7 +270,7 @@ const TestModeUpload = () => {
     }
 
     try {
-      // Map and upload "Other" type answers if needed
+      // Map and upload "Other" type answers
       const questions = await Promise.all(
         Object.entries(questionsByPage).map(async ([page, questionList]) => {
           const resolvedQuestions = await Promise.all(
@@ -266,8 +299,18 @@ const TestModeUpload = () => {
                 type: q.type,
                 questionNumber: q.questionNumber || '',
                 marks: q.marks,
-                correctAnswer,
-                multipleCorrect: q.multipleCorrect || false,
+                correctAnswer:
+                  q.type === 'MCQ'
+                    ? (typeof q.correctAnswer === 'string'
+                        ? q.correctAnswer.split(',').map((a) => a.trim().toUpperCase())
+                        : q.correctAnswer)
+                    : correctAnswer,
+                options:
+                  q.type === 'MCQ'
+                    ? (typeof q.options === 'string'
+                        ? q.options.split(',').map((a) => a.trim().toUpperCase())
+                        : q.options)
+                    : q.options || [],
               };
             })
           );
@@ -323,7 +366,7 @@ const TestModeUpload = () => {
             />
           </label>
           {selectedFile && (
-            <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#ccc' }}>
+            <div className="selected-file-name">
               {selectedFile.name}
             </div>
           )}
@@ -344,11 +387,11 @@ const TestModeUpload = () => {
             >
               <Page pageNumber={currentPage} />
             </Document>
-            <div>
+            <div className="pdf-nav">
               <button onClick={goToPreviousPage} disabled={currentPage <= 1}>
                 Previous
               </button>
-              <span style={{ margin: '0 1rem' }}>
+              <span>
                 Page {currentPage} of {numPages}
               </span>
               <button onClick={goToNextPage} disabled={currentPage >= numPages}>
@@ -364,18 +407,14 @@ const TestModeUpload = () => {
               <ul>
                 {(questionsByPage[currentPage] || []).map((q) => (
                   <li key={q.id}>
-                    <strong>{q.questionNumber}</strong>. {q.type} — Marks: {q.marks} — Correct Answer{q.multipleCorrect ? 's' : ''}:&nbsp;
+                <strong>{q.questionNumber}.</strong> {q.type} — Marks: {q.marks} — Correct Answer:&nbsp;
                     {q.type === 'Other' ? (
                       q.correctAnswer?.url ? (
                         <a
                           href={q.correctAnswer.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{
-                            color: '#81d4fa',
-                            textDecoration: 'underline',
-                            cursor: 'pointer',
-                          }}
+                          className="question-answer-link"
                         >
                           {q.correctAnswer.name || 'PDF/DOCX file'}
                         </a>
@@ -384,16 +423,12 @@ const TestModeUpload = () => {
                           href={URL.createObjectURL(q.correctAnswer)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{
-                            color: '#81d4fa',
-                            textDecoration: 'underline',
-                            cursor: 'pointer',
-                          }}
+                          className="question-answer-link"
                         >
                           {q.correctAnswer.name}
                         </a>
                       ) : (
-                        <span style={{ color: '#ccc', fontStyle: 'italic' }}>
+                        <span className="fallback-answer">
                           {q.correctAnswer?.name || 'PDF/DOCX file (not uploaded)'}
                         </span>
                       )
@@ -453,7 +488,6 @@ const TestModeUpload = () => {
                           type: e.target.value,
                           correctAnswer: '',
                           correctAnswerFile: null,
-                          multipleCorrect: false,
                         }))
                       }
                     >
@@ -479,6 +513,20 @@ const TestModeUpload = () => {
                   {questionFormData.type === 'MCQ' && (
                     <>
                       <label>
+                        MCQ Options (comma-separated):
+                        <input
+                          type="text"
+                          placeholder="E.g. A,B,C,D or 1,2,3,4 or True,False"
+                          value={questionFormData.options || ''}
+                          onChange={(e) =>
+                            setQuestionFormData((prev) => ({
+                              ...prev,
+                              options: e.target.value.toUpperCase(),
+                            }))
+                          }
+                        />
+                      </label>
+                      <label>
                         Correct Answer(s) (comma-separated):
                         <input
                           type="text"
@@ -491,19 +539,6 @@ const TestModeUpload = () => {
                             }))
                           }
                         />
-                      </label>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={questionFormData.multipleCorrect}
-                          onChange={(e) =>
-                            setQuestionFormData((prev) => ({
-                              ...prev,
-                              multipleCorrect: e.target.checked,
-                            }))
-                          }
-                        />
-                        Multiple correct options
                       </label>
                     </>
                   )}
@@ -542,7 +577,7 @@ const TestModeUpload = () => {
                   )}
 
                   <div>
-                    <button onClick={handleSaveQuestion} disabled={!isFormValid()}>
+                    <button onClick={handleSaveQuestion} disabled={!isFormValid(questionFormData)}>
                       Save Question
                     </button>
                     <button onClick={closeQuestionForm}>
@@ -554,19 +589,17 @@ const TestModeUpload = () => {
             </div>
           </div>
         )}
-        {/* Submit Test Paper Button */}
-        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+        <div className="submit-testpaper-container">
           <button onClick={handleSubmitTestPaper} className="submit-testpaper-button">
             Submit Test Paper
           </button>
         </div>
         {fileUrl && (
-          <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <div className="view-uploaded-paper-link">
             <a
               href={fileUrl}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ color: '#4fc3f7', textDecoration: 'underline' }}
             >
               View Uploaded Test Paper
             </a>

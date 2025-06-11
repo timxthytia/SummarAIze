@@ -19,7 +19,7 @@ const TestPaperDetail = () => {
   const [numPages, setNumPages] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [questionsByPage, setQuestionsByPage] = useState([]);
-  const [newQuestion, setNewQuestion] = useState({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', multipleCorrect: false });
+  const [newQuestion, setNewQuestion] = useState({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', options: '' });
   const [otherAnswerFile, setOtherAnswerFile] = useState(null);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [showAddQuestion, setShowAddQuestion] = useState(false);
@@ -48,10 +48,50 @@ const TestPaperDetail = () => {
     fetchTestpaper();
   }, [uid, id, navigate]);
 
+  // Validation for MCQ correct answers matching options
+  const isMCQFormValid = (question) => {
+    if (!question.marks || isNaN(Number(question.marks)) || Number(question.marks) < 0) return false;
+    if (question.type === 'MCQ') {
+      if (!question.options || question.options.trim() === '') return false;
+      if (!question.correctAnswer || question.correctAnswer.length === 0) return false;
+
+      const options = question.options
+        .split(',')
+        .map(opt => opt.trim().toUpperCase());
+
+      const answers = question.correctAnswer
+        .split(',')
+        .map(ans => ans.trim().toUpperCase())
+        .filter(Boolean);
+
+      return answers.every(ans => options.includes(ans));
+    }
+
+    if (question.type === 'Open-Ended' && (!question.correctAnswer || question.correctAnswer.trim() === '')) return false;
+    if (question.type === 'Other' && !question.correctAnswer && !otherAnswerFile) return false;
+
+    return true;
+  };
+
   const handleAddQuestion = async () => {
+    if (!isMCQFormValid(newQuestion)) {
+      alert("Please ensure all fields are filled and that MCQ answers match the listed options.");
+      return;
+    }
     const pageData = questionsByPage.find(p => p.page === currentPage) || { page: currentPage, questions: [] };
     const isEditing = editingQuestionId !== null;
     let newQ = { ...newQuestion, id: isEditing ? editingQuestionId : uuidv4() };
+
+    if (newQ.type === 'MCQ') {
+      newQ.options = (newQ.options || '')
+        .split(',')
+        .map((opt) => opt.trim().toUpperCase())
+        .filter(Boolean);
+      newQ.correctAnswer = (newQ.correctAnswer || '')
+        .split(',')
+        .map((ans) => ans.trim().toUpperCase())
+        .filter(Boolean);
+    }
 
     if (newQ.type === 'Other') {
       if (otherAnswerFile) {
@@ -78,7 +118,7 @@ const TestPaperDetail = () => {
     }
     const updated = questionsByPage.filter(p => p.page !== currentPage).concat(pageData);
     setQuestionsByPage(updated);
-    setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', multipleCorrect: false });
+    setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', options: '' });
     setOtherAnswerFile(null);
     setEditingQuestionId(null);
     setShowAddQuestion(false);
@@ -94,7 +134,22 @@ const TestPaperDetail = () => {
   const handleSaveChanges = async () => {
     try {
       const docRef = doc(db, 'users', uid, 'testpapers', id);
-      await updateDoc(docRef, { questionsByPage });
+      const transformedQuestionsByPage = questionsByPage.map(pageData => {
+        return {
+          ...pageData,
+          questions: pageData.questions.map(q => {
+            if (q.type === 'MCQ') {
+              return {
+                ...q,
+                options: q.options,
+                correctAnswer: q.correctAnswer,
+              };
+            }
+            return q;
+          }),
+        };
+      });
+      await updateDoc(docRef, { questionsByPage: transformedQuestionsByPage });
       alert('Changes saved.');
     } catch (error) {
       console.error('Failed to save changes:', error);
@@ -102,11 +157,38 @@ const TestPaperDetail = () => {
     }
   };
 
+  const isAddUpdateDisabled = () => {
+    if (!newQuestion.marks || isNaN(Number(newQuestion.marks)) || Number(newQuestion.marks) < 0) return true;
+    if (newQuestion.type === 'MCQ') {
+      if (!newQuestion.options || newQuestion.options.trim() === '') return true;
+      if (!newQuestion.correctAnswer || (Array.isArray(newQuestion.correctAnswer) && newQuestion.correctAnswer.length === 0)) return true;
+
+      const options = newQuestion.options
+        .split(',')
+        .map(opt => opt.trim().toUpperCase());
+
+      const correct = typeof newQuestion.correctAnswer === 'string' ? newQuestion.correctAnswer : '';
+      const answers = correct
+        .split(',')
+        .map(ans => ans.trim().toUpperCase())
+        .filter(Boolean);
+
+      return !answers.every(ans => options.includes(ans));
+    }
+    if (newQuestion.type === 'Open-Ended') {
+      return !newQuestion.correctAnswer || newQuestion.correctAnswer.trim() === '';
+    }
+    if (newQuestion.type === 'Other') {
+      return !newQuestion.correctAnswer && !otherAnswerFile;
+    }
+    return false;
+  };
+
   if (loading) {
     return (
       <>
         <NavbarLoggedin />
-        <div style={{ padding: '2rem', textAlign: 'center' }}>Loading test paper...</div>
+        <div className="loading-container">Loading test paper...</div>
       </>
     );
   }
@@ -119,9 +201,9 @@ const TestPaperDetail = () => {
     <>
       <NavbarLoggedin />
       <main>
-        <div style={{ maxWidth: 900, margin: '2rem auto', padding: '0 1rem' }}>
+        <div className="paper-container">
           <h1>{testpaper.paperTitle || 'Untitled Test Paper'}</h1>
-          <div style={{ border: '1px solid #ccc', borderRadius: 8, overflow: 'hidden' }}>
+          <div className="pdf-wrapper">
             <Document
               file={testpaper.fileUrl}
               onLoadSuccess={({ numPages }) => setNumPages(numPages)}
@@ -131,7 +213,7 @@ const TestPaperDetail = () => {
             </Document>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem' }}>
+          <div className="pdf-controls">
             <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>
               Previous
             </button>
@@ -148,7 +230,7 @@ const TestPaperDetail = () => {
             <ul className="question-list">
               {questionsByPage.find(p => p.page === currentPage)?.questions.map((q) => (
                 <li key={q.id} style={{ marginBottom: '0.5rem' }}>
-                  <strong>{q.questionNumber ? `${q.questionNumber}. ` : ''}{q.type}</strong> — Marks: {q.marks} — Correct Answer{q.multipleCorrect ? 's' : ''}:&nbsp;
+                  <strong>{q.questionNumber ? `${q.questionNumber}. ` : ''}{q.type}</strong> — Marks: {q.marks} — Correct Answer: &nbsp;
                   {(() => {
                     if (Array.isArray(q.correctAnswer)) {
                       return q.correctAnswer.join(', ');
@@ -182,7 +264,7 @@ const TestPaperDetail = () => {
                         questionNumber: q.questionNumber || '',
                         marks: q.marks || '',
                         correctAnswer: q.correctAnswer || '',
-                        multipleCorrect: q.multipleCorrect || false,
+                        options: Array.isArray(q.options) ? q.options.join(', ') : (q.options || '')
                       });
                       setEditingQuestionId(q.id);
                       setOtherAnswerFile(null);
@@ -223,20 +305,20 @@ const TestPaperDetail = () => {
                   <>
                     <input
                       type="text"
-                      placeholder="Correct option(s), comma-separated"
-                      value={Array.isArray(newQuestion.correctAnswer) ? newQuestion.correctAnswer.join(', ') : newQuestion.correctAnswer}
+                      placeholder="MCQ options, comma-separated"
+                      value={newQuestion.options || ''}
                       onChange={(e) =>
-                        setNewQuestion({ ...newQuestion, correctAnswer: e.target.value.split(',').map(opt => opt.trim()) })
+                        setNewQuestion({ ...newQuestion, options: e.target.value.toUpperCase() })
                       }
                     />
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={newQuestion.multipleCorrect}
-                        onChange={(e) => setNewQuestion({ ...newQuestion, multipleCorrect: e.target.checked })}
-                      />
-                      Multiple correct options
-                    </label>
+                    <input
+                      type="text"
+                      placeholder="Correct option(s), comma-separated"
+                      value={newQuestion.correctAnswer || ''}
+                      onChange={(e) =>
+                        setNewQuestion({ ...newQuestion, correctAnswer: e.target.value.toUpperCase() })
+                      }
+                    />
                   </>
                 ) : newQuestion.type === 'Other' ? (
                   <div className="file-upload-wrapper">
@@ -256,7 +338,7 @@ const TestPaperDetail = () => {
                       <span className="selected-filename">{otherAnswerFile.name}</span>
                     )}
                     {otherAnswerFile && (
-                      <div style={{ marginTop: '0.5rem' }}>
+                      <div className="file-preview">
                         <a
                           href={URL.createObjectURL(otherAnswerFile)}
                           target="_blank"
@@ -276,7 +358,11 @@ const TestPaperDetail = () => {
                     onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })}
                   />
                 )}
-                <button onClick={handleAddQuestion}>
+                <button
+                  onClick={handleAddQuestion}
+                  disabled={isAddUpdateDisabled()}
+                  className={`submit-button ${isAddUpdateDisabled() ? 'disabled' : ''}`}
+                >
                   {editingQuestionId ? 'Update' : 'Add'}
                 </button>
                 {editingQuestionId || showAddQuestion ? (
@@ -284,19 +370,10 @@ const TestPaperDetail = () => {
                     type="button"
                     className="cancel-edit-button"
                     onClick={() => {
-                      setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', multipleCorrect: false });
+                      setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', options: '' });
                       setEditingQuestionId(null);
                       setOtherAnswerFile(null);
                       setShowAddQuestion(false);
-                    }}
-                    style={{
-                      marginLeft: '1rem',
-                      backgroundColor: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      padding: '0.5rem 1rem',
-                      borderRadius: '8px',
-                      cursor: 'pointer'
                     }}
                   >
                     Cancel
@@ -306,9 +383,8 @@ const TestPaperDetail = () => {
             </div>
           ) : (
             <button
-              className="edit-button"
+              className="add-question-toggle"
               onClick={() => setShowAddQuestion(true)}
-              style={{ marginBottom: '1.5rem' }}
             >
               Add Question
             </button>

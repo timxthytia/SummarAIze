@@ -292,7 +292,6 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
                   </p>
                   <p><strong>Type:</strong> {summary.type}</p>
                   <p><strong>Summary:</strong></p>
-                  <div id={`summary-${summary.id}`} dangerouslySetInnerHTML={{ __html: summary.summary }} />
                   <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
                 </div>
 
@@ -395,7 +394,7 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
                     className="attempt-button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/testpaperattempt/${user.uid}/${paper.id}`);
+                      navigate(`/testattemptsetup/${user.uid}/${paper.id}`);
                     }}
                   >
                     Start Attempt

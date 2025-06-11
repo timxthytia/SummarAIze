@@ -229,3 +229,100 @@ input[type="file"] {
   text-overflow: ellipsis;
   vertical-align: bottom;
 }
+.loading-container {
+  padding: 2rem;
+  text-align: center;
+}
+
+.paper-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.pdf-wrapper {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pdf-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
+.file-preview {
+  margin-top: 0.5rem;
+}
+
+.submit-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.submit-button.disabled {
+  background-color: #ccc;
+  color: #666;
+  cursor: not-allowed;
+}
+
+.cancel-edit-button {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.add-question-toggle {
+  margin-bottom: 1.5rem;
+}
+.selected-file-name {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.pdf-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.pdf-nav span {
+  margin: 0 1rem;
+}
+
+.question-answer-link {
+  color: #81d4fa;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.fallback-answer {
+  color: #ccc;
+  font-style: italic;
+}
+
+.submit-testpaper-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.view-uploaded-paper-link {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.view-uploaded-paper-link a {
+  color: #4fc3f7;
+  text-decoration: underline;
+}
