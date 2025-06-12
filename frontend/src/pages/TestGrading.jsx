@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestGrading.css';
@@ -9,17 +9,46 @@ const TestGrading = () => {
   const { uid, id, attemptId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { testpaper, answers, timeTaken } = location.state || {};
+  const locationState = location.state || {};
+  const [testpaper, setTestpaper] = useState(locationState.testpaper);
+  const [answers, setAnswers] = useState(locationState.answers);
+  const [timeTaken, setTimeTaken] = useState(locationState.timeTaken);
 
   const [scores, setScores] = useState({});
   const [saveConfirm, setSaveConfirm] = useState({ visible: false });
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!testpaper || !answers) {
+        try {
+          const testpaperDocRef = doc(db, 'users', uid, 'testpapers', id);
+          const testpaperSnap = await getDoc(testpaperDocRef);
+          if (testpaperSnap.exists()) {
+            setTestpaper(testpaperSnap.data());
+          }
+          const attemptDocRef = doc(db, 'users', uid, 'testpapers', id, 'attempts', attemptId);
+          const attemptSnap = await getDoc(attemptDocRef);
+          if (attemptSnap.exists()) {
+            const attemptData = attemptSnap.data();
+            setAnswers(attemptData.answers);
+            setTimeTaken(attemptData.timeTaken);
+          }
+        } catch (error) {
+          console.error('Error fetching testpaper or attempt data:', error);
+          alert('Failed to load test data.');
+        }
+      }
+    };
+    fetchData();
+  }, [uid, id, attemptId, testpaper, answers]);
+
   const totalMarks = testpaper?.questionsByPage?.flatMap(p => p.questions).reduce((acc, q) => acc + Number(q.marks || 0), 0) || 0;
   const totalScored = Object.values(scores).reduce((a, b) => a + Number(b || 0), 0);
 
   const handleScoreChange = (qid, val) => {
-    setScores(prev => ({ ...prev, [qid]: val }));
+    const numericVal = val === '' ? '' : Number(val);
+    setScores(prev => ({ ...prev, [qid]: numericVal }));
   };
 
   const openSaveConfirm = () => {
@@ -60,7 +89,7 @@ const TestGrading = () => {
             <h3>Page {p.page}</h3>
             {p.questions.map((q) => (
               <div key={q.id} className="grading-question-block">
-                <p><strong>{q.questionNumber} ({q.type}) — {q.marks} marks</strong></p>
+                <p><strong>{q.questionNumber} ({q.type}) — {Number(q.marks)} marks</strong></p>
                 <p><strong>Correct Answer:</strong></p>
                 {q.type === 'MCQ' && Array.isArray(q.correctAnswer) && (
                   <p>{q.correctAnswer.join(', ')}</p>
@@ -74,13 +103,13 @@ const TestGrading = () => {
                   </a>
                 )}
                 <p><strong>Your Answer:</strong></p>
-                {q.type === 'MCQ' && Array.isArray(answers[q.id]) && (
+                {q.type === 'MCQ' && Array.isArray(answers?.[q.id]) && (
                   <p>{answers[q.id].join(', ')}</p>
                 )}
-                {q.type === 'Open-Ended' && typeof answers[q.id] === 'string' && (
+                {q.type === 'Open-Ended' && typeof answers?.[q.id] === 'string' && (
                   <p>{answers[q.id]}</p>
                 )}
-                {q.type === 'Other' && answers[q.id]?.url && (
+                {q.type === 'Other' && answers?.[q.id]?.url && (
                   <a href={answers[q.id].url} target="_blank" rel="noopener noreferrer">
                     {answers[q.id].name}
                   </a>
@@ -90,8 +119,8 @@ const TestGrading = () => {
                   <input
                     type="number"
                     min="0"
-                    max={q.marks}
-                    value={scores[q.id] || ''}
+                    max={Number(q.marks)}
+                    value={scores[q.id] === undefined ? '' : scores[q.id]}
                     onChange={(e) => handleScoreChange(q.id, e.target.value)}
                   />
                 </label>

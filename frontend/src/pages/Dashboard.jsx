@@ -385,7 +385,7 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
                     className="review-button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      navigate(`/testpaperreview/${user.uid}/${paper.id}`);
+                      navigate(`/testreview/${user.uid}/${paper.id}`, { state: { testpaper: paper } });
                     }}
                   >
                     Review

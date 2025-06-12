@@ -191,11 +191,12 @@ const TestModeUpload = () => {
       const pageQuestions = prev[currentPage] || [];
       let newQuestions;
       if (questionFormData.id) {
-        // Ediut existing questions
+        // Edit existing questions
         newQuestions = pageQuestions.map((q) =>
           q.id === questionFormData.id
             ? {
                 ...questionFormData,
+                marks: Number(questionFormData.marks),
                 correctAnswer: parseCorrectAnswer(questionFormData),
                 options:
                   questionFormData.type === 'MCQ'
@@ -211,6 +212,7 @@ const TestModeUpload = () => {
           {
             ...questionFormData,
             id: uuidv4(),
+            marks: Number(questionFormData.marks),
             correctAnswer: parseCorrectAnswer(questionFormData),
             options:
               questionFormData.type === 'MCQ'
@@ -298,7 +300,7 @@ const TestModeUpload = () => {
                 id: q.id,
                 type: q.type,
                 questionNumber: q.questionNumber || '',
-                marks: q.marks,
+                marks: Number(q.marks),
                 correctAnswer:
                   q.type === 'MCQ'
                     ? (typeof q.correctAnswer === 'string'

@@ -17,6 +17,7 @@ import TestPaperDetail from "./pages/TestPaperDetail";
 import TestAttemptSetup from "./pages/TestAttemptSetup";
 import TestAttempt from "./pages/TestAttempt";
 import TestGrading from "./pages/TestGrading";
+import TestReview from "./pages/TestReview";
 
 
 function App() {
@@ -103,6 +104,14 @@ function App() {
           element={
             <ProtectedRoute>
               <TestGrading />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/testreview/:uid/:id"
+          element={
+            <ProtectedRoute>
+              <TestReview />
             </ProtectedRoute>
           }
         />

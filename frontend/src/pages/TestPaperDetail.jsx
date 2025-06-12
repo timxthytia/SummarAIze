@@ -80,7 +80,8 @@ const TestPaperDetail = () => {
     }
     const pageData = questionsByPage.find(p => p.page === currentPage) || { page: currentPage, questions: [] };
     const isEditing = editingQuestionId !== null;
-    let newQ = { ...newQuestion, id: isEditing ? editingQuestionId : uuidv4() };
+    // Ensure marks is stored as a number
+    let newQ = { ...newQuestion, id: isEditing ? editingQuestionId : uuidv4(), marks: Number(newQuestion.marks) };
 
     if (newQ.type === 'MCQ') {
       newQ.options = (newQ.options || '')
@@ -161,14 +162,23 @@ const TestPaperDetail = () => {
     if (!newQuestion.marks || isNaN(Number(newQuestion.marks)) || Number(newQuestion.marks) < 0) return true;
     if (newQuestion.type === 'MCQ') {
       if (!newQuestion.options || newQuestion.options.trim() === '') return true;
-      if (!newQuestion.correctAnswer || (Array.isArray(newQuestion.correctAnswer) && newQuestion.correctAnswer.length === 0)) return true;
+      // For MCQ, correctAnswer may be a string or an array (after editing), coerce to string for input
+      let correctStr = '';
+      if (typeof newQuestion.correctAnswer === 'string') {
+        correctStr = newQuestion.correctAnswer;
+      } else if (Array.isArray(newQuestion.correctAnswer)) {
+        correctStr = newQuestion.correctAnswer.join(',');
+      } else {
+        correctStr = '';
+      }
+      if (!correctStr || correctStr.length === 0) return true;
 
       const options = newQuestion.options
         .split(',')
         .map(opt => opt.trim().toUpperCase());
 
-      const correct = typeof newQuestion.correctAnswer === 'string' ? newQuestion.correctAnswer : '';
-      const answers = correct
+      // Only split for MCQ; for other types, skip split logic
+      const answers = correctStr
         .split(',')
         .map(ans => ans.trim().toUpperCase())
         .filter(Boolean);
@@ -176,10 +186,11 @@ const TestPaperDetail = () => {
       return !answers.every(ans => options.includes(ans));
     }
     if (newQuestion.type === 'Open-ended') {
-      return !newQuestion.correctAnswer || newQuestion.correctAnswer.trim() === '';
+      return !newQuestion.correctAnswer || (typeof newQuestion.correctAnswer === 'string' && newQuestion.correctAnswer.trim() === '');
     }
     if (newQuestion.type === 'Other') {
-      return !newQuestion.correctAnswer && !otherAnswerFile;
+      // For "Other", correctAnswer is an object (uploaded file) or falsy
+      return (!newQuestion.correctAnswer || typeof newQuestion.correctAnswer !== 'object') && !otherAnswerFile;
     }
     return false;
   };
