@@ -5,6 +5,12 @@ import { db } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestGrading.css';
 
+import { Document, Page, pdfjs } from 'react-pdf';
+//import 'react-pdf/dist/Page/AnnotationLayer.css';
+//import 'react-pdf/dist/Page/TextLayer.css';
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+
 const TestGrading = () => {
   const { uid, id, attemptId } = useParams();
   const location = useLocation();
@@ -17,6 +23,8 @@ const TestGrading = () => {
   const [scores, setScores] = useState({});
   const [saveConfirm, setSaveConfirm] = useState({ visible: false });
   const [saving, setSaving] = useState(false);
+
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,7 +51,9 @@ const TestGrading = () => {
     fetchData();
   }, [uid, id, attemptId, testpaper, answers]);
 
+  // Total marks using marks of all questions
   const totalMarks = testpaper?.questionsByPage?.flatMap(p => p.questions).reduce((acc, q) => acc + Number(q.marks || 0), 0) || 0;
+  // Total score for user's attempt
   const totalScored = Object.values(scores).reduce((a, b) => a + Number(b || 0), 0);
 
   const handleScoreChange = (qid, val) => {
@@ -79,53 +89,80 @@ const TestGrading = () => {
     }
   };
 
+  const handleNextPage = () => {
+    if (currentPage < testpaper?.numPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
   return (
     <div className="test-grading-container">
       <NavbarLoggedin />
       <main>
+      <div className="pdf-viewer-container">
+        {testpaper?.fileUrl && (
+          <Document file={testpaper.fileUrl} onLoadSuccess={({ numPages }) => setCurrentPage(1)}>
+            <Page pageNumber={currentPage} />
+          </Document>
+        )}
+        <div className="page-navigation-buttons">
+          <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous</button>
+          <span>Page {currentPage}</span>
+          <button onClick={handleNextPage} disabled={currentPage === testpaper?.numPages}>Next</button>
+        </div>
+      </div>
+      <main>
         <h2>Grade Your Attempt</h2>
-        {testpaper?.questionsByPage?.map((p) => (
+        {testpaper?.questionsByPage?.filter(p => p.page === currentPage).map((p) => (
           <div key={p.page} className="grading-page-block">
             <h3>Page {p.page}</h3>
-            {p.questions.map((q) => (
-              <div key={q.id} className="grading-question-block">
-                <p><strong>{q.questionNumber} ({q.type}) — {Number(q.marks)} marks</strong></p>
-                <p><strong>Correct Answer:</strong></p>
-                {q.type === 'MCQ' && Array.isArray(q.correctAnswer) && (
-                  <p>{q.correctAnswer.join(', ')}</p>
-                )}
-                {q.type === 'Open-Ended' && (
-                  <p>{q.correctAnswer}</p>
-                )}
-                {q.type === 'Other' && q.correctAnswer?.url && (
-                  <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer">
-                    {q.correctAnswer.name}
-                  </a>
-                )}
-                <p><strong>Your Answer:</strong></p>
-                {q.type === 'MCQ' && Array.isArray(answers?.[q.id]) && (
-                  <p>{answers[q.id].join(', ')}</p>
-                )}
-                {q.type === 'Open-Ended' && typeof answers?.[q.id] === 'string' && (
-                  <p>{answers[q.id]}</p>
-                )}
-                {q.type === 'Other' && answers?.[q.id]?.url && (
-                  <a href={answers[q.id].url} target="_blank" rel="noopener noreferrer">
-                    {answers[q.id].name}
-                  </a>
-                )}
-                <label>
-                  Marks You Scored:
-                  <input
-                    type="number"
-                    min="0"
-                    max={Number(q.marks)}
-                    value={scores[q.id] === undefined ? '' : scores[q.id]}
-                    onChange={(e) => handleScoreChange(q.id, e.target.value)}
-                  />
-                </label>
-              </div>
-            ))}
+            {p.questions.map((q) => {
+              return (
+                <div key={q.id} className="grading-question-block">
+                  <p><strong>{q.questionNumber} ({q.type}) — {Number(q.marks)} marks</strong></p>
+                  <p><strong>Correct Answer:</strong></p>
+                  {q.type === 'MCQ' && Array.isArray(q.correctAnswer) && (
+                    <p>{q.correctAnswer.join(', ')}</p>
+                  )}
+                  {q.type === 'Open-ended' && (
+                    <p>{q.correctAnswer}</p>
+                  )}
+                  {q.type === 'Other' && q.correctAnswer?.url && (
+                    <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer">
+                      {q.correctAnswer.name}
+                    </a>
+                  )}
+                  <p><strong>Your Answer:</strong></p>
+                  {q.type === 'MCQ' && (
+                    <p>{Array.isArray(answers?.[q.id]) && answers[q.id].length > 0 ? answers[q.id].join(', ') : 'No answer submitted'}</p>
+                  )}
+                  {q.type === 'Open-ended' && (
+                    <p>{typeof answers?.[q.id] === 'string' && answers[q.id] !== '' ? answers[q.id] : 'No answer submitted'}</p>
+                  )}
+                  {q.type === 'Other' && (
+                    answers?.[q.id]?.url ? (
+                      <a href={answers[q.id].url} target="_blank" rel="noopener noreferrer">
+                        {answers[q.id].name}
+                      </a>
+                    ) : (
+                      <p>No answer submitted</p>
+                    )
+                  )}
+                  <label>
+                    Marks You Scored:
+                    <input
+                      type="number"
+                      min="0"
+                      max={Number(q.marks)}
+                      value={scores[q.id] === undefined ? '' : scores[q.id]}
+                      onChange={(e) => handleScoreChange(q.id, e.target.value)}
+                    />
+                  </label>
+                </div>
+              );
+            })}
           </div>
         ))}
         <div className="grading-summary">
@@ -155,6 +192,7 @@ const TestGrading = () => {
           </div>
         </div>
       )}
+    </main>
     </div>
   );
 };

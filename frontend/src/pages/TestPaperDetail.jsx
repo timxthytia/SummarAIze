@@ -162,7 +162,7 @@ const TestPaperDetail = () => {
     if (!newQuestion.marks || isNaN(Number(newQuestion.marks)) || Number(newQuestion.marks) < 0) return true;
     if (newQuestion.type === 'MCQ') {
       if (!newQuestion.options || newQuestion.options.trim() === '') return true;
-      // For MCQ, correctAnswer may be a string or an array (after editing), coerce to string for input
+      // For MCQ, correctAnswer may be a string or an array (after editing), convert to string for input
       let correctStr = '';
       if (typeof newQuestion.correctAnswer === 'string') {
         correctStr = newQuestion.correctAnswer;
@@ -173,11 +173,11 @@ const TestPaperDetail = () => {
       }
       if (!correctStr || correctStr.length === 0) return true;
 
+      // Only split for MCQ
       const options = newQuestion.options
         .split(',')
         .map(opt => opt.trim().toUpperCase());
-
-      // Only split for MCQ; for other types, skip split logic
+      
       const answers = correctStr
         .split(',')
         .map(ans => ans.trim().toUpperCase())
@@ -189,7 +189,7 @@ const TestPaperDetail = () => {
       return !newQuestion.correctAnswer || (typeof newQuestion.correctAnswer === 'string' && newQuestion.correctAnswer.trim() === '');
     }
     if (newQuestion.type === 'Other') {
-      // For "Other", correctAnswer is an object (uploaded file) or falsy
+      // For "Other", correctAnswer is an object (uploaded file) or false
       return (!newQuestion.correctAnswer || typeof newQuestion.correctAnswer !== 'object') && !otherAnswerFile;
     }
     return false;

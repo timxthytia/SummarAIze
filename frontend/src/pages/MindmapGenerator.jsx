@@ -29,6 +29,7 @@ const MindmapGenerator = () => {
     return () => unsubscribe();
   }, []);
 
+  // Generate mindmap 
   const handleGenerate = async () => {
     if (!inputText.trim()) return;
     setLoading(true);
@@ -69,6 +70,7 @@ const MindmapGenerator = () => {
     }
   };
 
+  // Save mindmap data to firestore db, including nodes and edge positions
   const handleSaveMindmap = async () => {
     if (!user || !mapTitle.trim() || nodes.length === 0) return;
     try {

@@ -33,6 +33,7 @@ const TestAttemptSetup = () => {
     fetchTestpaper();
   }, [uid, id, navigate]);
 
+  // Start attempt
   const handleStart = () => {
     navigate(`/testattempt/${uid}/${id}/exam`, {
       state: { duration },

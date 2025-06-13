@@ -216,10 +216,12 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
     }
   };
 
+  // Delete files
   const openDeleteConfirm = (id) => {
     setDeleteConfirm({ visible: true, id, isMindmap: false, isTestpaper: false });
   };
 
+  // Cancel delete operation
   const cancelDelete = () => {
     setDeleteConfirm({ visible: false, id: '', isMindmap: false, isTestpaper: false });
   };
@@ -291,7 +293,6 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
                     </button>
                   </p>
                   <p><strong>Type:</strong> {summary.type}</p>
-                  <p><strong>Summary:</strong></p>
                   <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
                 </div>
 

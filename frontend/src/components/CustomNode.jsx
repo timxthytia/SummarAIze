@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Handle, Position } from 'reactflow';
 import '../styles/CustomNode.css';
 
@@ -7,8 +7,7 @@ const CustomNode = ({ data }) => {
   const [bgColor, setBgColor] = useState(data.bgColor || '#ffffff');
   const [borderColor, setBorderColor] = useState(data.borderColor || '#000000');
   const [colorModalVisible, setColorModalVisible] = useState(false);
-  const textareaRef = useRef(null);
-  const modalRef = useRef(null);
+  const modalRef = React.useRef(null);
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (colorModalVisible && modalRef.current && !modalRef.current.contains(event.target)) {
@@ -20,13 +19,6 @@ const CustomNode = ({ data }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [colorModalVisible]);
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
-    }
-  }, [text]);
 
   const handleTextChange = (e) => {
     const newText = e.target.value;
@@ -66,7 +58,6 @@ const CustomNode = ({ data }) => {
         <Handle type="target" position={Position.Bottom} id="b" className="custom-handle" />
 
         <textarea
-          ref={textareaRef}
           value={text}
           onChange={handleTextChange}
           className="custom-node-textarea"
@@ -130,9 +121,10 @@ const CustomNode = ({ data }) => {
             ×
           </button>
           <h3 style={{ marginTop: '0.5rem' }}>Customize Node</h3>
-          <label style={{ display: 'block', marginBottom: '8px' }}>
-            Background:
+          <label htmlFor="bg-color-picker" style={{ display: 'block', marginBottom: '8px', color: '#000' }}>
+            <span style={{ marginRight: '6px' }}>Background:</span>
             <input
+              id="bg-color-picker"
               type="color"
               value={bgColor}
               onChange={(e) => {
@@ -143,9 +135,10 @@ const CustomNode = ({ data }) => {
               }}
             />
           </label>
-          <label style={{ display: 'block' }}>
-            Border:
+          <label htmlFor="border-color-picker" style={{ display: 'block', color: '#000' }}>
+            <span style={{ marginRight: '6px' }}>Border:</span>
             <input
+              id="border-color-picker"
               type="color"
               value={borderColor}
               onChange={(e) => {

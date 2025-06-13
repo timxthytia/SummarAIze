@@ -22,6 +22,7 @@ const TestAttempt = () => {
   const [answers, setAnswers] = useState({});
   const [timeLeft, setTimeLeft] = useState(duration * 60);
   const [timerActive, setTimerActive] = useState(true);
+  const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
 
   useEffect(() => {
     const fetchTestpaper = async () => {
@@ -44,6 +45,7 @@ const TestAttempt = () => {
     fetchTestpaper();
   }, [uid, id, navigate]);
 
+  // Timer effect
   useEffect(() => {
     if (!timerActive) return;
     const interval = setInterval(() => {
@@ -59,10 +61,12 @@ const TestAttempt = () => {
     return () => clearInterval(interval);
   }, [timerActive]);
 
+  // Change state of "answers" prop whenever user inputs answer
   const handleChange = (questionId, value) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
 
+  // Save submission details to firestore
   const handleSubmit = async () => {
     try {
       setTimerActive(false);
@@ -90,13 +94,15 @@ const TestAttempt = () => {
         }
       }
 
-      await setDoc(newAttempt, {
+      const attemptData = {
         answers: processedAnswers,
         timeTaken: duration * 60 - timeLeft,
         graded: false,
         timestamp: serverTimestamp(),
-      });
+      };
+      await setDoc(newAttempt, attemptData);
 
+      // Redirect to TestGrading.jsx
       navigate(`/testattempt/${uid}/${id}/${attemptId}/grade`, {
         state: {
           answers: processedAnswers,
@@ -113,6 +119,7 @@ const TestAttempt = () => {
 
   const pageQuestions = testpaper?.questionsByPage?.find(p => p.page === currentPage)?.questions || [];
 
+  // Format timer
   const formatTime = () => {
     const mins = Math.floor(timeLeft / 60);
     const secs = timeLeft % 60;
@@ -196,10 +203,29 @@ const TestAttempt = () => {
           ))}
         </div>
 
-        <button className="submit-button" onClick={handleSubmit}>
+        <button className="submit-button" onClick={() => setShowSubmitConfirm(true)}>
           Submit
         </button>
       </main>
+      {showSubmitConfirm && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <p>
+              Are you sure you want to submit this test?
+              <br />
+              Your answers will be saved and cannot be changed.
+            </p>
+            <div className="delete-modal-buttons">
+              <button className="delete-confirm-button" onClick={handleSubmit}>
+                Submit
+              </button>
+              <button className="delete-cancel-button" onClick={() => setShowSubmitConfirm(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

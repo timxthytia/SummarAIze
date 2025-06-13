@@ -41,9 +41,8 @@ const TestReview = () => {
         const testpaperSnap = await getDoc(testpaperRef);
         if (testpaperSnap.exists()) {
           const data = testpaperSnap.data();
-          // questionsByPage is expected to be an array of page objects each with a questions array
           const questionsByPage = data.questionsByPage || [];
-          // Flatten questionsByPage to a single array of questions using flatMap
+          // Flatten questionsByPage to a single array of questions
           const allQuestions = questionsByPage.flatMap(p => p.questions || []);
           const total = allQuestions.reduce((sum, question) => sum + Number(question.marks || 0), 0);
           setTotalMarks(total);
@@ -74,22 +73,21 @@ const TestReview = () => {
 
   const { avg, high, low } = calculateStats();
 
-  // Calculate per-question stats using scores keyed by question.id
+  // Calculate per-question stats using question.id as key 
   const getPerQuestionStats = () => {
     // Use all attempts, not just graded
     if (attempts.length === 0) return [];
 
     return questions.map((question, index) => {
-      // For each attempt, get the score for this question using question.id
       const scores = attempts
         .map(attempt => {
-          // attempt.scores is expected to be an object keyed by question.id
+          // attempt.scores is expected to be an object
           const answerObj = attempt.scores?.[question.id];
-          // Allow undefined/ungraded scores
+          // Allow ungraded scores
           if (typeof answerObj === 'number') return answerObj;
           if (typeof answerObj === 'object' && answerObj !== null && typeof answerObj.score === 'number') return answerObj.score;
           if (typeof answerObj === 'string' && !isNaN(Number(answerObj))) return Number(answerObj);
-          // If not graded or missing, return undefined
+          // If not graded, return undefined
           return undefined;
         });
       // Only use numeric scores for stats
@@ -157,7 +155,6 @@ const TestReview = () => {
             <p><strong>Average Score:</strong> {avg}</p>
             <p><strong>Highest Score:</strong> {high}</p>
             <p><strong>Lowest Score:</strong> {low}</p>
-            {/* Optional: per-question stats placeholder */}
             {perQuestionStats.length > 0 && perQuestionStats.map(({ question, avgScore, highScore, lowScore, scores }, idx) => (
               <div key={idx} className="question-stats">
                 <h4>Question {idx + 1}</h4>
@@ -176,7 +173,7 @@ const TestReview = () => {
                   {attempts.map((attempt, index) => {
                     const score = attempt.scores?.[question.id];
                     const userAnswer = attempt.answers?.[question.id];
-                    // Render attempts in reverse order (latest first)
+                    // Render attempts in reverse order (latest attempt first)
                     const revIdx = attempts.length - 1 - index;
                     const displayAttemptNum = attempts.length - index;
                     return (
