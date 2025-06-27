@@ -96,6 +96,11 @@ input[type="file"] {
   color: white;
 }
 
+.title-input-section input::placeholder {
+  color: white;
+  opacity: 1;
+}
+
 .title-input-section label {
   font-weight: bold;
   margin-bottom: 0.5rem;
@@ -225,4 +230,26 @@ input[type="file"] {
   overflow: hidden;
   text-overflow: ellipsis;
   vertical-align: bottom;
+}
+
+.submit-testpaper-container {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.submit-testpaper-button {
+  background-color: white;
+  color: #5f27cd;
+  font-weight: bold;
+  border: none;
+  padding: 0.8rem 1.6rem;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.submit-testpaper-button:hover {
+  background-color: #5f27cd;
+  color: white;
 }

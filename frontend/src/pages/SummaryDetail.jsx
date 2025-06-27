@@ -78,7 +78,7 @@ const SummaryDetail = () => {
           'color', 'background', 'align'
         ]}
       />
-      <button onClick={handleSave} disabled={saving}>
+      <button className="save-button" onClick={handleSave} disabled={saving}>
         {saving ? 'Saving...' : 'Save Changes'}
       </button>
     </div>

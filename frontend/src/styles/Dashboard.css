@@ -39,12 +39,7 @@
   backdrop-filter: blur(10px);
 }
 
-.summary-list h3 {
-  margin-bottom: 1.5rem;
-  color: white;
-  font-size: 1.6rem;
-}
-
+.summary-list h3,
 .mindmap-list h3,
 .testpaper-list h3 {
   margin-bottom: 1.5rem;
@@ -52,16 +47,7 @@
   font-size: 1.6rem;
 }
 
-.summary-card {
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  transition: transform 0.2s;
-  backdrop-filter: blur(5px);
-}
-
+.summary-card,
 .mindmap-card,
 .testpaper-card {
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -73,32 +59,21 @@
   backdrop-filter: blur(5px);
 }
 
-.summary-card:hover {
-  transform: scale(1.01);
-  cursor: pointer;
-}
-
+.summary-card:hover,
 .mindmap-card:hover,
 .testpaper-card:hover {
   transform: scale(1.01);
   cursor: pointer;
 }
 
-.summary-card p {
-  margin: 0.6rem 0;
-  color: white;
-}
-
+.summary-card p,
 .mindmap-card p,
 .testpaper-card p {
   margin: 0.6rem 0;
   color: white;
 }
 
-.summary-card strong {
-  font-weight: bold;
-}
-
+.summary-card strong,
 .mindmap-card strong,
 .testpaper-card strong {
   font-weight: bold;
@@ -219,10 +194,7 @@
   color: #555;
 }
 
-.summary-card small {
-  color: #ccc;
-}
-
+.summary-card small,
 .mindmap-card small,
 .testpaper-card small {
   color: #ccc;
@@ -287,6 +259,69 @@
 }
 
 .delete-cancel-button:hover {
+  background-color: #5f27cd;
+  color: white;
+}
+
+.dashboard-toggle-buttons {
+  position: fixed;
+  top: 50%;
+  left: 2rem;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  z-index: 100;
+}
+
+.toggle-button {
+  width: 200px;
+  text-align: center;
+  padding: 1rem 1.5rem;
+  border: 2px solid white;
+  background-color: transparent;
+  color: white;
+  border-radius: 12px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.toggle-button.active,
+.toggle-button:hover {
+  background-color: white;
+  color: #5f27cd;
+}
+
+.summary-list,
+.mindmap-list,
+.testpaper-list {
+  margin-left: 240px;
+}
+
+.testpaper-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.edit-button,
+.review-button,
+.attempt-button {
+  background-color: white;
+  color: #5f27cd;
+  border: 2px solid white;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.edit-button:hover,
+.review-button:hover,
+.attempt-button:hover {
   background-color: #5f27cd;
   color: white;
 }

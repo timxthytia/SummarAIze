@@ -127,6 +127,11 @@ input[type="file"] {
   background: rgba(255, 255, 255, 0.05);
   padding: 0.75rem;
   border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .question-panel button {
@@ -149,15 +154,25 @@ input[type="file"] {
   color: black;
 }
 
-.add-question-button {
-  margin-top: 1rem;
+.add-question-toggle {
   background-color: white;
   color: #5f27cd;
   border: none;
-  border-radius: 10px;
-  padding: 0.6rem 1rem;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
   font-weight: bold;
+  font-size: 1rem;
   cursor: pointer;
+  margin: 2rem auto 1.5rem;
+  display: block;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.add-question-toggle:hover {
+  background-color: #5f27cd;
+  color: white;
+  transform: translateY(-1px);
 }
 
 .question-form {
@@ -213,14 +228,6 @@ input[type="file"] {
   cursor: not-allowed;
 }
 
-.question-panel ul li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: space-between;
-}
-
 .open-ended-answer {
   display: inline-block;
   max-width: 220px;
@@ -229,6 +236,7 @@ input[type="file"] {
   text-overflow: ellipsis;
   vertical-align: bottom;
 }
+
 .loading-container {
   padding: 2rem;
   text-align: center;
@@ -238,12 +246,19 @@ input[type="file"] {
   max-width: 900px;
   margin: 2rem auto;
   padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .pdf-wrapper {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0 auto;
 }
 
 .pdf-controls {
@@ -281,9 +296,6 @@ input[type="file"] {
   margin-left: 0.5rem;
 }
 
-.add-question-toggle {
-  margin-bottom: 1.5rem;
-}
 .selected-file-name {
   margin-top: 0.5rem;
   font-size: 0.9rem;

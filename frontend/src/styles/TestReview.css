@@ -15,42 +15,58 @@
   background-color: #eee;
   border: 1px solid #ccc;
   cursor: pointer;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
 }
 
 .review-toggle-buttons .active {
-  background-color: #007bff;
+  background-color: #5f27cd;
   color: white;
+  border-color: #5f27cd;
 }
 
 .attempt-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
-  margin-bottom: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  transition: transform 0.2s;
-  backdrop-filter: blur(5px);
+  padding: 1rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .attempt-entry {
-  padding: 12px;
-  border: 1px solid #ddd;
+  padding: 14px;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 15px;
 }
 
 .attempt-link {
   font-weight: bold;
-  color: #007bff;
+  color: #ffd700;
   background: none;
   border: none;
   cursor: pointer;
   text-decoration: underline;
+  font-size: 15px;
 }
 
 .paper-stats {
   padding: 16px;
-  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  color: white;
+  font-size: 15px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 .question-stats {
@@ -58,7 +74,7 @@
   padding: 16px;
   margin-bottom: 24px;
   border-radius: 8px;
-  border-left: 4px solid #333;
+  border-left: 4px solid #5f27cd;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
