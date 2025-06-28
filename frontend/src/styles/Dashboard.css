@@ -23,10 +23,11 @@
   max-width: 1000px;
   margin: 0 auto;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  border: 2px solid white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
 }
 
+.summary-list,
 .mindmap-list,
 .testpaper-list {
   background-color: rgba(255, 255, 255, 0.05);
@@ -50,11 +51,14 @@
 .summary-card,
 .mindmap-card,
 .testpaper-card {
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
-  background-color: rgba(255, 255, 255, 0.1);
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
   transition: transform 0.2s;
   backdrop-filter: blur(5px);
 }
@@ -64,6 +68,7 @@
 .testpaper-card:hover {
   transform: scale(1.01);
   cursor: pointer;
+  border: 2px solid rgba(255, 255, 255, 0.995);
 }
 
 .summary-card p,
@@ -112,6 +117,7 @@
   color: white;
   border: 2px solid white;
   padding: 0.5rem 1rem;
+  margin-right: 10px;
   border-radius: 10px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -167,6 +173,11 @@
   position: relative;
   width: 300px;
   text-align: center;
+  box-shadow: 0 0 15px rgba(0,0,0,0.25);
+  color: #5f27cd;
+  font-weight: bold;
+  font-size: 1.2rem;
+  max-width: 320px;
 }
 
 .rename-modal h3 {
@@ -225,6 +236,7 @@
   font-size: 1.2rem;
 }
 
+.rename-modal-buttons,
 .delete-modal-buttons {
   margin-top: 1.5rem;
   display: flex;
@@ -232,6 +244,7 @@
   justify-content: center;
 }
 
+.confirm-rename-button,
 .delete-confirm-button {
   background-color: #5f27cd;
   border: none;
@@ -243,11 +256,13 @@
   transition: background-color 0.3s ease;
 }
 
+.confirm-rename-button:hover,
 .delete-confirm-button:hover {
   background-color: #833471;
 }
 
-.delete-cancel-button {
+
+.modal-cancel-button {
   background-color: transparent;
   border: 2px solid #5f27cd;
   color: #5f27cd;
@@ -258,7 +273,7 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.delete-cancel-button:hover {
+.modal-cancel-button:hover {
   background-color: #5f27cd;
   color: white;
 }

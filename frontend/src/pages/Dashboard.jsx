@@ -260,7 +260,21 @@ const Dashboard = () => {
           ) : (
             summaries.map((summary) => (
               <div key={summary.id} className="summary-card">
-                <div className="summary-card-header">
+                <div className="summary-header">
+                  <p><strong>Title:</strong> {summary.title || 'Untitled'}</p>
+                  <button
+                    className="rename-trigger-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRenameModal({ visible: true, id: summary.id, title: summary.title || '' });
+                    }}
+                  >
+                    Rename
+                  </button>
+                </div>
+                <p><strong>Type:</strong> {summary.type}</p>
+                <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
+                <div className="summary-actions">
                   <select
                     value={downloadFormats[summary.id] || 'pdf'}
                     onChange={(e) => setDownloadFormats(prev => ({ ...prev, [summary.id]: e.target.value }))}
@@ -278,24 +292,12 @@ const Dashboard = () => {
                     Download
                   </button>
                 </div>
-
-                <div className="summary-link" onClick={() => handleNavigate(summary.id)}>
-                  <p>
-                    <strong>Title:</strong> {summary.title || 'Untitled'}
-                    <button
-                      className="rename-trigger-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setRenameModal({ visible: true, id: summary.id, title: summary.title || '' });
-                      }}
-                    >
-                      Rename
-                    </button>
-                  </p>
-                  <p><strong>Type:</strong> {summary.type}</p>
-                  <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
-                </div>
-
+                <button
+                  className="delete-button"
+                  onClick={() => handleNavigate(summary.id)}
+                >
+                  View
+                </button>
                 <button
                   className="delete-button"
                   onClick={() => openDeleteConfirm(summary.id)}
@@ -315,13 +317,9 @@ const Dashboard = () => {
             <p>No mind maps found.</p>
           ) : (
             mindmaps.map((mindmap) => (
-              <div
-                key={mindmap.id}
-                className="mindmap-card"
-                onClick={() => handleNavigate(mindmap.id, true)}
-              >
-                <p>
-                  <strong>Title:</strong> {mindmap.title || 'Untitled'}
+              <div key={mindmap.id} className="mindmap-card">
+                <div className="summary-header">
+                  <p><strong>Title:</strong> {mindmap.title || 'Untitled'}</p>
                   <button
                     className="rename-trigger-button"
                     onClick={(e) => {
@@ -331,14 +329,19 @@ const Dashboard = () => {
                   >
                     Rename
                   </button>
-                </p>
+                </div>
                 <p><small>{mindmap.timestamp?.toDate().toLocaleString()}</small></p>
+                <div className="summary-actions">
+                </div>
                 <button
                   className="delete-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteConfirm({ visible: true, id: mindmap.id, isMindmap: true });
-                  }}
+                  onClick={() => handleNavigate(mindmap.id, true)}
+                >
+                  View
+                </button>
+                <button
+                  className="delete-button"
+                  onClick={() => setDeleteConfirm({ visible: true, id: mindmap.id, isMindmap: true })}
                 >
                   Delete
                 </button>
@@ -355,10 +358,7 @@ const Dashboard = () => {
             <p>No test papers found.</p>
           ) : (
             testpapers.map((paper) => (
-              <div
-                key={paper.id}
-                className="testpaper-card"
-              >
+              <div key={paper.id} className="mindmap-card">
                 <p><strong>Title:</strong> {paper.paperTitle}</p>
                 <button
                   className="rename-trigger-button"
@@ -383,15 +383,6 @@ const Dashboard = () => {
                     Edit
                   </button>
                   <button
-                    className="review-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/testreview/${user.uid}/${paper.id}`, { state: { testpaper: paper } });
-                    }}
-                  >
-                    Review
-                  </button>
-                  <button
                     className="attempt-button"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -401,6 +392,15 @@ const Dashboard = () => {
                     Start Attempt
                   </button>
                 </div>
+                <button
+                  className="delete-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/testreview/${user.uid}/${paper.id}`, { state: { testpaper: paper } });
+                  }}
+                >
+                  Review
+                </button>
                 <button
                   className="delete-button"
                   onClick={(e) => {
@@ -438,13 +438,21 @@ const Dashboard = () => {
               onChange={(e) => setRenameModal(prev => ({ ...prev, title: e.target.value }))}
               placeholder="New title"
             />
-            <button
-              onClick={handleRename}
-              className="confirm-rename-button"
-              disabled={!renameModal.title.trim()}
-            >
-              Rename
-            </button>
+            <div className="rename-modal-buttons">
+              <button
+                onClick={handleRename}
+                className="modal-cancel-button"
+                disabled={!renameModal.title.trim()}
+              >
+                Rename
+              </button>
+              <button
+                className="modal-cancel-button"
+                onClick={() => setRenameModal({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false })}
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -460,8 +468,8 @@ const Dashboard = () => {
                   : 'Are you sure you want to delete this summary?'}
             </p>
             <div className="delete-modal-buttons">
-              <button className="delete-confirm-button" onClick={() => handleDelete(deleteConfirm.id)}>Yes</button>
-              <button className="delete-cancel-button" onClick={cancelDelete}>No</button>
+              <button className="modal-cancel-button" onClick={() => handleDelete(deleteConfirm.id)}>Yes</button>
+              <button className="modal-cancel-button" onClick={cancelDelete}>No</button>
             </div>
           </div>
         </div>

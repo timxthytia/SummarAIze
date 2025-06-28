@@ -343,7 +343,7 @@ const TestModeUpload = () => {
       <NavbarLoggedin />
       <main></main>
       <div className="upload-card">
-        <h1 className="upload-title">Upload Past-Year Test Paper</h1>
+        <h1 className="upload-title">Upload Test Paper</h1>
 
         <div className="title-input-section">
           <label htmlFor="paperTitle">Test Paper Title:</label>
@@ -390,19 +390,18 @@ const TestModeUpload = () => {
               <Page pageNumber={currentPage} />
             </Document>
             <div className="pdf-nav">
-              <button onClick={goToPreviousPage} disabled={currentPage <= 1}>
-                Previous
+              <button onClick={goToPreviousPage} disabled={currentPage <= 1} aria-label="Previous Page">
+                ←
               </button>
               <span>
                 Page {currentPage} of {numPages}
               </span>
-              <button onClick={goToNextPage} disabled={currentPage >= numPages}>
-                Next
+              <button onClick={goToNextPage} disabled={currentPage >= numPages} aria-label="Next Page">
+                →
               </button>
             </div>
 
             <div className="question-panel">
-              <h3>Questions on Page {currentPage}</h3>
               {(questionsByPage[currentPage] || []).length === 0 && (
                 <p>No questions added for this page.</p>
               )}

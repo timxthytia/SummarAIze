@@ -313,6 +313,27 @@ input[type="file"] {
   margin: 0 1rem;
 }
 
+.pdf-nav button {
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.pdf-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pdf-nav button:hover:not(:disabled) {
+  background-color: #5f27cd;
+  color: white;
+}
+
 .question-answer-link {
   color: #81d4fa;
   text-decoration: underline;
@@ -337,4 +358,28 @@ input[type="file"] {
 .view-uploaded-paper-link a {
   color: #4fc3f7;
   text-decoration: underline;
+}
+
+.save-buttonn {
+  background-color: rgba(255, 255, 255, 0.004);
+  color: white;
+  border: 2px solid white;
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.save-buttonn:hover {
+  background-color: white;
+  color: #5f27cd;
+}
+
+.save-button-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 2rem;
+  width: 100%;
 }

@@ -42,9 +42,9 @@
   margin-bottom: 1.5rem;
 }
 
-.save-button {
-  background-color: white;
-  color: #5f27cd;
+.save-buttonn {
+  background-color: rgba(255, 255, 255, 0.004);
+  color: white;
   border: 2px solid white;
   padding: 0.6rem 1.4rem;
   font-size: 1rem;
@@ -54,7 +54,7 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.save-button:hover {
-  background-color: #5f27cd;
-  color: white;
+.save-buttonn:hover {
+  background-color: white;
+  color: #5f27cd;
 }

@@ -55,17 +55,37 @@
 }
 
 .grading-summary button {
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #007bff;
-  border: none;
+  background-color: rgba(255, 255, 255, 0.004);
   color: white;
-  border-radius: 5px;
+  border: 2px solid white;
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
   cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .grading-summary button:hover {
-  background-color: #0056b3;
+  background-color: white;
+  color: #5f27cd;
+}
+
+.save-buttonn {
+  background-color: rgba(255, 255, 255, 0.004);
+  color: white;
+  border: 2px solid white;
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.save-buttonn:hover {
+  background-color: white;
+  color: #5f27cd;
 }
 
 .pdf-viewer-container {
@@ -80,15 +100,34 @@
   margin-bottom: 10px;
 }
 
-.page-navigation-buttons {
+.pdf-nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
-  margin-top: 10px;
+  margin-top: 1rem;
 }
 
-.page-navigation-buttons span {
+.pdf-nav span {
+  margin: 0 1rem;
+}
+
+.pdf-nav button {
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1.5rem;
   font-weight: bold;
-  font-size: 16px;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.pdf-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pdf-nav button:hover:not(:disabled) {
+  background-color: #5f27cd;
+  color: white;
 }

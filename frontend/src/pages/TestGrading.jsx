@@ -19,6 +19,7 @@ const TestGrading = () => {
   const [testpaper, setTestpaper] = useState(locationState.testpaper);
   const [answers, setAnswers] = useState(locationState.answers);
   const [timeTaken, setTimeTaken] = useState(locationState.timeTaken);
+  const [numPages, setNumPages] = useState(null);
 
   const [scores, setScores] = useState({});
   const [saveConfirm, setSaveConfirm] = useState({ visible: false });
@@ -101,20 +102,26 @@ const TestGrading = () => {
     <div className="test-grading-container">
       <NavbarLoggedin />
       <main>
+        <h2>Grade Your Attempt</h2>
       <div className="pdf-viewer-container">
         {testpaper?.fileUrl && (
-          <Document file={testpaper.fileUrl} onLoadSuccess={({ numPages }) => setCurrentPage(1)}>
+          <Document
+            file={testpaper.fileUrl}
+            onLoadSuccess={({ numPages }) => {
+              setCurrentPage(1);
+              setNumPages(numPages);
+            }}
+          >
             <Page pageNumber={currentPage} />
           </Document>
         )}
-        <div className="page-navigation-buttons">
-          <button onClick={handlePreviousPage} disabled={currentPage === 1}>Previous</button>
-          <span>Page {currentPage}</span>
-          <button onClick={handleNextPage} disabled={currentPage === testpaper?.numPages}>Next</button>
+        <div className="pdf-nav">
+          <button onClick={handlePreviousPage} disabled={currentPage === 1}>←</button>
+          <span>Page {currentPage} of {numPages}</span>
+          <button onClick={handleNextPage} disabled={currentPage === numPages}>→</button>
         </div>
       </div>
       <main>
-        <h2>Grade Your Attempt</h2>
         {testpaper?.questionsByPage?.filter(p => p.page === currentPage).map((p) => (
           <div key={p.page} className="grading-page-block">
             <h3>Page {p.page}</h3>

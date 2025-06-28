@@ -253,3 +253,24 @@ input[type="file"] {
   background-color: #5f27cd;
   color: white;
 }
+
+.pdf-nav button {
+  background-color: transparent;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.pdf-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pdf-nav button:hover:not(:disabled) {
+  background-color: #5f27cd;
+  color: white;
+}

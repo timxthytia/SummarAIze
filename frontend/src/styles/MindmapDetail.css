@@ -8,20 +8,23 @@
 .add-node-btn,
 .delete-mode-btn,
 .save-btn {
-  margin: 0.5rem 0.5rem 0 0;
-  padding: 8px 16px;
-  font-size: 14px;
-  background-color: #4A90E2;
+  background-color: rgba(255, 255, 255, 0.004);
   color: white;
-  border: none;
-  border-radius: 6px;
+  border: 2px solid white;
+  padding: 0.6rem 1.4rem;
+  margin: 0.6rem 0.6rem 0 0 ;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .add-node-btn:hover,
 .delete-mode-btn:hover,
 .save-btn:hover {
-  background-color: #3b7dc0;
+  background-color: white;
+  color: #5f27cd;
 }
+
 

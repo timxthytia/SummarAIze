@@ -9,8 +9,18 @@
   color: white;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;
   align-items: center;
+}
+
+.input-button-wrapper {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 1rem;
+}
+.input-button-wrapper textarea {
+  flex: 1;
 }
 
 .mindmap-generator-container h1 {
@@ -27,7 +37,6 @@
   border-radius: 12px;
   padding: 1rem;
   font-size: 1rem;
-  margin-bottom: 1rem;
   resize: vertical;
 }
 
@@ -62,4 +71,10 @@
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 1rem;
+}
+
+.save-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
 }

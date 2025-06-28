@@ -22,11 +22,12 @@ class MindMapRequest(BaseModel):
 @router.post("/generate-mindmap")
 async def generate_mindmap(request: MindMapRequest):
     prompt = (
-        "From the following text, extract a set of concepts and how they relate to each other. "
-        "Return the result as a JSON with `nodes` and `edges` arrays.\n\n"
-        f"Text:\n{request.text}\n\n"
-        "Format:\n{\n  \"nodes\": [ {\"id\": \"1\", \"label\": \"...\"} ],\n  "
-        "\"edges\": [ {\"source\": \"1\", \"target\": \"2\", \"label\": \"...\"} ]\n}"
+        "From the following input, extract a set of concepts and relationships as a mindmap. "
+        "Return only valid JSON with two arrays: `nodes` and `edges`. No explanation, no markdown — just JSON.\n\n"
+        f"Input:\n{request.text}\n\n"
+        "Format:\n"
+        "{\n  \"nodes\": [ {\"id\": \"1\", \"label\": \"...\"} ],\n"
+        "  \"edges\": [ {\"source\": \"1\", \"target\": \"2\", \"label\": \"...\"} ]\n}"
     )
 
     try:
@@ -40,7 +41,13 @@ async def generate_mindmap(request: MindMapRequest):
         if content is None:
             raise HTTPException(status_code=500, detail="OpenAI returned no content.")
 
-        data = json.loads(content)
+        if not content.startswith("{"):
+            raise HTTPException(status_code=500, detail="OpenAI did not return valid JSON.")
+
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail="OpenAI returned invalid JSON.")
 
         edges_with_ids = []
         for i, edge in enumerate(data.get("edges", [])):

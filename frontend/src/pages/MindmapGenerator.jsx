@@ -64,7 +64,11 @@ const MindmapGenerator = () => {
       })));
     } catch (err) {
       console.error('Error generating mindmap:', err);
-      alert('Error generating mindmap.');
+      if (err.response?.data?.detail) {
+        alert(`Error: ${err.response.data.detail}`);
+      } else {
+        alert('An unexpected error occurred while generating the mindmap.');
+      }
     } finally {
       setLoading(false);
     }
@@ -128,7 +132,7 @@ const MindmapGenerator = () => {
         </div>
 
         {nodes.length > 0 && (
-          <div style={{ marginTop: '1rem' }}>
+          <div className='save-container' style={{ marginTop: '1rem' }}>
             <input
               type="text"
               placeholder="Enter mind map title..."
@@ -136,7 +140,7 @@ const MindmapGenerator = () => {
               onChange={e => setMapTitle(e.target.value)}
               style={{ padding: '0.5rem', borderRadius: '8px', width: '60%', marginRight: '1rem' }}
             />
-            <button className='mindmap-button' onClick={handleSaveMindmap}>Save Mind Map</button>
+            <button className='mindmap-button' onClick={handleSaveMindmap}>Save</button>
           </div>
         )}
       </div>

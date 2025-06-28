@@ -142,12 +142,11 @@ const TestAttempt = () => {
             <p>Loading test paper...</p>
           )}
         </div>
-        <div className="pdf-page-nav">
+        <div className="pdf-nav">
           <button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>←</button>
           <span>Page {currentPage} of {testpaper?.numPages}</span>
           <button disabled={currentPage === testpaper?.numPages} onClick={() => setCurrentPage(currentPage + 1)}>→</button>
         </div>
-
         <div className="question-list">
           {pageQuestions.map((q) => (
             <div key={q.id} className="question-block">
@@ -202,10 +201,11 @@ const TestAttempt = () => {
             </div>
           ))}
         </div>
-
-        <button className="submit-button" onClick={() => setShowSubmitConfirm(true)}>
-          Submit
-        </button>
+        <div className="submit-button-wrapper">
+          <button className="submit-button" onClick={() => setShowSubmitConfirm(true)}>
+            Submit
+          </button>
+        </div>
       </main>
       {showSubmitConfirm && (
         <div className="delete-modal-overlay">

@@ -52,6 +52,7 @@ const SummaryDetail = () => {
     });
     setLastSaved(new Date().toLocaleString());
     setSaving(false);
+    alert('Changes saved successfully.');
   };
 
   return (
@@ -78,7 +79,7 @@ const SummaryDetail = () => {
           'color', 'background', 'align'
         ]}
       />
-      <button className="save-button" onClick={handleSave} disabled={saving}>
+      <button className="save-buttonn" onClick={handleSave} disabled={saving}>
         {saving ? 'Saving...' : 'Save Changes'}
       </button>
     </div>

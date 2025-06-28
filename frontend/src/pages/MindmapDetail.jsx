@@ -17,6 +17,7 @@ const MindmapDetail = () => {
   const [title, setTitle] = useState('');
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [saving, setSaving] = useState(false);
   const [timestamp, setTimestamp] = useState('');
   const [user, setUser] = useState(null);
   const [deleteMode, setDeleteMode] = useState(false);
@@ -96,7 +97,18 @@ const MindmapDetail = () => {
     fetchMindmap();
   }, [uid, id, navigate]);
 
+  const handleSave = async () => {
+      setSaving(true);
+      const docRef = doc(db, 'users', uid, 'summaries', id);
+      await updateDoc(docRef, {
+        summary
+      });
+      setLastSaved(new Date().toLocaleString());
+      setSaving(false);
+    };
+
   const handleSaveChanges = async () => {
+    setSaving(true)
     try {
       const docRef = doc(db, 'users', uid, 'mindmaps', id);
 
@@ -121,6 +133,7 @@ const MindmapDetail = () => {
       console.error('Error saving changes:', error);
       alert('Failed to save changes.');
     }
+    setSaving(false);
   };
 
   const onConnect = (params) => {
@@ -234,7 +247,7 @@ const MindmapDetail = () => {
           Add Node
         </button>
         <button onClick={() => setDeleteMode(!deleteMode)} className="delete-mode-btn">
-          {deleteMode ? 'Exit' : 'Delete Mode'}
+          {deleteMode ? 'Exit' : 'Delete Node'}
         </button>
         {deleteMode && (
           <p style={{ color: '#d32f2f', fontSize: '14px', marginTop: '0.5rem' }}>
@@ -256,8 +269,8 @@ const MindmapDetail = () => {
             />
           </ReactFlowProvider>
         </div>
-        <button onClick={handleSaveChanges} className="save-btn">
-          Save Changes
+        <button onClick={handleSaveChanges} disabled={saving} className="save-btn">
+          {saving ? 'Saving...' : 'Save Changes'}
         </button>
         {edgeModal.visible && (
           <div className="rename-modal-overlay">

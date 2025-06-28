@@ -178,13 +178,12 @@ const TestPaperDetail = () => {
               />
             </Document>
           </div>
-          <div className="pdf-controls">
-            <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>Previous</button>
+          <div className="pdf-nav">
+            <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>←</button>
             <span>Page {currentPage} of {numPages}</span>
-            <button onClick={() => setCurrentPage((p) => Math.min(p + 1, numPages))} disabled={currentPage === numPages}>Next</button>
+            <button onClick={() => setCurrentPage((p) => Math.min(p + 1, numPages))} disabled={currentPage === numPages}>→</button>
           </div>
           <div className="question-panel">
-            <h2 className="question-header">Questions on Page {currentPage}</h2>
             <ul className="question-list">
               {questionsByPage.find(p => p.page === currentPage)?.questions.map((q) => (
                 <li key={q.id}>
@@ -248,7 +247,9 @@ const TestPaperDetail = () => {
           ) : (
             <button className="add-question-toggle" onClick={() => setShowAddQuestion(true)}>Add Question</button>
           )}
-          <button className="save-button" onClick={handleSaveChanges}>Save Changes</button>
+          <div className="save-button-wrapper">
+            <button className="save-buttonn" onClick={handleSaveChanges}>Save Changes</button>
+          </div>
         </div>
       </main>
     </>

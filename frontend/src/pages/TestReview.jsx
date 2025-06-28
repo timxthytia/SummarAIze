@@ -141,7 +141,7 @@ const TestReview = () => {
                           >
                           Attempt {attempts.length - index}
                           </button>
-                          <p>{attempt.timestamp ? attempt.timestamp.toDate().toLocaleString() : 'Unknown time'}</p>
+                          <p>{attempt.timestamp ? `Attempted at: ${attempt.timestamp.toDate().toLocaleString()}` : 'Unknown time'}</p>
                           <p>{attempt.graded ? `Score: ${attempt.totalScored} / ${totalMarks}` : 'Score: Ungraded'}</p>
                           <p>Time Taken: {attempt.timeTaken ? `${Math.round(attempt.timeTaken / 60)} mins` : '-'}</p>
                       </div>
@@ -178,7 +178,7 @@ const TestReview = () => {
                     const displayAttemptNum = attempts.length - index;
                     return (
                       <div key={index} className="score-entry">
-                        Attempt {displayAttemptNum}: {typeof score === 'number' && !isNaN(score) ? score : 'Ungraded'}
+                        Attempt {displayAttemptNum}: {typeof score === 'number' && !isNaN(score) ? `${score} mark(s)` : 'Ungraded'}
                         <div className="user-answer">
                           {(() => {
                             if (typeof userAnswer === 'string') {

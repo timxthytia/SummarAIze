@@ -1,8 +1,11 @@
+/*
 @keyframes animatedGradient {
+
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+*/
 
 html, body {
   margin: 0;
@@ -21,9 +24,6 @@ html, body {
   box-sizing: inherit;
 }
 
-button, input, select, textarea {
-  font-family: inherit;
-}
 
 main {
   padding-top: 80px; 
