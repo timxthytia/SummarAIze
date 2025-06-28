@@ -3,10 +3,18 @@ from pydantic import BaseModel
 import os
 import json
 from openai import OpenAI
+from utils.openai_client import client
+import re
+import traceback
+
 
 router = APIRouter()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+def extract_json(content: str) -> str:
+    match = re.search(r"```json\n(.*?)```", content, re.DOTALL)
+    if match:
+        return match.group(1).strip()
+    return content.strip()
 
 class MindMapRequest(BaseModel):
     text: str
@@ -27,7 +35,8 @@ async def generate_mindmap(request: MindMapRequest):
             messages=[{"role": "user", "content": prompt}],
             temperature=0.5,
         )
-        content = response.choices[0].message.content
+        content = extract_json(response.choices[0].message.content or "")
+        print("Raw OpenAI response:\n", content)
         if content is None:
             raise HTTPException(status_code=500, detail="OpenAI returned no content.")
 
@@ -48,4 +57,5 @@ async def generate_mindmap(request: MindMapRequest):
         return data
 
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"OpenAI error: {str(e)}")

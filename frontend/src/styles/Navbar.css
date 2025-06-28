@@ -1,5 +1,14 @@
+@import url('https://fonts.googleapis.com/css?family=Work+Sans:400,600');
+
 * {
   box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #222;
+  font-family: 'Work Sans', sans-serif;
+  font-weight: 800;
 }
 
 .navbar {
@@ -13,7 +22,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background-color: #341f97;
+  background-color: #36353a;
   backdrop-filter: blur(5px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
@@ -30,26 +39,51 @@
 
 .navbar-home {
   background: none;
-  border: 2px solid white;
-  color: white;
+  border: none;
+  color: #fff;
   padding: 0.5rem 1.2rem;
   font-size: 1rem;
-  font-weight: 500;
-  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   white-space: nowrap;
+  font-family: 'Work Sans', sans-serif;
+  text-transform: uppercase;
+  position: relative;
+}
+
+.navbar-home::before {
+  content: '';
+  display: block;
+  height: 5px;
+  background-color: white;
+  position: absolute;
+  top: 0;
+  width: 0%;
+  transition: all ease-in-out 250ms;
 }
 
 .navbar-home:hover {
-  background-color: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
+}
+
+.navbar-home:hover::before {
+  width: 100%;
 }
 
 .navbar-right {
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 3rem;
+  justify-content: center;
+}
+
+.navbar-links {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  flex: 1;
+  min-width: 320px;
 }
 
 .navbar-user {

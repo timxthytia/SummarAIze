@@ -103,7 +103,7 @@ const MindmapGenerator = () => {
           rows={5}
           style={{ width: '100%', maxWidth: '800px', marginBottom: '10px' }}
         />
-        <button onClick={handleGenerate} disabled={loading} style={{ marginBottom: '1rem' }}>
+        <button className='mindmap-button' onClick={handleGenerate} disabled={loading} style={{ marginBottom: '1rem' }}>
           {loading ? 'Generating...' : 'Generate Mind Map'}
         </button>
 
@@ -136,7 +136,7 @@ const MindmapGenerator = () => {
               onChange={e => setMapTitle(e.target.value)}
               style={{ padding: '0.5rem', borderRadius: '8px', width: '60%', marginRight: '1rem' }}
             />
-            <button onClick={handleSaveMindmap}>Save Mind Map</button>
+            <button className='mindmap-button' onClick={handleSaveMindmap}>Save Mind Map</button>
           </div>
         )}
       </div>

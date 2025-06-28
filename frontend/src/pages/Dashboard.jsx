@@ -18,9 +18,9 @@ const Dashboard = () => {
   const [summaries, setSummaries] = useState([]);
   const [mindmaps, setMindmaps] = useState([]);
   const [testpapers, setTestpapers] = useState([]);
-const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false });
+  const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false });
   const [downloadFormats, setDownloadFormats] = useState({});
-const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isMindmap: false, isTestpaper: false });
+  const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isMindmap: false, isTestpaper: false });
   const [view, setView] = useState('summaries');
   const navigate = useNavigate();
 
@@ -236,19 +236,19 @@ const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isM
           className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
           onClick={() => setView('summaries')}
         >
-          Summaries
+          SUMMARIES
         </button>
         <button
           className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
           onClick={() => setView('mindmaps')}
         >
-          Mind Maps
+          MINDMAPS
         </button>
         <button
           className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
           onClick={() => setView('testpapers')}
         >
-          Test Papers
+          TEST PAPERS
         </button>
       </div>
 
