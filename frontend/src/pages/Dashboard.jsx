@@ -175,6 +175,7 @@ const Dashboard = () => {
       container.querySelectorAll('.ql-align-left').forEach(el => {
         el.style.textAlign = 'left';
       });
+      container.style.color = 'black';
       html2pdf()
         .set({
           margin: [10, 20],

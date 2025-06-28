@@ -1,20 +1,14 @@
-# ========================
 # Python (Backend)
-# ========================
 __pycache__/
 *.pyc
 venv/
 
-# ========================
 # Node.js (Frontend + Backend)
-# ========================
 node_modules/
 .pnp
 .pnp.js
 
-# ========================
 # Build and Output
-# ========================
 build/
 build/Release
 coverage/
@@ -24,18 +18,14 @@ coverage/
 bower_components/
 lib-cov/
 
-# ========================
 # Package logs
-# ========================
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 firebase-debug.log*
 firebase-debug.*.log*
 
-# ========================
 # Environment and Secrets
-# ========================
 .env
 .env.local
 .env.development.local
@@ -50,9 +40,7 @@ frontend/.env
 # Backend-specific env
 backend/.env
 
-# ========================
 # System and Editor Files
-# ========================
 .DS_Store
 .lock-wscript
 .node_repl_history
@@ -60,8 +48,7 @@ pids
 *.pid
 *.pid.lock
 
-# ========================
-# 🔥 Firebase
-# ========================
+# Firebase
 .firebase/
-# .firebaserc  ← Uncomment if devs should use their own Firebase project
+
+google-cloud-sdk-*.tar.gz
