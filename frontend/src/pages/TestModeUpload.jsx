@@ -10,7 +10,6 @@ import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../services/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
-import { getDocs } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;

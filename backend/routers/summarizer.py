@@ -1,9 +1,14 @@
 # routers/summarizer.py
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from utils.openai_client import client
 import fitz  
-import docx2txt 
+import docx2txt
+import tempfile
+import pytesseract
+from PIL import Image
+import io
+import traceback
 
 router = APIRouter()
 
@@ -36,36 +41,50 @@ async def summarize(request: SummarizeRequest):
 
 @router.post("/summarize-file")
 async def summarize_file(file: UploadFile = File(...), type: str = Form(...)):
-    content = ""
+    try:
+        content = ""
+        # PDf Extraction
+        if file.filename and file.filename.endswith(".pdf"):
+            pdf_bytes = await file.read()
+            pdf = fitz.open(stream=pdf_bytes, filetype="pdf")
+            text_chunks = []
+            for page in pdf:
+                text_chunks.append(page.get_text())  # type: ignore
+            content = "\n".join(text_chunks)
+        # DOCX Extraction
+        elif file.filename and file.filename.endswith(".docx"):
+            docx_bytes = await file.read()
+            with tempfile.NamedTemporaryFile(suffix=".docx", delete=True) as tmp:
+                tmp.write(docx_bytes)
+                tmp.flush()
+                content = docx2txt.process(tmp.name)
+        # Image Extraction
+        elif file.filename and file.filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+            image_bytes = await file.read()
+            image = Image.open(io.BytesIO(image_bytes))
+            content = pytesseract.image_to_string(image)
+        else:
+            return {"error": "Unsupported file type. Please upload a PDF, DOCX or Image File."}
 
-    if file.filename and file.filename.endswith(".pdf"):
-        pdf_bytes = await file.read()
-        pdf = fitz.open(stream=pdf_bytes, filetype="pdf")
-        text_chunks = []
-        for page in pdf:
-            text_chunks.append(page.get_text())  # type: ignore
-        content = "\n".join(text_chunks)
-    elif file.filename and file.filename.endswith(".docx"):
-        content = docx2txt.process(file.file)
-    else:
-        return {"error": "Unsupported file type"}
+        prompt_map = {
+            "short": "Summarize the following in a short paragraph:",
+            "long": "Summarize the following in a long, detailed paragraph:",
+            "bullet": "Summarize the following using bullet points:",
+        }
 
-    prompt_map = {
-        "short": "Summarize the following in a short paragraph:",
-        "long": "Summarize the following in a long, detailed paragraph:",
-        "bullet": "Summarize the following using bullet points:",
-    }
+        prompt = f"{prompt_map[type]}\n\n{content}"
 
-    prompt = f"{prompt_map[type]}\n\n{content}"
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful academic summarizer."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.5,
+            max_tokens=500
+        )
 
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are a helpful academic summarizer."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.5,
-        max_tokens=500
-    )
-
-    return {"summary": response.choices[0].message.content}
+        return {"summary": response.choices[0].message.content}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"File processing error: {str(e)}")

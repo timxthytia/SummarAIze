@@ -1,12 +1,17 @@
+from fastapi import UploadFile, File
+import fitz
+import docx2txt
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import os
 import json
 from openai import OpenAI
 from utils.openai_client import client
 import re
 import traceback
-
+import tempfile
+import pytesseract
+from PIL import Image
+import io
 
 router = APIRouter()
 
@@ -37,7 +42,7 @@ async def generate_mindmap(request: MindMapRequest):
             temperature=0.5,
         )
         content = extract_json(response.choices[0].message.content or "")
-        print("Raw OpenAI response:\n", content)
+        # print("Raw OpenAI response:\n", content)
         if content is None:
             raise HTTPException(status_code=500, detail="OpenAI returned no content.")
 
@@ -66,3 +71,43 @@ async def generate_mindmap(request: MindMapRequest):
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"OpenAI error: {str(e)}")
+
+
+# API endpoint for file uploads
+@router.post("/generate-mindmap-file")
+async def generate_mindmap_file(file: UploadFile = File(...)):
+    try:
+        # PDF extraction
+        if file.filename and file.filename.lower().endswith(".pdf"):
+            pdf_bytes = await file.read()
+            pdf = fitz.open(stream=pdf_bytes, filetype="pdf")
+            text_chunks = []
+            for page in pdf:
+                text_chunks.append(page.get_text()) # type: ignore
+            content = "\n".join(text_chunks)
+        # DOCX extraction
+        elif file.filename and file.filename.lower().endswith(".docx"):
+            docx_bytes = await file.read()
+            with tempfile.NamedTemporaryFile(suffix=".docx", delete=True) as tmp:
+                tmp.write(docx_bytes)
+                tmp.flush()
+                content = docx2txt.process(tmp.name)
+         # Image Extraction
+        elif file.filename and file.filename.lower().endswith(('.jpg', '.jpeg', '.png')):
+            image_bytes = await file.read()
+            image = Image.open(io.BytesIO(image_bytes))
+            content = pytesseract.image_to_string(image)
+        else:
+            return {"error": "Unsupported file type. Please upload a PDF, DOCX or Image File."}
+        
+        # Log extracted content for debugging
+        # preview = content[:1000] + ('...[truncated]' if len(content) > 1000 else '')
+        # print("\n========== FILE EXTRACTED ==========")
+        # print(f"Filename: {file.filename}")
+        # print(f"Extracted text preview:\n{preview}\n")
+        # print("========== END OF EXTRACTED ==========\n")
+
+        return await generate_mindmap(MindMapRequest(text=content))
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"File processing error: {str(e)}")

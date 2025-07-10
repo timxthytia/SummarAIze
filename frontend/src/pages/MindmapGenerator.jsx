@@ -21,6 +21,8 @@ const MindmapGenerator = () => {
   const [mapTitle, setMapTitle] = useState('');
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [mode, setMode] = useState('text'); // "text" or "file"
+  const [selectedFile, setSelectedFile] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -31,12 +33,25 @@ const MindmapGenerator = () => {
 
   // Generate mindmap 
   const handleGenerate = async () => {
-    if (!inputText.trim()) return;
+    if (mode === 'text') {
+      if (!inputText.trim()) return;
+    } else if (mode === 'file') {
+      if (!selectedFile) return;
+    }
     setLoading(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/generate-mindmap`, {
-        text: inputText
-      });
+      let response;
+      if (mode === 'text') {
+        response = await axios.post(`${import.meta.env.VITE_API_URL}/generate-mindmap`, {
+          text: inputText
+        });
+      } else {
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        response = await axios.post(`${import.meta.env.VITE_API_URL}/generate-mindmap-file`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
 
       const { nodes: genNodes, edges: genEdges } = response.data;
 
@@ -98,18 +113,50 @@ const MindmapGenerator = () => {
     <ReactFlowProvider>
       <div className="mindmap-generator-container" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
         <NavbarLoggedin user={user} />
+        <div className="mode-toggle">
+          <button className={mode === 'text' ? 'active' : ''} onClick={() => setMode('text')}>
+            Text Mode
+          </button>
+          <button className={mode === 'file' ? 'active' : ''} onClick={() => setMode('file')}>
+            File Mode
+          </button>
+        </div>
         <main></main>
         <h1>Mind Map Generator</h1>
-        <textarea
-          placeholder="Enter your text here..."
-          value={inputText}
-          onChange={e => setInputText(e.target.value)}
-          rows={5}
-          style={{ width: '100%', maxWidth: '800px', marginBottom: '10px' }}
-        />
-        <button className='mindmap-button' onClick={handleGenerate} disabled={loading} style={{ marginBottom: '1rem' }}>
-          {loading ? 'Generating...' : 'Generate Mind Map'}
-        </button>
+        {mode === 'text' ? (
+          <>
+            <textarea
+              placeholder="Enter your text here..."
+              value={inputText}
+              onChange={e => setInputText(e.target.value)}
+              rows={5}
+              style={{ width: '100%', maxWidth: '800px', marginBottom: '10px' }}
+            />
+            <button className='mindmap-button' onClick={handleGenerate} disabled={loading} style={{ marginBottom: '1rem' }}>
+              {loading ? 'Generating...' : 'Generate Mind Map'}
+            </button>
+          </>
+        ) : (
+          <div className="file-upload-section" style={{ marginBottom: '1rem' }}>
+            <label>Upload PDF/ DOCX/ Image:</label><br />
+            <label className="custom-file-upload">
+              Choose File
+              <input
+                type="file"
+                accept=".pdf,.docx,.jpg,.jpeg,.png"
+                onChange={e => setSelectedFile(e.target.files[0])}
+              />
+            </label>
+            {selectedFile && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
+                {selectedFile.name}
+              </div>
+            )}
+            <button className='mindmap-button' onClick={handleGenerate} disabled={loading || !selectedFile} style={{ marginTop: '0.5rem' }}>
+              {loading ? 'Generating...' : 'Generate Mind Map'}
+            </button>
+          </div>
+        )}
 
         <div className='mindmap-flow-wrapper'>
           <ReactFlow

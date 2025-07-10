@@ -105,17 +105,16 @@ const TextSummarizer = () => {
   return (
     <div className="summarizer-container">
       <NavbarLoggedin />
+      <div className="mode-toggle">
+        <button className={mode === 'text' ? 'active' : ''} onClick={() => setMode('text')}>
+          Text Mode
+        </button>
+        <button className={mode === 'file' ? 'active' : ''} onClick={() => setMode('file')}>
+          File Mode
+        </button>
+      </div>
       <div className="summarizer-card">
         <h1 className="summarizer-title">Generate Your Own Personalised Summaries</h1>
-
-        <div className="mode-toggle">
-          <button className={mode === 'text' ? 'active' : ''} onClick={() => setMode('text')}>
-            Text Mode
-          </button>
-          <button className={mode === 'file' ? 'active' : ''} onClick={() => setMode('file')}>
-            File Mode
-          </button>
-        </div>
 
         {mode === 'text' ? (
           <textarea
@@ -126,12 +125,12 @@ const TextSummarizer = () => {
           />
         ) : (
           <div className="file-upload-section">
-            <label>Upload PDF/DOCX:</label><br />
+            <label>Upload PDF/ DOCX/ Image:</label><br />
             <label className="custom-file-upload">
               Choose File
               <input
                 type="file"
-                accept=".pdf,.docx"
+                accept=".pdf,.docx,.jpg,.jpeg,.png"
                 onChange={(e) => setSelectedFile(e.target.files[0])}
               />
             </label>
