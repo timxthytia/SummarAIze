@@ -8,6 +8,8 @@ const CustomNode = ({ data }) => {
   const [borderColor, setBorderColor] = useState(data.borderColor || '#000000');
   const [colorModalVisible, setColorModalVisible] = useState(false);
   const modalRef = React.useRef(null);
+  const textareaRef = React.useRef(null);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (colorModalVisible && modalRef.current && !modalRef.current.contains(event.target)) {
@@ -19,6 +21,13 @@ const CustomNode = ({ data }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [colorModalVisible]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+    }
+  }, [text]);
 
   const handleTextChange = (e) => {
     const newText = e.target.value;
@@ -58,6 +67,7 @@ const CustomNode = ({ data }) => {
         <Handle type="target" position={Position.Bottom} id="b" className="custom-handle" />
 
         <textarea
+          ref={textareaRef}
           value={text}
           onChange={handleTextChange}
           className="custom-node-textarea"

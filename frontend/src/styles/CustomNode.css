@@ -7,10 +7,10 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   font-size: 14px;
   min-width: 120px;
-  text-align: center;
+  max-width: 260px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  word-break: break-word;
 }
 
 .custom-node-textarea {
@@ -18,9 +18,10 @@
   background: transparent;
   font-size: 14px;
   width: 100%;
-  text-align: center;
   outline: none;
   padding: 2px;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .custom-handle {
