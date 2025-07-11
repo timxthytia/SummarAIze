@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useRef } from 'react';
 import { getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -6,12 +7,15 @@ import {
   query, where, orderBy, updateDoc
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
-import html2pdf from 'html2pdf.js';
-import DOMPurify from 'dompurify';
 import '../styles/Dashboard.css';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { getDoc } from 'firebase/firestore';
+import { handleDownload, handleMindmapDownload } from '../utils/exportUtils';
+
+import ExportMindmapModal from '../components/ExportMindmapModel';
+import CustomNode from '../components/CustomNode'; 
+import CustomEdge from '../components/CustomEdge'; 
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -20,9 +24,21 @@ const Dashboard = () => {
   const [testpapers, setTestpapers] = useState([]);
   const [renameModal, setRenameModal] = useState({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false });
   const [downloadFormats, setDownloadFormats] = useState({});
+  const [mindmapExportFormats, setMindmapExportFormats] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isMindmap: false, isTestpaper: false });
   const [view, setView] = useState('summaries');
   const navigate = useNavigate();
+
+  // States for ExportMindmapModel
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportMindmap, setExportMindmap] = useState(null);
+  const [exportFormat, setExportFormat] = useState('png');
+  const [exportNodes, setExportNodes] = useState([]);
+  const [exportEdges, setExportEdges] = useState([]);
+  // Pass in custom nodes and edges
+  const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
+  const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
+  const mindmapRefs = useRef({});
 
   useEffect(() => {
     const unsubscribeAuth = getAuth().onAuthStateChanged((user) => {
@@ -160,62 +176,6 @@ const Dashboard = () => {
     }
   };
 
-  // Exporting as PDF/ DOCX documents
-  const handleDownload = async (title, summaryHTML, format) => {
-    const container = document.createElement('div');
-    container.innerHTML = DOMPurify.sanitize(summaryHTML);
-
-    if (format === 'pdf') {
-      container.querySelectorAll('.ql-align-center').forEach(el => {
-        el.style.textAlign = 'center';
-      });
-      container.querySelectorAll('.ql-align-right').forEach(el => {
-        el.style.textAlign = 'right';
-      });
-      container.querySelectorAll('.ql-align-left').forEach(el => {
-        el.style.textAlign = 'left';
-      });
-      container.style.color = 'black';
-      html2pdf()
-        .set({
-          margin: [10, 20],
-          filename: `${title || 'summary'}.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        })
-        .from(container)
-        .save();
-    } else if (format === 'docx') {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/generate-docx`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            title,
-            html: container.innerHTML,
-          }),
-        });
-
-        if (!response.ok) throw new Error('Failed to generate DOCX');
-
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${title || 'summary'}.docx`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        window.URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error('Error downloading DOCX:', error);
-        alert('Failed to download DOCX file');
-      }
-    }
-  };
 
   // Delete files
   const openDeleteConfirm = (id) => {
@@ -273,7 +233,6 @@ const Dashboard = () => {
                     Rename
                   </button>
                 </div>
-                <p><strong>Type:</strong> {summary.type}</p>
                 <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
                 <div className="summary-actions">
                   <select
@@ -287,7 +246,12 @@ const Dashboard = () => {
                   <button
                     className="download-button"
                     onClick={() =>
-                      handleDownload(summary.title, summary.summary, downloadFormats[summary.id] || 'pdf')
+                      handleDownload(
+                        summary.title,
+                        summary.summary,
+                        downloadFormats[summary.id] || 'pdf',
+                        import.meta.env.VITE_API_URL
+                      )
                     }
                   >
                     Download
@@ -318,7 +282,11 @@ const Dashboard = () => {
             <p>No mind maps found.</p>
           ) : (
             mindmaps.map((mindmap) => (
-              <div key={mindmap.id} className="mindmap-card">
+              <div
+                key={mindmap.id}
+                className="mindmap-card"
+                ref={el => mindmapRefs.current[mindmap.id] = el}
+              >
                 <div className="summary-header">
                   <p><strong>Title:</strong> {mindmap.title || 'Untitled'}</p>
                   <button
@@ -333,6 +301,26 @@ const Dashboard = () => {
                 </div>
                 <p><small>{mindmap.timestamp?.toDate().toLocaleString()}</small></p>
                 <div className="summary-actions">
+                  <button
+                    className="download-button"
+                    onClick={async () => {
+                      // Fetch the latest nodes/edges for this mindmap
+                      const docRef = doc(db, 'users', user.uid, 'mindmaps', mindmap.id);
+                      const mindmapDoc = await getDoc(docRef);
+                      if (mindmapDoc.exists()) {
+                        const data = mindmapDoc.data();
+                        setExportNodes(data.nodes || []);
+                        setExportEdges((data.edges || []).map(e => ({ ...e, type: 'custom' })));
+                        setExportMindmap(mindmap);
+                        setExportFormat('png');
+                        setExportModalOpen(true);
+                      } else {
+                        alert('Mindmap not found.');
+                      }
+                    }}
+                  >
+                    Download
+                  </button>
                 </div>
                 <button
                   className="delete-button"
@@ -475,6 +463,18 @@ const Dashboard = () => {
           </div>
         </div>
       )}
+      {/* Mindmap Export Modal */}
+      <ExportMindmapModal
+        open={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        mindmap={exportMindmap}
+        format={exportFormat}
+        setFormat={setExportFormat}
+        nodes={exportNodes}
+        edges={exportEdges}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+      />
     </main>
     </div>
   );

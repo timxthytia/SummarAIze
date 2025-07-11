@@ -58,3 +58,11 @@
   background-color: white;
   color: #5f27cd;
 }
+
+/* Fix for all-bold text in ReactQuill editor */
+.ql-editor {
+  font-weight: normal;
+}
+.ql-editor strong {
+  font-weight: bold;
+}
