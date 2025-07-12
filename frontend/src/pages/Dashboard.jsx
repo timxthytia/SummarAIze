@@ -11,7 +11,7 @@ import '../styles/Dashboard.css';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { getDoc } from 'firebase/firestore';
-import { handleDownload, handleMindmapDownload } from '../utils/exportUtils';
+import { handleDownload } from '../utils/exportUtils';
 
 import ExportMindmapModal from '../components/ExportMindmapModel';
 import CustomNode from '../components/CustomNode'; 
