@@ -2,7 +2,6 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import html2pdf from 'html2pdf.js';
 import DOMPurify from 'dompurify';
-import { toPng, toJpeg } from 'html-to-image';
 
 /* Downloads a summaries as PDF or DOCX (PNG/JPEG). */
 export const handleDownload = async (title, summaryHTML, format, apiUrl) => {

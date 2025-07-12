@@ -20,6 +20,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       plugins: [nodePolyfills()],
+      external: ['html-to-image'],
     },
   },
   server: {
