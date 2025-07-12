@@ -32,6 +32,11 @@ const Dashboard = () => {
   const [newTag, setNewTag] = useState('');
   // Tag autocomplete
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+
+  // Tag search bar state
+  const [tagSearchInput, setTagSearchInput] = useState('');
+  const [tagSearchSuggestions, setTagSearchSuggestions] = useState([]);
+  const [selectedTags, setSelectedTags] = useState([]);
   // All unique tags from summaries, mindmaps, testpapers
   const allTags = useMemo(() => {
     const tagsSet = new Set();
@@ -56,6 +61,51 @@ const Dashboard = () => {
       tag.toLowerCase() !== val.toLowerCase()
     );
     setFilteredSuggestions(filtered);
+  };
+
+  // Handler for tag search bar input (autocomplete for filter bar)
+  const onTagSearchInputChange = (e) => {
+    const val = e.target.value;
+    setTagSearchInput(val);
+    if (!val.trim()) {
+      setTagSearchSuggestions([]);
+      return;
+    }
+    const filtered = allTags.filter(tag =>
+      tag.toLowerCase().includes(val.toLowerCase()) &&
+      !selectedTags.includes(tag)
+    );
+    setTagSearchSuggestions(filtered);
+  };
+
+  // Add tag to filter bar
+  const addTagToFilter = (tag) => {
+    if (!selectedTags.includes(tag)) {
+      setSelectedTags(prev => [...prev, tag]);
+    }
+    setTagSearchInput('');
+    setTagSearchSuggestions([]);
+  };
+
+  // Remove tag from filter bar
+  const removeTagFromFilter = (tag) => {
+    setSelectedTags(prev => prev.filter(t => t !== tag));
+  };
+
+  // TagChip helper component
+  const TagChip = ({ tag, onRemove }) => (
+    <span className="tag-chip">
+      {tag}
+      {onRemove && (
+        <button className="tag-remove-btn" onClick={onRemove}>×</button>
+      )}
+    </span>
+  );
+
+  // Filter items by tags (OR logic)
+  const filterByTags = (items) => {
+    if (selectedTags.length === 0) return items;
+    return items.filter(item => (item.tags || []).some(tag => selectedTags.includes(tag)));
   };
   const navigate = useNavigate();
 
@@ -267,295 +317,335 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <NavbarLoggedin user={user} />
       <main>
-      <div className="dashboard-toggle-buttons">
-        <button
-          className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
-          onClick={() => setView('summaries')}
-        >
-          SUMMARIES
-        </button>
-        <button
-          className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
-          onClick={() => setView('mindmaps')}
-        >
-          MINDMAPS
-        </button>
-        <button
-          className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
-          onClick={() => setView('testpapers')}
-        >
-          TEST PAPERS
-        </button>
-      </div>
-
-      {view === 'summaries' && (
-        <div className="summary-list">
-          <h3>Your Saved Summaries</h3>
-          {summaries.length === 0 ? (
-            <p>No summaries found.</p>
-          ) : (
-            summaries.map((summary) => (
-              <div key={summary.id} className="summary-card">
-                <div className="summary-header">
-                  <p><strong>Title:</strong> {summary.title || 'Untitled'}</p>
-                  <button
-                    className="rename-trigger-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRenameModal({ visible: true, id: summary.id, title: summary.title || '' });
-                    }}
-                  >
-                    Rename
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openTagModal(summary.id, summary.tags || [], false, false);
-                    }}
-                  >
-                    Tag
-                  </button>
-                </div>
-                <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
-                <div className="summary-actions">
-                  <select
-                    value={downloadFormats[summary.id] || 'pdf'}
-                    onChange={(e) => setDownloadFormats(prev => ({ ...prev, [summary.id]: e.target.value }))}
-                    className="download-format-select"
-                  >
-                    <option value="pdf">PDF</option>
-                    <option value="docx">DOCX</option>
-                  </select>
-                  <button
-                    className="download-button"
-                    onClick={() =>
-                      handleDownload(
-                        summary.title,
-                        summary.summary,
-                        downloadFormats[summary.id] || 'pdf',
-                        import.meta.env.VITE_API_URL
-                      )
-                    }
-                  >
-                    Download
-                  </button>
-                </div>
-                <button
-                  className="delete-button"
-                  onClick={() => handleNavigate(summary.id)}
-                >
-                  View
-                </button>
-                <button
-                  className="delete-button"
-                  onClick={() => openDeleteConfirm(summary.id)}
-                >
-                  Delete
-                </button>
-                <div className="tags-container">
-                  {(summary.tags || []).map((tag, idx) => (
-                    <span key={idx} className="tag-chip">
-                      {tag}
-                      <button
-                        className="tag-remove-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveTag(summary.id, tag);
-                        }}
+        <div className="left-sidebar">
+          <div className="dashboard-toggle-buttons">
+            <button
+              className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
+              onClick={() => setView('summaries')}
+            >
+              SUMMARIES
+            </button>
+            <button
+              className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
+              onClick={() => setView('mindmaps')}
+            >
+              MINDMAPS
+            </button>
+            <button
+              className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
+              onClick={() => setView('testpapers')}
+            >
+              TEST PAPERS
+            </button>
+          </div>
+          <div className="tag-filter-bar">
+            <div className="tag-filter-input-wrapper" style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={tagSearchInput}
+                onChange={onTagSearchInputChange}
+                placeholder="Filter by tag..."
+                autoComplete="off"
+                className="tag-filter-input"
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && tagSearchInput.trim()) {
+                    addTagToFilter(tagSearchInput.trim());
+                  }
+                }}
+              />
+              {tagSearchSuggestions.length > 0 && (
+                <div className="autocomplete-container">
+                  <ul className="autocomplete-list">
+                    {tagSearchSuggestions.map((tag, idx) => (
+                      <li
+                        key={idx}
+                        className="autocomplete-item"
+                        onClick={() => addTagToFilter(tag)}
                       >
-                        ×
-                      </button>
-                    </span>
-                  ))}
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
-            ))
-          )}
+              )}
+            </div>
+            <div className="tag-filter-chips">
+              {selectedTags.map((tag, idx) => (
+                <TagChip key={idx} tag={tag} onRemove={() => removeTagFromFilter(tag)} />
+              ))}
+            </div>
+          </div>
         </div>
-      )}
-
-      {view === 'mindmaps' && (
-        <div className="mindmap-list">
-          <h3>Your Saved Mindmaps</h3>
-          {mindmaps.length === 0 ? (
-            <p>No mind maps found.</p>
-          ) : (
-            mindmaps.map((mindmap) => (
-              <div
-                key={mindmap.id}
-                className="mindmap-card"
-                ref={el => mindmapRefs.current[mindmap.id] = el}
-              >
-                <div className="summary-header">
-                  <p><strong>Title:</strong> {mindmap.title || 'Untitled'}</p>
-                  <button
-                    className="rename-trigger-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRenameModal({ visible: true, id: mindmap.id, title: mindmap.title || '', isMindmap: true });
-                    }}
-                  >
-                    Rename
-                  </button>
-                  <button
-                    className="delete-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openTagModal(mindmap.id, mindmap.tags || [], true, false);
-                    }}
-                  >
-                    Tag
-                  </button>
-                </div>
-                <p><small>{mindmap.timestamp?.toDate().toLocaleString()}</small></p>
-                <div className="summary-actions">
-                  <button
-                    className="download-button"
-                    onClick={async () => {
-                      // Fetch the latest nodes/edges for this mindmap
-                      const docRef = doc(db, 'users', user.uid, 'mindmaps', mindmap.id);
-                      const mindmapDoc = await getDoc(docRef);
-                      if (mindmapDoc.exists()) {
-                        const data = mindmapDoc.data();
-                        setExportNodes(data.nodes || []);
-                        setExportEdges((data.edges || []).map(e => ({ ...e, type: 'custom' })));
-                        setExportMindmap(mindmap);
-                        setExportFormat('png');
-                        setExportModalOpen(true);
-                      } else {
-                        alert('Mindmap not found.');
+      <div className="main-content">
+        {view === 'summaries' && (
+          <div className="summary-list">
+            <h3>Your Saved Summaries</h3>
+            {filterByTags(summaries).length === 0 ? (
+              <p>No summaries found.</p>
+            ) : (
+              filterByTags(summaries).map((summary) => (
+                <div key={summary.id} className="summary-card">
+                  <div className="summary-header">
+                    <p><strong>Title:</strong> {summary.title || 'Untitled'}</p>
+                    <button
+                      className="rename-trigger-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenameModal({ visible: true, id: summary.id, title: summary.title || '' });
+                      }}
+                    >
+                      Rename
+                    </button>
+                    <button
+                      className="delete-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openTagModal(summary.id, summary.tags || [], false, false);
+                      }}
+                    >
+                      Tag
+                    </button>
+                  </div>
+                  <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
+                  <div className="summary-actions">
+                    <select
+                      value={downloadFormats[summary.id] || 'pdf'}
+                      onChange={(e) => setDownloadFormats(prev => ({ ...prev, [summary.id]: e.target.value }))}
+                      className="download-format-select"
+                    >
+                      <option value="pdf">PDF</option>
+                      <option value="docx">DOCX</option>
+                    </select>
+                    <button
+                      className="download-button"
+                      onClick={() =>
+                        handleDownload(
+                          summary.title,
+                          summary.summary,
+                          downloadFormats[summary.id] || 'pdf',
+                          import.meta.env.VITE_API_URL
+                        )
                       }
-                    }}
-                  >
-                    Download
-                  </button>
-                </div>
-                <button
-                  className="delete-button"
-                  onClick={() => handleNavigate(mindmap.id, true)}
-                >
-                  View
-                </button>
-                <button
-                  className="delete-button"
-                  onClick={() => setDeleteConfirm({ visible: true, id: mindmap.id, isMindmap: true })}
-                >
-                  Delete
-                </button>
-                <div className="tags-container">
-                  {(mindmap.tags || []).map((tag, idx) => (
-                    <span key={idx} className="tag-chip">
-                      {tag}
-                      <button
-                        className="tag-remove-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveTag(mindmap.id, tag, true, false);
-                        }}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {view === 'testpapers' && (
-        <div className="testpaper-list">
-          <h3>Your Uploaded Test Papers</h3>
-          {testpapers.length === 0 ? (
-            <p>No test papers found.</p>
-          ) : (
-            testpapers.map((paper) => (
-              <div key={paper.id} className="mindmap-card">
-                <div className="summary-header">
-                  <p><strong>Title:</strong> {paper.paperTitle}</p>
+                    >
+                      Download
+                    </button>
+                  </div>
                   <button
-                    className="rename-trigger-button"
+                    className="delete-button"
+                    onClick={() => handleNavigate(summary.id)}
+                  >
+                    View
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={() => openDeleteConfirm(summary.id)}
+                  >
+                    Delete
+                  </button>
+                  <div className="tags-container">
+                    {(summary.tags || []).map((tag, idx) => (
+                      <span key={idx} className="tag-chip">
+                        {tag}
+                        <button
+                          className="tag-remove-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveTag(summary.id, tag);
+                          }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {view === 'mindmaps' && (
+          <div className="mindmap-list">
+            <h3>Your Saved Mindmaps</h3>
+            {filterByTags(mindmaps).length === 0 ? (
+              <p>No mind maps found.</p>
+            ) : (
+              filterByTags(mindmaps).map((mindmap) => (
+                <div
+                  key={mindmap.id}
+                  className="mindmap-card"
+                  ref={el => mindmapRefs.current[mindmap.id] = el}
+                >
+                  <div className="summary-header">
+                    <p><strong>Title:</strong> {mindmap.title || 'Untitled'}</p>
+                    <button
+                      className="rename-trigger-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenameModal({ visible: true, id: mindmap.id, title: mindmap.title || '', isMindmap: true });
+                      }}
+                    >
+                      Rename
+                    </button>
+                    <button
+                      className="delete-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openTagModal(mindmap.id, mindmap.tags || [], true, false);
+                      }}
+                    >
+                      Tag
+                    </button>
+                  </div>
+                  <p><small>{mindmap.timestamp?.toDate().toLocaleString()}</small></p>
+                  <div className="summary-actions">
+                    <button
+                      className="download-button"
+                      onClick={async () => {
+                        // Fetch the latest nodes/edges for this mindmap
+                        const docRef = doc(db, 'users', user.uid, 'mindmaps', mindmap.id);
+                        const mindmapDoc = await getDoc(docRef);
+                        if (mindmapDoc.exists()) {
+                          const data = mindmapDoc.data();
+                          setExportNodes(data.nodes || []);
+                          setExportEdges((data.edges || []).map(e => ({ ...e, type: 'custom' })));
+                          setExportMindmap(mindmap);
+                          setExportFormat('png');
+                          setExportModalOpen(true);
+                        } else {
+                          alert('Mindmap not found.');
+                        }
+                      }}
+                    >
+                      Download
+                    </button>
+                  </div>
+                  <button
+                    className="delete-button"
+                    onClick={() => handleNavigate(mindmap.id, true)}
+                  >
+                    View
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={() => setDeleteConfirm({ visible: true, id: mindmap.id, isMindmap: true })}
+                  >
+                    Delete
+                  </button>
+                  <div className="tags-container">
+                    {(mindmap.tags || []).map((tag, idx) => (
+                      <span key={idx} className="tag-chip">
+                        {tag}
+                        <button
+                          className="tag-remove-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveTag(mindmap.id, tag, true, false);
+                          }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {view === 'testpapers' && (
+          <div className="testpaper-list">
+            <h3>Your Uploaded Test Papers</h3>
+            {filterByTags(testpapers).length === 0 ? (
+              <p>No test papers found.</p>
+            ) : (
+              filterByTags(testpapers).map((paper) => (
+                <div key={paper.id} className="mindmap-card">
+                  <div className="summary-header">
+                    <p><strong>Title:</strong> {paper.paperTitle}</p>
+                    <button
+                      className="rename-trigger-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenameModal({ visible: true, id: paper.id, title: paper.paperTitle || '', isTestpaper: true, isMindmap: false });
+                      }}
+                    >
+                      Rename
+                    </button>
+                    <button
+                      className="delete-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openTagModal(paper.id, paper.tags || [], false, true);
+                      }}
+                    >
+                      Tag
+                    </button>
+                  </div>
+                  <p><strong>File:</strong> {paper.fileName}</p>
+                  <p><strong>Pages:</strong> {paper.numPages}</p>
+                  <p><small>{new Date(paper.uploadedAt).toLocaleString()}</small></p>
+                  <div className="testpaper-actions">
+                    <button
+                      className="edit-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/testpaperdetail/${user.uid}/${paper.id}`);
+                      }}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="attempt-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/testattemptsetup/${user.uid}/${paper.id}`);
+                      }}
+                    >
+                      Start Attempt
+                    </button>
+                  </div>
+                  <button
+                    className="delete-button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      setRenameModal({ visible: true, id: paper.id, title: paper.paperTitle || '', isTestpaper: true, isMindmap: false });
+                      navigate(`/testreview/${user.uid}/${paper.id}`, { state: { testpaper: paper } });
                     }}
                   >
-                    Rename
+                    Review
                   </button>
                   <button
                     className="delete-button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      openTagModal(paper.id, paper.tags || [], false, true);
+                      setDeleteConfirm({ visible: true, id: paper.id, isTestpaper: true, isMindmap: false });
                     }}
                   >
-                    Tag
+                    Delete
                   </button>
+                  <div className="tags-container">
+                    {(paper.tags || []).map((tag, idx) => (
+                      <span key={idx} className="tag-chip">
+                        {tag}
+                        <button
+                          className="tag-remove-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveTag(paper.id, tag, false, true);
+                          }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <p><strong>File:</strong> {paper.fileName}</p>
-                <p><strong>Pages:</strong> {paper.numPages}</p>
-                <p><small>{new Date(paper.uploadedAt).toLocaleString()}</small></p>
-                <div className="testpaper-actions">
-                  <button
-                    className="edit-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/testpaperdetail/${user.uid}/${paper.id}`);
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="attempt-button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/testattemptsetup/${user.uid}/${paper.id}`);
-                    }}
-                  >
-                    Start Attempt
-                  </button>
-                </div>
-                <button
-                  className="delete-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/testreview/${user.uid}/${paper.id}`, { state: { testpaper: paper } });
-                  }}
-                >
-                  Review
-                </button>
-                <button
-                  className="delete-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDeleteConfirm({ visible: true, id: paper.id, isTestpaper: true, isMindmap: false });
-                  }}
-                >
-                  Delete
-                </button>
-                <div className="tags-container">
-                  {(paper.tags || []).map((tag, idx) => (
-                    <span key={idx} className="tag-chip">
-                      {tag}
-                      <button
-                        className="tag-remove-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveTag(paper.id, tag, false, true);
-                        }}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+              ))
+            )}
+          </div>
+        )}
+      </div>
       {/* Tag Modal */}
       {tagModal.visible && (
         <div className="rename-modal-overlay">
@@ -577,7 +667,7 @@ const Dashboard = () => {
                 autoComplete="off"
               />
               {filteredSuggestions.length > 0 && (
-                <div className="autocomplete-container">
+                <div className="autocomplete-popup-container">
                   <ul className="autocomplete-list">
                     {filteredSuggestions.map((tag, idx) => (
                       <li
