@@ -274,3 +274,11 @@ input[type="file"] {
   background-color: #5f27cd;
   color: white;
 }
+
+.selected-filename {
+  color: #1976d2;
+  text-decoration: underline;
+  cursor: pointer;
+  vertical-align: middle;
+  font-size: 0.97em;
+}

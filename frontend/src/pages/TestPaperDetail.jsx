@@ -226,10 +226,34 @@ const TestPaperDetail = () => {
                   <input type="text" placeholder="Correct Answer(s)" value={newQuestion.correctAnswer || ''} onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value.toUpperCase() })} />
                 </>
               ) : newQuestion.type === 'Other' ? (
-                <div>
-                  <label htmlFor="other-answer-upload">{editingQuestionId ? 'Update Answer File:' : 'Upload Answer File:'}</label>
-                  <input id="other-answer-upload" type="file" accept=".pdf,.doc,.docx" onChange={(e) => setOtherAnswerFile(e.target.files[0])} />
-                  {otherAnswerFile && <span className="selected-filename">{otherAnswerFile.name}</span>}
+                <div style={{ margin: '8px 0' }}>
+                  <label htmlFor="other-answer-upload" className="file-upload-label">
+                    {editingQuestionId ? 'Update Answer File:' : 'Upload Answer File:'}
+                  </label>
+                  <label htmlFor="other-answer-upload" className="choose-file-btn">
+                    Choose File
+                    <input
+                      id="other-answer-upload"
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      style={{ display: 'none' }}
+                      onChange={(e) => setOtherAnswerFile(e.target.files[0])}
+                    />
+                  </label>
+                  {otherAnswerFile && (
+                    <a
+                      className="selected-filename"
+                      href={
+                        otherAnswerFile instanceof File
+                          ? URL.createObjectURL(otherAnswerFile)
+                          : otherAnswerFile.url || '#'
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {otherAnswerFile.name || (typeof otherAnswerFile === "string" ? otherAnswerFile : "Answer File")}
+                    </a>
+                  )}
                 </div>
               ) : (
                 <input type="text" placeholder="Correct Answer" value={newQuestion.correctAnswer} onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })} />

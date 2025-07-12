@@ -163,7 +163,7 @@ const TestReview = () => {
                 <p><strong>Highest Score:</strong> {highScore}</p>
                 <p><strong>Lowest Score:</strong> {lowScore}</p>
                 <p><strong>Correct Answer:</strong> {typeof question.correctAnswer === 'object' && question.correctAnswer?.url ? (
-                  <a href={question.correctAnswer.url} target="_blank" rel="noopener noreferrer">
+                  <a href={question.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="selected-filename">
                     {question.correctAnswer.name}
                   </a>
                 ) : (
@@ -184,7 +184,7 @@ const TestReview = () => {
                             if (typeof userAnswer === 'string') {
                               return userAnswer.length > 100 ? userAnswer.slice(0, 100) + '...' : userAnswer;
                             } else if (typeof userAnswer === 'object' && userAnswer?.url) {
-                              return <a href={userAnswer.url} target="_blank" rel="noopener noreferrer">{userAnswer.name}</a>;
+                              return <a href={userAnswer.url} target="_blank" rel="noopener noreferrer" className="selected-filename">{userAnswer.name}</a>;
                             } else if (Array.isArray(userAnswer)) {
                               return userAnswer.join(', ');
                             } else {

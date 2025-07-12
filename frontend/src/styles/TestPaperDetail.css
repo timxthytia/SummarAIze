@@ -383,3 +383,27 @@ input[type="file"] {
   margin-top: 2rem;
   width: 100%;
 }
+
+.choose-file-btn {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  border: 2px solid white;
+  border-radius: 12px;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease, color 0.3s ease;
+  text-align: center;
+}
+.choose-file-btn:hover {
+  background-color: white;
+  color: #5f27cd;
+}
+
+.selected-filename {
+  color: #1976d2;
+  margin-left: 8px;
+  font-size: 0.97em;
+  vertical-align: middle;
+}

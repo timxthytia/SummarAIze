@@ -6,8 +6,6 @@ import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestGrading.css';
 
 import { Document, Page, pdfjs } from 'react-pdf';
-//import 'react-pdf/dist/Page/AnnotationLayer.css';
-//import 'react-pdf/dist/Page/TextLayer.css';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -137,7 +135,7 @@ const TestGrading = () => {
                     <p>{q.correctAnswer}</p>
                   )}
                   {q.type === 'Other' && q.correctAnswer?.url && (
-                    <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer">
+                    <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="selected-filename">
                       {q.correctAnswer.name}
                     </a>
                   )}
@@ -150,7 +148,7 @@ const TestGrading = () => {
                   )}
                   {q.type === 'Other' && (
                     answers?.[q.id]?.url ? (
-                      <a href={answers[q.id].url} target="_blank" rel="noopener noreferrer">
+                      <a href={answers[q.id].url} target="_blank" rel="noopener noreferrer" className="selected-filename">
                         {answers[q.id].name}
                       </a>
                     ) : (

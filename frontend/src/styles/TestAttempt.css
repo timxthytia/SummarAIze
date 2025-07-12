@@ -211,3 +211,17 @@ main {
   background-color: #5f27cd;
   color: white;
 }
+
+.selected-filename {
+  display: block;            
+  color: #1976d2;               
+  margin-top: 6px;           
+  text-decoration: none;      
+  cursor: default;            
+  font-size: 0.97em;
+}
+
+.selected-filename:hover {
+  cursor: pointer;            
+  text-decoration: underline #1976d2;  
+}

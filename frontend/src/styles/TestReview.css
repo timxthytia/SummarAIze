@@ -124,3 +124,17 @@
 .score-entry:last-child {
   border-bottom: none;
 }
+
+.selected-filename {
+  display: block;            
+  color: #1976d2;               
+  text-decoration: none;      
+  cursor: default;            
+  font-size: 0.97em;
+  margin-left: 0;
+}
+
+.selected-filename:hover {
+  cursor: pointer;            
+  text-decoration: underline #1976d2;  
+}

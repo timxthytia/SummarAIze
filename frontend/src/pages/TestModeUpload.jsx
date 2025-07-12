@@ -367,7 +367,7 @@ const TestModeUpload = () => {
             />
           </label>
           {selectedFile && (
-            <div className="selected-file-name">
+            <div className="selected-filename">
               {selectedFile.name}
             </div>
           )}
@@ -571,7 +571,16 @@ const TestModeUpload = () => {
                         />
                       </label>
                       {questionFormData.correctAnswerFile && (
-                        <span className="selected-filename">{questionFormData.correctAnswerFile.name}</span>
+                        <a
+                          className="selected-filename"
+                          href={questionFormData.correctAnswerFile instanceof File
+                            ? URL.createObjectURL(questionFormData.correctAnswerFile)
+                            : questionFormData.correctAnswerFile.url || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {questionFormData.correctAnswerFile.name || (typeof questionFormData.correctAnswerFile === "string" ? questionFormData.correctAnswerFile : "Answer File")}
+                        </a>
                       )}
                     </div>
                   )}
@@ -591,7 +600,7 @@ const TestModeUpload = () => {
         )}
         <div className="submit-testpaper-container">
           <button onClick={handleSubmitTestPaper} className="submit-testpaper-button">
-            Submit Test Paper
+            Upload Test Paper
           </button>
         </div>
         {fileUrl && (

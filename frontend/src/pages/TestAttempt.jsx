@@ -150,7 +150,7 @@ const TestAttempt = () => {
         <div className="question-list">
           {pageQuestions.map((q) => (
             <div key={q.id} className="question-block">
-              <p><strong>{q.questionNumber} ({q.type}) — {q.marks} marks</strong></p>
+              <p><strong>{q.questionNumber}. ({q.type}) — {q.marks} marks</strong></p>
 
               {q.type === 'MCQ' && Array.isArray(q.options) && (
                 <div className="mcq-answer">
@@ -188,14 +188,32 @@ const TestAttempt = () => {
 
               {q.type === 'Other' && (
                 <div className="other-answer">
-                  <input
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => handleChange(q.id, e.target.files[0])}
-                  />
-                  {answers[q.id] && typeof answers[q.id] === 'object' && (
-                    <p className="selected-file-name">{answers[q.id].name}</p>
-                  )}
+                  <>
+                    <input
+                      id={`file-upload-${q.id}`}
+                      type="file"
+                      accept=".pdf,.doc,.docx"
+                      style={{ display: 'none' }}
+                      onChange={(e) => handleChange(q.id, e.target.files[0])}
+                    />
+                    <label
+                      htmlFor={`file-upload-${q.id}`}
+                      className="submit-button"
+                      style={{ display: 'inline-block', marginBottom: '8px', cursor: 'pointer' }}
+                    >
+                      Choose File
+                    </label>
+                    {answers[q.id] && typeof answers[q.id] === 'object' && (
+                      <a
+                        className="selected-filename"
+                        href={URL.createObjectURL(answers[q.id])}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {answers[q.id].name}
+                      </a>
+                    )}
+                  </>
                 </div>
               )}
             </div>
