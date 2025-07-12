@@ -27,6 +27,36 @@ const Dashboard = () => {
   const [mindmapExportFormats, setMindmapExportFormats] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isMindmap: false, isTestpaper: false });
   const [view, setView] = useState('summaries');
+  // Tag modal state
+  const [tagModal, setTagModal] = useState({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false });
+  const [newTag, setNewTag] = useState('');
+  // Tag autocomplete
+  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+  // All unique tags from summaries, mindmaps, testpapers
+  const allTags = useMemo(() => {
+    const tagsSet = new Set();
+    [...summaries, ...mindmaps, ...testpapers].forEach(item => {
+      (item.tags || []).forEach(tag => tagsSet.add(tag));
+    });
+    return Array.from(tagsSet);
+  }, [summaries, mindmaps, testpapers]);
+
+  // Handler for tag input change (autocomplete)
+  const onTagInputChange = (e) => {
+    const val = e.target.value;
+    setNewTag(val);
+
+    if (!val.trim()) {
+      setFilteredSuggestions([]);
+      return;
+    }
+
+    const filtered = allTags.filter(tag =>
+      tag.toLowerCase().includes(val.toLowerCase()) &&
+      tag.toLowerCase() !== val.toLowerCase()
+    );
+    setFilteredSuggestions(filtered);
+  };
   const navigate = useNavigate();
 
   // States for ExportMindmapModel
@@ -39,6 +69,51 @@ const Dashboard = () => {
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
   const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
   const mindmapRefs = useRef({});
+ 
+  // Tag modal open function
+  const openTagModal = (id, tags = [], isMindmap = false, isTestpaper = false) => {
+    setNewTag('');
+    setTagModal({ visible: true, id, tags, isMindmap, isTestpaper });
+  };
+
+  // Save new tag function
+  const handleSaveTag = async () => {
+    if (!newTag.trim()) return;
+    try {
+      const { id, tags, isMindmap, isTestpaper } = tagModal;
+      const docPath = isMindmap ? 'mindmaps' : isTestpaper ? 'testpapers' : 'summaries';
+      const docRef = doc(db, 'users', user.uid, docPath, id);
+
+      // Add new tag only if not duplicate
+      const updatedTags = tags.includes(newTag.trim()) ? tags : [...tags, newTag.trim()];
+
+      await updateDoc(docRef, { tags: updatedTags });
+
+      setTagModal({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false });
+    } catch (error) {
+      console.error('Error saving tag:', error);
+    }
+  };
+
+  // Remove tag function
+  const handleRemoveTag = async (id, tagToRemove, isMindmap = false, isTestpaper = false) => {
+    try {
+      const docPath = isMindmap ? 'mindmaps' : isTestpaper ? 'testpapers' : 'summaries';
+      const docRef = doc(db, 'users', user.uid, docPath, id);
+
+      // Find the document's tags
+      let currentTags = [];
+      if (isMindmap) currentTags = mindmaps.find(m => m.id === id)?.tags || [];
+      else if (isTestpaper) currentTags = testpapers.find(t => t.id === id)?.tags || [];
+      else currentTags = summaries.find(s => s.id === id)?.tags || [];
+
+      const updatedTags = currentTags.filter(t => t !== tagToRemove);
+
+      await updateDoc(docRef, { tags: updatedTags });
+    } catch (error) {
+      console.error('Error removing tag:', error);
+    }
+  };
 
   useEffect(() => {
     const unsubscribeAuth = getAuth().onAuthStateChanged((user) => {
@@ -232,6 +307,15 @@ const Dashboard = () => {
                   >
                     Rename
                   </button>
+                  <button
+                    className="delete-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openTagModal(summary.id, summary.tags || [], false, false);
+                    }}
+                  >
+                    Tag
+                  </button>
                 </div>
                 <p><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
                 <div className="summary-actions">
@@ -269,6 +353,22 @@ const Dashboard = () => {
                 >
                   Delete
                 </button>
+                <div className="tags-container">
+                  {(summary.tags || []).map((tag, idx) => (
+                    <span key={idx} className="tag-chip">
+                      {tag}
+                      <button
+                        className="tag-remove-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveTag(summary.id, tag);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
             ))
           )}
@@ -297,6 +397,15 @@ const Dashboard = () => {
                     }}
                   >
                     Rename
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openTagModal(mindmap.id, mindmap.tags || [], true, false);
+                    }}
+                  >
+                    Tag
                   </button>
                 </div>
                 <p><small>{mindmap.timestamp?.toDate().toLocaleString()}</small></p>
@@ -334,6 +443,22 @@ const Dashboard = () => {
                 >
                   Delete
                 </button>
+                <div className="tags-container">
+                  {(mindmap.tags || []).map((tag, idx) => (
+                    <span key={idx} className="tag-chip">
+                      {tag}
+                      <button
+                        className="tag-remove-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveTag(mindmap.id, tag, true, false);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
             ))
           )}
@@ -348,16 +473,27 @@ const Dashboard = () => {
           ) : (
             testpapers.map((paper) => (
               <div key={paper.id} className="mindmap-card">
-                <p><strong>Title:</strong> {paper.paperTitle}</p>
-                <button
-                  className="rename-trigger-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setRenameModal({ visible: true, id: paper.id, title: paper.paperTitle || '', isTestpaper: true, isMindmap: false });
-                  }}
-                >
-                  Rename
-                </button>
+                <div className="summary-header">
+                  <p><strong>Title:</strong> {paper.paperTitle}</p>
+                  <button
+                    className="rename-trigger-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setRenameModal({ visible: true, id: paper.id, title: paper.paperTitle || '', isTestpaper: true, isMindmap: false });
+                    }}
+                  >
+                    Rename
+                  </button>
+                  <button
+                    className="delete-button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openTagModal(paper.id, paper.tags || [], false, true);
+                    }}
+                  >
+                    Tag
+                  </button>
+                </div>
                 <p><strong>File:</strong> {paper.fileName}</p>
                 <p><strong>Pages:</strong> {paper.numPages}</p>
                 <p><small>{new Date(paper.uploadedAt).toLocaleString()}</small></p>
@@ -399,9 +535,82 @@ const Dashboard = () => {
                 >
                   Delete
                 </button>
+                <div className="tags-container">
+                  {(paper.tags || []).map((tag, idx) => (
+                    <span key={idx} className="tag-chip">
+                      {tag}
+                      <button
+                        className="tag-remove-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveTag(paper.id, tag, false, true);
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
             ))
           )}
+        </div>
+      )}
+      {/* Tag Modal */}
+      {tagModal.visible && (
+        <div className="rename-modal-overlay">
+          <div className="rename-modal">
+            <button
+              className="close-modal-button"
+              onClick={() => setTagModal({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false })}
+            >
+              ×
+            </button>
+            <h3>Add Tag</h3>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={newTag}
+                onChange={onTagInputChange}
+                placeholder="Enter tag keyword"
+                autoFocus
+                autoComplete="off"
+              />
+              {filteredSuggestions.length > 0 && (
+                <div className="autocomplete-container">
+                  <ul className="autocomplete-list">
+                    {filteredSuggestions.map((tag, idx) => (
+                      <li
+                        key={idx}
+                        className="autocomplete-item"
+                        onClick={() => {
+                          setNewTag(tag);
+                          setFilteredSuggestions([]);
+                        }}
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div className="rename-modal-buttons">
+              <button
+                onClick={handleSaveTag}
+                disabled={!newTag.trim()}
+                className="modal-cancel-button"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => setTagModal({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false })}
+                className="modal-cancel-button"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

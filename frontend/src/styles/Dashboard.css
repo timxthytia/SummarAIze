@@ -340,3 +340,72 @@
   background-color: #5f27cd;
   color: white;
 }
+
+
+.tags-container {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.tag-chip {
+  background-color: white;
+  color: #5f27cd; /* Purple color */
+  border-radius: 12px;
+  padding: 0.25rem 0.6rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
+}
+
+.tag-remove-btn {
+  background: none;
+  border: none;
+  color: #5f27cd; 
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 0.4rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+
+.tag-remove-btn:hover {
+  color: #833471; 
+}
+/* Autocomplete dropdown for tag modal input */
+.autocomplete-container {
+  position: absolute;
+  top: 36px;
+  left: 0;
+  right: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  z-index: 2000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.autocomplete-list {
+  list-style: none;
+  padding: 0.2rem 0;
+  margin: 0;
+}
+
+.autocomplete-item {
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  color: #5f27cd;
+}
+
+.autocomplete-item:hover {
+  background-color: #5f27cd;
+  color: white;
+}
