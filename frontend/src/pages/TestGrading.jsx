@@ -9,6 +9,12 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
+const formatTimeTaken = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+};
+
 const TestGrading = () => {
   const { uid, id, attemptId } = useParams();
   const location = useLocation();
@@ -182,7 +188,7 @@ const TestGrading = () => {
             <p>
               You scored {totalScored} out of {totalMarks}.
               <br />
-              Time taken: {Math.floor(timeTaken / 60)} minutes and {timeTaken % 60} seconds.
+              Time taken: {formatTimeTaken(timeTaken)}
               <br />
               Are you sure you want to save this attempt?
             </p>

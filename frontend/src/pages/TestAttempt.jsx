@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, collection, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -7,9 +7,13 @@ import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestAttempt.css';
 import { Document, Page, pdfjs } from 'react-pdf';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
-//import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-//import 'react-pdf/dist/esm/Page/TextLayer.css';
 pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+
+const formatTimeTaken = (seconds) => {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}m ${secs < 10 ? '0' : ''}${secs}s`;
+};
 
 const TestAttempt = () => {
   const { uid, id } = useParams();
@@ -20,9 +24,20 @@ const TestAttempt = () => {
   const [testpaper, setTestpaper] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [answers, setAnswers] = useState({});
+  const answersRef = useRef({});
   const [timeLeft, setTimeLeft] = useState(duration * 60);
   const [timerActive, setTimerActive] = useState(true);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [submitTimeTaken, setSubmitTimeTaken] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+  const [showTimeExpiredPopup, setShowTimeExpiredPopup] = useState(false);
+
+  const intervalRef = useRef(null);
+  const startTimeRef = useRef(null);
+
+  useEffect(() => {
+    startTimeRef.current = Date.now();
+  }, []);
 
   useEffect(() => {
     const fetchTestpaper = async () => {
@@ -36,7 +51,6 @@ const TestAttempt = () => {
           navigate('/dashboard');
         }
       } catch (error) {
-        console.error('Error loading test paper:', error);
         alert('Failed to load test.');
         navigate('/dashboard');
       }
@@ -48,26 +62,36 @@ const TestAttempt = () => {
   // Timer effect
   useEffect(() => {
     if (!timerActive) return;
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          clearInterval(interval);
-          handleSubmit();
+          clearInterval(intervalRef.current);
+          setTimerActive(false);
+          setShowTimeExpiredPopup(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(intervalRef.current);
+    };
   }, [timerActive]);
 
   // Change state of "answers" prop whenever user inputs answer
   const handleChange = (questionId, value) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+    setAnswers((prev) => {
+      const newAnswers = { ...prev, [questionId]: value };
+      answersRef.current = newAnswers;
+      return newAnswers;
+    });
   };
 
   // Save submission details to firestore
-  const handleSubmit = async () => {
+  const submitAttempt = async () => {
+    if (submitting) return;
+    setSubmitting(true);
+    const timeTaken = (Date.now() - startTimeRef.current) / 1000;
     try {
       setTimerActive(false);
 
@@ -78,7 +102,7 @@ const TestAttempt = () => {
       const processedAnswers = {};
 
       for (const q of testpaper?.questionsByPage?.flatMap(p => p.questions) || []) {
-        const answer = answers[q.id];
+        const answer = answersRef.current[q.id];
         if (answer === undefined) continue;
 
         if (q.type === 'Other' && answer instanceof File) {
@@ -96,25 +120,30 @@ const TestAttempt = () => {
 
       const attemptData = {
         answers: processedAnswers,
-        timeTaken: duration * 60 - timeLeft,
+        timeTaken,
         graded: false,
         timestamp: serverTimestamp(),
       };
       await setDoc(newAttempt, attemptData);
-
-      // Redirect to TestGrading.jsx
       navigate(`/testattempt/${uid}/${id}/${attemptId}/grade`, {
         state: {
           answers: processedAnswers,
-          timeTaken: duration * 60 - timeLeft,
+          timeTaken,
           attemptId,
           testpaper,
         },
       });
+      setSubmitting(false);
     } catch (err) {
-      console.error('Error submitting attempt:', err);
       alert('Failed to submit test.');
+      setSubmitting(false);
     }
+  };
+
+  const handleSubmitClick = () => {
+    const timeTaken = (Date.now() - startTimeRef.current) / 1000;
+    setSubmitTimeTaken(timeTaken);
+    setShowSubmitConfirm(true);
   };
 
   const pageQuestions = testpaper?.questionsByPage?.find(p => p.page === currentPage)?.questions || [];
@@ -220,7 +249,7 @@ const TestAttempt = () => {
           ))}
         </div>
         <div className="submit-button-wrapper">
-          <button className="submit-button" onClick={() => setShowSubmitConfirm(true)}>
+          <button className="submit-button" onClick={handleSubmitClick} disabled={submitting}>
             Submit
           </button>
         </div>
@@ -229,16 +258,54 @@ const TestAttempt = () => {
         <div className="delete-modal-overlay">
           <div className="delete-modal">
             <p>
-              Are you sure you want to submit this test?
-              <br />
-              Your answers will be saved and cannot be changed.
+              Are you sure you want to submit this test?<br />
+              Your answers will be saved and cannot be changed.<br />
+              <strong>Time taken: {formatTimeTaken(submitTimeTaken)}</strong>
             </p>
             <div className="delete-modal-buttons">
-              <button className="delete-confirm-button" onClick={handleSubmit}>
-                Submit
+              <button
+                className="delete-confirm-button"
+                onClick={async () => {
+                  setShowSubmitConfirm(false);
+                  await submitAttempt();
+                }}
+                disabled={submitting}
+              >
+                {submitting ? 'Submitting...' : 'Submit'}
               </button>
-              <button className="delete-cancel-button" onClick={() => setShowSubmitConfirm(false)}>
+              <button
+                className="delete-cancel-button"
+                onClick={() => setShowSubmitConfirm(false)}
+                disabled={submitting}
+              >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showTimeExpiredPopup && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal">
+            <p>
+              Time is up! Would you like to submit your attempt or continue?
+            </p>
+            <div className="delete-modal-buttons">
+              <button className="delete-confirm-button" onClick={() => {
+                setShowTimeExpiredPopup(false);
+                setShowSubmitConfirm(true);
+                const timeTaken = (Date.now() - startTimeRef.current) / 1000;
+                setSubmitTimeTaken(timeTaken);
+              }} disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Submit'}
+              </button>
+              <button className="delete-cancel-button" onClick={() => {
+                setShowTimeExpiredPopup(false);
+                // Keep timer stopped at zero so user can continue answering
+                setTimerActive(false);
+                setTimeLeft(0);
+              }}>
+                Continue
               </button>
             </div>
           </div>

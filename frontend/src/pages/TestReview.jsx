@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestReview.css';
@@ -12,6 +12,7 @@ const TestReview = () => {
   const [loading, setLoading] = useState(true);
   const [totalMarks, setTotalMarks] = useState(0);
   const [questions, setQuestions] = useState([]);
+  const [deleteConfirm, setDeleteConfirm] = React.useState({ visible: false, attemptId: null });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,7 +32,18 @@ const TestReview = () => {
     };
 
     fetchAttempts();
-  }, [uid, id]);
+  }, [uid, id, deleteConfirm.visible]);
+  // Handle delete attempt
+  const handleDeleteAttempt = async () => {
+    try {
+      const docRef = doc(db, 'users', uid, 'testpapers', id, 'attempts', deleteConfirm.attemptId);
+      await deleteDoc(docRef);
+      setDeleteConfirm({ visible: false, attemptId: null });
+    } catch (error) {
+      console.error('Error deleting attempt:', error);
+      setDeleteConfirm({ visible: false, attemptId: null });
+    }
+  };
 
   useEffect(() => {
     // Fetch full testpaper document and calculate total marks from questionsByPage
@@ -144,6 +156,15 @@ const TestReview = () => {
                           <p>{attempt.timestamp ? `Attempted at: ${attempt.timestamp.toDate().toLocaleString()}` : 'Unknown time'}</p>
                           <p>{attempt.graded ? `Score: ${attempt.totalScored} / ${totalMarks}` : 'Score: Ungraded'}</p>
                           <p>Time Taken: {attempt.timeTaken ? `${Math.round(attempt.timeTaken / 60)} mins` : '-'}</p>
+                          <button
+                            className="delete-button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteConfirm({ visible: true, attemptId: attempt.id });
+                            }}
+                          >
+                            Delete
+                          </button>
                       </div>
                       )
                     })
@@ -199,6 +220,18 @@ const TestReview = () => {
               </div>
             ))}
             </div>
+        )}
+        {/* Delete confirmation modal */}
+        {deleteConfirm.visible && (
+          <div className="delete-modal-overlay">
+            <div className="delete-modal">
+              <p>Delete attempt?</p>
+              <div className="delete-modal-buttons">
+                <button className="modal-cancel-button" onClick={() => setDeleteConfirm({ visible: false, attemptId: null })}>Cancel</button>
+                <button className="modal-cancel-button" onClick={handleDeleteAttempt}>Delete</button>
+              </div>
+            </div>
+          </div>
         )}
         </main>
     </div>
