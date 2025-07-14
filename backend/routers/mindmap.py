@@ -11,6 +11,9 @@ import traceback
 import tempfile
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
+import os
+print("PYTESSERACT CMD:", pytesseract.pytesseract.tesseract_cmd)
+print("PATH:", os.environ.get("PATH"))
 from PIL import Image
 import io
 
