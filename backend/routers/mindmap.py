@@ -10,6 +10,7 @@ import re
 import traceback
 import tempfile
 import pytesseract
+pytesseract.pytesseract.tesseract_cmd = "/usr/bin/tesseract"
 from PIL import Image
 import io
 
