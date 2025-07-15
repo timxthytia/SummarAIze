@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactFlow from 'reactflow';
 import jsPDF from 'jspdf';
+import { toPng } from 'html-to-image';
 import CustomEdge from './CustomEdge';
 import '../styles/ExportMindmapModel.css'
 
@@ -29,7 +30,6 @@ const ExportMindmapModal = ({
     setExporting(true);
     console.log('[Export] Export started');
     try {
-      const { toPng } = await import('html-to-image');
       const container = document.getElementById('export-mindmap-canvas');
       console.log('[Export] format:', format);
       console.log('[Export] container found:', !!container);
