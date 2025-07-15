@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-//import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "../styles/TextLayer.css";
+import "../styles/AnnotationLayer.css";
 import { auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import NavbarLoggedin from '../components/NavbarLoggedin';
@@ -11,7 +12,7 @@ import { db } from '../services/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
 const WORDS_PER_PAGE = 500;
 
@@ -385,7 +386,7 @@ const TestModeUpload = () => {
               loading="Loading PDF..."
               error="Failed to load PDF."
             >
-              <Page pageNumber={currentPage} />
+              <Page pageNumber={currentPage} width={800} />
             </Document>
             <div className="pdf-nav">
               <button onClick={goToPreviousPage} disabled={currentPage <= 1} aria-label="Previous Page">

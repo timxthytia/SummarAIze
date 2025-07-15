@@ -19,6 +19,7 @@
     "html-to-image": "^1.11.13",
     "html2pdf.js": "^0.10.3",
     "jspdf": "^3.0.1",
+    "pdfjs-dist": "^5.3.31",
     "process": "^0.11.10",
     "quill": "^2.0.3",
     "react": "^18.3.1",

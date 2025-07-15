@@ -8,7 +8,7 @@ import '../styles/TestPaperDetail.css';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 const TestPaperDetail = () => {
   const { uid, id } = useParams();
   const navigate = useNavigate();
