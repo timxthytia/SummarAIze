@@ -27,12 +27,16 @@ const ExportMindmapModal = ({
 
   const handleExport = async () => {
     setExporting(true);
+    console.log('[Export] Export started');
     try {
       const { toPng } = await import('html-to-image');
       const container = document.getElementById('export-mindmap-canvas');
+      console.log('[Export] format:', format);
+      console.log('[Export] container found:', !!container);
       if (!container) throw new Error('Export container not found');
       if (format === 'png') {
         const dataUrl = await toPng(container, { pixelRatio: 3, backgroundColor: '#fff' });
+        console.log('[Export] PNG dataUrl:', dataUrl ? dataUrl.slice(0, 30) + '...' : 'null');
         const link = document.createElement('a');
         link.href = dataUrl;
         link.download = `${mindmap?.title || 'mindmap'}.png`;
@@ -41,6 +45,7 @@ const ExportMindmapModal = ({
         document.body.removeChild(link);
       } else if (format === 'pdf') {
         const dataUrl = await toPng(container, { pixelRatio: 3, backgroundColor: '#fff' });
+        console.log('[Export] PDF dataUrl:', dataUrl ? dataUrl.slice(0, 30) + '...' : 'null');
         const img = new window.Image();
         img.src = dataUrl;
         img.onload = () => {
@@ -52,11 +57,17 @@ const ExportMindmapModal = ({
           pdf.addImage(dataUrl, 'PNG', 0, 0, img.width, img.height);
           pdf.save(`${mindmap?.title || 'mindmap'}.pdf`);
         };
+        img.onerror = (e) => {
+          console.error('[Export] Image failed to load', e);
+          alert('Failed to export mindmap (image load error).');
+        }
       }
     } catch (err) {
+      console.error('[Export] Export mindmap error:', err);
       alert('Failed to export mindmap.');
     }
     setExporting(false);
+    console.log('[Export] Export finished');
   };
 
   if (!open) return null;
