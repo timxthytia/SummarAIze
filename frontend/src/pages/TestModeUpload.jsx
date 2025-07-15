@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+//import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import { auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import NavbarLoggedin from '../components/NavbarLoggedin';
@@ -11,7 +11,7 @@ import { db } from '../services/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 const WORDS_PER_PAGE = 500;
 
