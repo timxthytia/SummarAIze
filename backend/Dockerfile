@@ -9,6 +9,10 @@ RUN apt-get update && \
       libtesseract-dev \
       libleptonica-dev \
       pkg-config \
+      libpng-dev \
+      libjpeg-dev \
+      libtiff-dev \
+      zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app

@@ -73,6 +73,13 @@ async def summarize_file(file: UploadFile = File(...), type: str = Form(...)):
                 print("Tesseract CLI version (runtime):", version.decode())
             except Exception as ex:
                 print("Error running tesseract --version at runtime:", ex)
+            print("Verifying Tesseract subprocess execution...")
+            import subprocess
+            try:
+                output = subprocess.check_output([pytesseract.pytesseract.tesseract_cmd, "--version"])
+                print("Tesseract CLI version (subprocess):", output.decode())
+            except Exception as ex:
+                print("Error running tesseract CLI directly (subprocess):", ex)
             image_bytes = await file.read()
             image = Image.open(io.BytesIO(image_bytes))
             content = pytesseract.image_to_string(image)
