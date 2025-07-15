@@ -6,13 +6,12 @@ import { onAuthStateChanged } from 'firebase/auth';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestModeUpload.css';
 import axios from 'axios';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../services/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const WORDS_PER_PAGE = 500;
 

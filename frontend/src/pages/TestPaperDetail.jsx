@@ -6,11 +6,9 @@ import { db } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestPaperDetail.css';
 import { Document, Page, pdfjs } from 'react-pdf';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
-
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 const TestPaperDetail = () => {
   const { uid, id } = useParams();
   const navigate = useNavigate();

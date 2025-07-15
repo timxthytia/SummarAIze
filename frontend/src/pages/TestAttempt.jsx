@@ -6,8 +6,7 @@ import { db, storage } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestAttempt.css';
 import { Document, Page, pdfjs } from 'react-pdf';
-import workerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url';
-pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 const formatTimeTaken = (seconds) => {
   const mins = Math.floor(seconds / 60);
