@@ -22,7 +22,8 @@
   background-color: rgba(255, 255, 255, 0.05);
   padding: 2rem;
   border-radius: 16px;
-  max-width: 1000px;
+  width: 100%;
+  max-width: 900px;
   margin: 0 auto;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   border: 2px solid white;
@@ -46,10 +47,11 @@
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   width: 100%;
-  max-width: 800px;
   box-sizing: border-box;
   transition: transform 0.2s;
   backdrop-filter: blur(5px);
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .summary-card:hover,
@@ -448,9 +450,14 @@
 
 .main-content {
   margin-left: 300px;
+  margin-right: 260px;
+  min-width: 0;
+  max-width: 1200px;
+  width: 100%;
   padding: 1rem;
   box-sizing: border-box;
   color: white;
+  margin: 0 auto;
 }
 
 .testpaper-actions {
@@ -513,14 +520,6 @@
   gap: 0.8rem;
 }
 
-.main-content {
-  margin-left: 300px;
-  margin-right: 260px; /* add space for right sidebar */
-  padding: 1rem;
-  box-sizing: border-box;
-  color: white;
-}
-
 .topright-filter-bar {
   position: fixed;
   top: 5.2rem;
@@ -534,7 +533,6 @@
   align-items: flex-end;
   min-height: 80px;
 }
-
 
 .topright-filter-bar .tag-filter-bar {
   width: 100%;
@@ -553,4 +551,12 @@
   flex-wrap: wrap;
   gap: 0.4rem;
   padding-top: 5px;
+}
+
+@media (max-width: 1400px) {
+  .main-content {
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 100vw;
+  }
 }

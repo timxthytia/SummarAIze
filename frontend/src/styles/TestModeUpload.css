@@ -1,9 +1,15 @@
+@keyframes animatedGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .upload-container {
   width: 100%;
   min-height: 100vh;
   padding: 6rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(-45deg, #5f27cd, #341f97, #833471);
+  background: linear-gradient(-45deg, #0b132b, #1b233a, #2e3b50, #1b233a);
   background-size: 300% 300%;
   animation: animatedGradient 15s ease-in-out infinite;
   color: white;
@@ -11,15 +17,15 @@
 }
 
 .upload-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(30, 40, 60, 0.1);
   padding: 3rem;
   border-radius: 20px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
   color: white;
-  border: 2px solid white !important;
+  border: 2px solid #ffffff;
   backdrop-filter: blur(10px);
 }
 
@@ -38,19 +44,20 @@
 .custom-file-upload {
   display: inline-block;
   padding: 0.6rem 1.2rem;
-  border: 2px solid white;
+  border: 2px solid #ffffff;
   border-radius: 12px;
   background-color: transparent;
-  color: white;
+  color: #ffffff;
   cursor: pointer;
   font-weight: bold;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: background 0.3s, color 0.3s, border 0.3s;
   text-align: center;
 }
 
 .custom-file-upload:hover {
-  background-color: white;
-  color: #5f27cd;
+  background-color: #ffffff;
+  color: #0b132b;
+  border: 2px solid #ffffff;
 }
 
 input[type="file"] {
@@ -59,8 +66,8 @@ input[type="file"] {
 
 .upload-button {
   background-color: transparent;
-  color: white;
-  border: 2px solid white;
+  color: #ffffff;
+  border: 2px solid #ffffff;
   padding: 0.8rem 1.6rem;
   border-radius: 12px;
   cursor: pointer;
@@ -68,7 +75,13 @@ input[type="file"] {
   font-weight: bold;
   width: 100%;
   margin-top: 1rem;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s, color 0.3s, border 0.3s;
+}
+
+.upload-button:hover {
+  background-color: #ffffff;
+  color: #0b132b;
+  border: 2px solid #ffffff;
 }
 
 .error-message {
@@ -91,20 +104,20 @@ input[type="file"] {
   font-size: 1rem;
   border-radius: 8px;
   border: none;
-  box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.06);
+  background-color: #1f2c48;
+  color: #ffffff;
 }
 
 .title-input-section input::placeholder {
-  color: white;
-  opacity: 1;
+  color: #eee;
 }
 
 .title-input-section label {
   font-weight: bold;
   margin-bottom: 0.5rem;
   display: block;
+  color: #f3f3f3;
 }
 
 .question-panel {
@@ -126,42 +139,17 @@ input[type="file"] {
   gap: 0.5rem;
   padding: 0.75rem;
   border-radius: 8px;
-  background: rgba(255,255,255,0.07);
+  background: #1f2c48;
   margin-bottom: 0.7rem;
+  border: 1.5px solid #ffffff;
 }
 
-.question-type {
-  min-width: 120px;
-  flex: 1;
-  text-align: left;
-}
-
-.question-marks {
-  min-width: 90px;
-  flex: 1;
-  text-align: left;
-}
-
-.question-answer-label {
-  min-width: 120px;
-  flex: 1;
-  text-align: left;
-  font-weight: bold;
-}
-
-.question-answer-value {
-  min-width: 90px;
-  flex: 1;
-  text-align: left;
-}
-
+.question-type,
+.question-marks,
+.question-answer-label,
+.question-answer-value,
 .open-ended-answer {
-  display: inline-block;
-  max-width: 80px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
+  color: #ffffff;
 }
 
 .edit-question-button,
@@ -178,88 +166,98 @@ input[type="file"] {
 
 .edit-question-button {
   background: transparent;
-  color: #43a047;
-  border: 2px solid #43a047;
+  color: #23be8a;
+  border: 2px solid #23be8a;
 }
 
 .delete-question-button {
   background: transparent;
-  color: #e53935;
-  border: 2px solid #e53935;
+  color: #ff6b6b;
+  border: 2px solid #ff6b6b;
 }
 
 .edit-question-button:hover {
-  background: #43a047;
+  background: #23be8a;
   color: white;
 }
 
 .delete-question-button:hover {
-  background: #e53935;
+  background: #ff6b6b;
   color: white;
 }
 
 .add-question-button {
   margin-top: 1rem;
-  background-color: white;
-  color: #5f27cd;
-  border: none;
+  background-color: transparent;
+  color: #ffffff;
+  border: 2px solid #ffffff;
   border-radius: 10px;
   padding: 0.6rem 1rem;
   font-weight: bold;
   cursor: pointer;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+
+.add-question-button:hover {
+  background: #ffffff;
+  color: #0b132b;
+  border: 2px solid #ffffff;
 }
 
 .question-form {
   margin-top: 1rem;
   padding: 1rem;
-  border: 1px solid #ccc;
+  border: 1px solid #ffffff;
   border-radius: 8px;
-  background-color: rgba(30, 30, 30, 0.9);
+  background-color: #1f2c48;
   color: white;
 }
 
 .question-form h4 {
+  color: #ffffff;
   margin-bottom: 1rem;
 }
 
 .question-form label {
-  display: block;
-  margin-bottom: 0.5rem;
   font-weight: bold;
-  color: white;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  display: block;
 }
 
 .question-form input[type="text"],
 .question-form input[type="number"],
 .question-form select {
+  background-color: #1c2a4a;
+  color: white;
   padding: 0.5rem;
   border-radius: 6px;
   border: none;
   width: 100%;
   margin-top: 0.3rem;
   margin-bottom: 1rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
 }
 
 .question-form select option {
-  background-color: #1e1e1e;
+  background-color: #2e3b50;
   color: white;
 }
 
-.question-form input[type="checkbox"] {
-  margin-right: 0.5rem;
+.question-form button {
+  background-color: transparent;
+  color: #ffffff;
+  font-weight: bold;
+  border: 2px solid #ffffff;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  margin-right: 0.75rem;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
 }
 
-.question-form button {
-  margin-right: 0.75rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  background-color: white;
-  color: #5f27cd;
+.question-form button:hover:not(:disabled) {
+  background-color: #ffffff;
+  color: #0b132b;
 }
 
 .question-form button:disabled {
@@ -273,31 +271,37 @@ input[type="file"] {
 }
 
 .submit-testpaper-button {
-  background-color: white;
-  color: #5f27cd;
+  background-color: transparent;
+  color: #ffffff;
   font-weight: bold;
-  border: none;
+  border: 2px solid #ffffff;
   padding: 0.8rem 1.6rem;
   font-size: 1.1rem;
   border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
 }
 
 .submit-testpaper-button:hover {
-  background-color: #5f27cd;
-  color: white;
+  background-color: #ffffff;
+  color: #0b132b;
+  border-color: #ffffff;
 }
 
 .pdf-nav button {
   background-color: transparent;
-  color: white;
+  color: #ffffff;
   border: none;
   padding: 0.5rem 1rem;
   font-size: 1.5rem;
   font-weight: bold;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s;
+}
+
+.pdf-nav button:hover:not(:disabled) {
+  background-color: #ffffff;
+  color: #0b132b;
 }
 
 .pdf-nav button:disabled {
@@ -305,46 +309,20 @@ input[type="file"] {
   cursor: not-allowed;
 }
 
-.pdf-nav button:hover:not(:disabled) {
-  background-color: #5f27cd;
-  color: white;
-}
-
-.selected-filename {
-  color: #1976d2 !important;
-  text-decoration: none !important;
+.selected-filename,
+.question-answer-link {
+  color: #ffffff;
+  text-decoration: none;
   cursor: pointer;
-  vertical-align: middle;
   font-size: 0.97em;
   transition: text-decoration 0.2s;
 }
 
 .selected-filename:hover,
-.selected-filename:focus {
-  text-decoration: underline !important;
-}
-
-.question-answer-link {
-  color: #1976d2 !important;
-  text-decoration: none !important;
-  cursor: pointer;
-  font-size: 0.97em;
-  transition: text-decoration 0.2s;
-}
-
+.selected-filename:focus,
 .question-answer-link:hover,
 .question-answer-link:focus {
-  text-decoration: underline !important;
-}
-
-.question-list-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  border-radius: 8px;
-  background: rgba(255,255,255,0.07);
-  margin-bottom: 0.7rem;
+  text-decoration: underline;
 }
 
 .icon-edit-button,
@@ -361,14 +339,14 @@ input[type="file"] {
 }
 
 .icon-edit-button:hover svg {
-  background: #43a047;
+  background: #23be8a;
   border-radius: 8px;
-  box-shadow: 0 0 5px #43a04744;
+  box-shadow: 0 0 5px #23be8a44;
   transform: scale(1.17);
 }
 
 .icon-delete-button:hover svg {
-  background: #e53935;
+  background: #ff6b6b;
   border-radius: 8px;
   box-shadow: 0 0 5px #e5393544;
   transform: scale(1.17);
@@ -376,6 +354,8 @@ input[type="file"] {
 
 .icon-edit-button svg,
 .icon-delete-button svg {
+  width: 28px;
+  height: 28px;
   display: block;
   transition: background 0.2s, transform 0.2s;
 }
@@ -386,11 +366,11 @@ input[type="file"] {
 
 .icon-edit-button,
 .icon-delete-button {
-  min-width: 40px !important;
-  min-height: 40px !important;
-  width: 40px !important;
-  height: 40px !important;
-  padding: 0 !important;
+  min-width: 40px;
+  min-height: 40px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -398,17 +378,10 @@ input[type="file"] {
   border-width: 2px;
 }
 
-.icon-edit-button svg,
-.icon-delete-button svg {
-  width: 28px !important;
-  height: 28px !important;
-  display: block;
-}
-
 .icon-edit-button {
-  border: 2px solid #43a047 !important;
+  border: 2px solid #23be8a;
 }
 
 .icon-delete-button {
-  border: 2px solid #e53935 !important;
+  border: 2px solid #ff6b6b;
 }
