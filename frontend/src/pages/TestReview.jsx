@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { collection, getDocs, doc, getDoc, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestReview.css';
@@ -16,7 +16,6 @@ const TestReview = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Get all previous attempts for paper
     const fetchAttempts = async () => {
       try {
         const attemptsRef = collection(db, 'users', uid, 'testpapers', id, 'attempts');
@@ -25,28 +24,24 @@ const TestReview = () => {
         list.sort((a, b) => b.timestamp - a.timestamp);
         setAttempts(list);
       } catch (err) {
-        console.error('Failed to fetch attempts:', err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchAttempts();
   }, [uid, id, deleteConfirm.visible]);
-  // Handle delete attempt
+
   const handleDeleteAttempt = async () => {
     try {
       const docRef = doc(db, 'users', uid, 'testpapers', id, 'attempts', deleteConfirm.attemptId);
       await deleteDoc(docRef);
       setDeleteConfirm({ visible: false, attemptId: null });
     } catch (error) {
-      console.error('Error deleting attempt:', error);
       setDeleteConfirm({ visible: false, attemptId: null });
     }
   };
 
   useEffect(() => {
-    // Fetch full testpaper document and calculate total marks from questionsByPage
     const fetchTestpaper = async () => {
       try {
         const testpaperRef = doc(db, 'users', uid, 'testpapers', id);
@@ -54,7 +49,6 @@ const TestReview = () => {
         if (testpaperSnap.exists()) {
           const data = testpaperSnap.data();
           const questionsByPage = data.questionsByPage || [];
-          // Flatten questionsByPage to a single array of questions
           const allQuestions = questionsByPage.flatMap(p => p.questions || []);
           const total = allQuestions.reduce((sum, question) => sum + Number(question.marks || 0), 0);
           setTotalMarks(total);
@@ -64,18 +58,14 @@ const TestReview = () => {
           setQuestions([]);
         }
       } catch (err) {
-        console.error('Failed to fetch testpaper document:', err);
       }
     };
-
     fetchTestpaper();
   }, [uid, id]);
 
-  // Calculate stats for Breakdown display
   const calculateStats = () => {
     const graded = attempts.filter(attempt => attempt.graded);
     if (graded.length === 0) return { avg: '-', high: '-', low: '-' };
-
     const scores = graded.map(a => a.totalScored || 0);
     const avg = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2);
     const high = Math.max(...scores);
@@ -85,24 +75,17 @@ const TestReview = () => {
 
   const { avg, high, low } = calculateStats();
 
-  // Calculate per-question stats using question.id as key 
   const getPerQuestionStats = () => {
-    // Use all attempts, not just graded
     if (attempts.length === 0) return [];
-
     return questions.map((question, index) => {
       const scores = attempts
         .map(attempt => {
-          // attempt.scores is expected to be an object
           const answerObj = attempt.scores?.[question.id];
-          // Allow ungraded scores
           if (typeof answerObj === 'number') return answerObj;
           if (typeof answerObj === 'object' && answerObj !== null && typeof answerObj.score === 'number') return answerObj.score;
           if (typeof answerObj === 'string' && !isNaN(Number(answerObj))) return Number(answerObj);
-          // If not graded, return undefined
           return undefined;
         });
-      // Only use numeric scores for stats
       const numericScores = scores.filter(score => typeof score === 'number' && !isNaN(score));
       const avgScore = numericScores.length > 0 ? (numericScores.reduce((a, b) => a + b, 0) / numericScores.length).toFixed(2) : '-';
       const highScore = numericScores.length > 0 ? Math.max(...numericScores) : '-';
@@ -123,55 +106,80 @@ const TestReview = () => {
     <div className="test-review-container">
       <NavbarLoggedin />
       <main>
-        <div className="review-toggle-buttons">
-            <button className={view === 'attempts' ? 'active' : ''} onClick={() => setView('attempts')}>Attempts</button>
-            <button className={view === 'stats' ? 'active' : ''} onClick={() => setView('stats')}>Paper Statistics</button>
+        <div className="test-review-toggle-buttons">
+          <button
+            className={`test-review-toggle-btn ${view === 'attempts' ? 'active' : ''}`}
+            onClick={() => setView('attempts')}
+          >
+            <span className="icon-badge">
+              <svg className="toggle-icon" viewBox="0 0 28 28" fill="none">
+                <rect x="5" y="7" width="18" height="14" rx="3" stroke="#5f27cd" strokeWidth="2"/>
+                <rect x="8.5" y="11" width="3" height="3" rx="1.5" fill="#5f27cd"/>
+                <rect x="16.5" y="11" width="3" height="3" rx="1.5" fill="#5f27cd"/>
+              </svg>
+              <span className="badge-count">{attempts.length}</span>
+            </span>
+            Attempts
+          </button>
+          <button
+            className={`test-review-toggle-btn ${view === 'stats' ? 'active' : ''}`}
+            onClick={() => setView('stats')}
+          >
+            <span className="icon-badge">
+              <svg className="toggle-icon" viewBox="0 0 28 28" fill="none">
+                <rect x="5" y="17" width="3.5" height="6" rx="1.75" fill="#5f27cd"/>
+                <rect x="12.25" y="10" width="3.5" height="13" rx="1.75" fill="#5f27cd"/>
+                <rect x="19.5" y="5" width="3.5" height="18" rx="1.75" fill="#5f27cd"/>
+              </svg>
+            </span>
+            Paper Statistics
+          </button>
         </div>
         {loading ? (
-            <p>Loading...</p>
+          <p>Loading...</p>
         ) : view === 'attempts' ? (
-            <div className="attempt-list">
-                {attempts.length === 0 ? (
-                    <p>No attempts yet.</p>
-                ) : (
-                    attempts.map((attempt, index) => {
-                      return (
-                      <div key={attempt.id} className="attempt-entry">
-                          <button
-                          className="attempt-link"
-                          onClick={() => {
-                            navigate(`/testattempt/${uid}/${id}/${attempt.id}/grade`, {
-                              state: {
-                                graded: attempt.graded,
-                                answers: attempt.answers,
-                                timeTaken: attempt.timeTaken,
-                                attemptId: attempt.id,
-                                timestamp: attempt.timestamp
-                              }
-                            });
-                          }}
-                          >
-                          Attempt {attempts.length - index}
-                          </button>
-                          <p>{attempt.timestamp ? `Attempted at: ${attempt.timestamp.toDate().toLocaleString()}` : 'Unknown time'}</p>
-                          <p>{attempt.graded ? `Score: ${attempt.totalScored} / ${totalMarks}` : 'Score: Ungraded'}</p>
-                          <p>Time Taken: {attempt.timeTaken ? `${Math.round(attempt.timeTaken / 60)} mins` : '-'}</p>
-                          <button
-                            className="delete-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteConfirm({ visible: true, attemptId: attempt.id });
-                            }}
-                          >
-                            Delete
-                          </button>
-                      </div>
-                      )
-                    })
-                )}
-            </div>
+          <div className="attempt-list">
+            {attempts.length === 0 ? (
+              <p>No attempts yet.</p>
+            ) : (
+              attempts.map((attempt, index) => {
+                return (
+                  <div key={attempt.id} className="attempt-entry">
+                    <button
+                      className="attempt-link"
+                      onClick={() => {
+                        navigate(`/testattempt/${uid}/${id}/${attempt.id}/grade`, {
+                          state: {
+                            graded: attempt.graded,
+                            answers: attempt.answers,
+                            timeTaken: attempt.timeTaken,
+                            attemptId: attempt.id,
+                            timestamp: attempt.timestamp
+                          }
+                        });
+                      }}
+                    >
+                      Attempt {attempts.length - index}
+                    </button>
+                    <p>{attempt.timestamp ? `Attempted at: ${attempt.timestamp.toDate().toLocaleString()}` : 'Unknown time'}</p>
+                    <p>{attempt.graded ? `Score: ${attempt.totalScored} / ${totalMarks}` : 'Score: Ungraded'}</p>
+                    <p>Time Taken: {attempt.timeTaken ? `${Math.round(attempt.timeTaken / 60)} mins` : '-'}</p>
+                    <button
+                      className="delete-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirm({ visible: true, attemptId: attempt.id });
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )
+              })
+            )}
+          </div>
         ) : (
-            <div className="paper-stats">
+          <div className="paper-stats">
             <h3>Overall Statistics</h3>
             <p><strong>Average Score:</strong> {avg}</p>
             <p><strong>Highest Score:</strong> {high}</p>
@@ -194,7 +202,6 @@ const TestReview = () => {
                   {attempts.map((attempt, index) => {
                     const score = attempt.scores?.[question.id];
                     const userAnswer = attempt.answers?.[question.id];
-                    // Render attempts in reverse order (latest attempt first)
                     const revIdx = attempts.length - 1 - index;
                     const displayAttemptNum = attempts.length - index;
                     return (
@@ -219,9 +226,8 @@ const TestReview = () => {
                 </div>
               </div>
             ))}
-            </div>
+          </div>
         )}
-        {/* Delete confirmation modal */}
         {deleteConfirm.visible && (
           <div className="delete-modal-overlay">
             <div className="delete-modal">
@@ -233,7 +239,7 @@ const TestReview = () => {
             </div>
           </div>
         )}
-        </main>
+      </main>
     </div>
   );
 };

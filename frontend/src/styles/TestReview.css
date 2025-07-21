@@ -4,26 +4,70 @@
   margin: auto;
 }
 
-.review-toggle-buttons {
+.test-review-toggle-buttons {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 18px;
+  margin-bottom: 28px;
+  justify-content: center;
+  margin-top: 12px;
 }
 
-.review-toggle-buttons button {
-  padding: 8px 16px;
-  background-color: #eee;
-  border: 1px solid #ccc;
+.test-review-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 30px 12px 22px;
+  background: #f6f3fd;
+  border: 2px solid #c7b9f4;
+  color: #5f27cd;
+  border-radius: 999px;
+  font-size: 1.14rem;
+  font-weight: 700;
   cursor: pointer;
-  border-radius: 6px;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
+  transition: background 0.22s, color 0.22s, border 0.22s, box-shadow 0.18s;
+  box-shadow: 0 2px 10px rgba(95, 39, 205, 0.04);
+  position: relative;
+  outline: none;
 }
 
-.review-toggle-buttons .active {
-  background-color: #5f27cd;
-  color: white;
-  border-color: #5f27cd;
+.test-review-toggle-btn .toggle-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.test-review-toggle-btn.active,
+.test-review-toggle-btn:hover {
+  background: #5f27cd;
+  color: #fff;
+  border: 2px solid #5f27cd;
+}
+
+.test-review-toggle-btn.active .toggle-icon,
+.test-review-toggle-btn:hover .toggle-icon {
+  filter: brightness(0) invert(1);
+}
+
+.test-review-toggle-btn .icon-badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.test-review-toggle-btn .badge-count {
+  position: absolute;
+  top: -7px;
+  right: -13px;
+  background: #ff6b6b;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 16px;
+  padding: 0 6px;
+  min-width: 18px;
+  text-align: center;
+  border: 2px solid #f6f3fd;
+  box-shadow: 0 2px 8px #5f27cd22;
 }
 
 .attempt-list {
@@ -53,7 +97,6 @@
   cursor: pointer;
   border: 2px solid rgba(255, 255, 255, 0.995);
 }
-
 
 .attempt-link {
   font-weight: bold;
@@ -137,4 +180,56 @@
 .selected-filename:hover {
   cursor: pointer;            
   text-decoration: underline #1976d2;  
+}
+
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+}
+
+.delete-modal {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.25);
+  color: #5f27cd;
+  font-weight: bold;
+  font-size: 1.2rem;
+  min-width: 250px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.delete-modal-buttons {
+  margin-top: 18px;
+  display: flex;
+  gap: 15px;
+}
+
+.modal-cancel-button {
+  background: #5f27cd;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.modal-cancel-button:hover {
+  background: #ff6b6b;
+  color: #fff;
 }

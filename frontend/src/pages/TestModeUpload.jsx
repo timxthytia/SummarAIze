@@ -14,7 +14,12 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
-const WORDS_PER_PAGE = 500;
+const truncate = (str) => {
+  if (Array.isArray(str)) {
+    str = str.join(', ');
+  }
+  return typeof str === 'string' && str.length > 5 ? str.slice(0, 5) + '...' : str;
+};
 
 const TestModeUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -25,7 +30,6 @@ const TestModeUpload = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [error, setError] = useState('');
-
   const [paperTitle, setPaperTitle] = useState('');
   const [questionsByPage, setQuestionsByPage] = useState({});
   const [showQuestionForm, setShowQuestionForm] = useState(false);
@@ -102,7 +106,6 @@ const TestModeUpload = () => {
         setCurrentPage(1);
         setNumPages(0);
       } catch (err) {
-        console.error(err);
         setError('Failed to convert DOCX to PDF.');
       }
     } else {
@@ -135,37 +138,24 @@ const TestModeUpload = () => {
     setShowQuestionForm(false);
   };
 
-  // Validates MCQ options and correct answers (case-insensitive, spacing-insensitive)
   const isFormValid = (question) => {
     if (!question.marks || isNaN(Number(question.marks)) || Number(question.marks) < 0) {
       return false;
     }
-
     if (question.type === 'MCQ') {
       if (!question.options || question.options.trim() === '') return false;
       if (!question.correctAnswer || question.correctAnswer.length === 0) return false;
-
-      const options = question.options
-        .split(',')
-        .map(opt => opt.trim().toUpperCase());
-
-      const answers = question.correctAnswer
-        .split(',')
-        .map(ans => ans.trim().toUpperCase())
-        .filter(Boolean);
-
+      const options = question.options.split(',').map(opt => opt.trim().toUpperCase());
+      const answers = question.correctAnswer.split(',').map(ans => ans.trim().toUpperCase()).filter(Boolean);
       const allAnswersValid = answers.every(ans => options.includes(ans));
       if (!allAnswersValid) return false;
     }
-
     if (question.type === 'Open-ended' && (!question.correctAnswer || question.correctAnswer.trim() === '')) {
       return false;
     }
-
     if (question.type === 'Other' && !question.correctAnswerFile) {
       return false;
     }
-
     return true;
   };
 
@@ -190,7 +180,6 @@ const TestModeUpload = () => {
       const pageQuestions = prev[currentPage] || [];
       let newQuestions;
       if (questionFormData.id) {
-        // Edit existing questions
         newQuestions = pageQuestions.map((q) =>
           q.id === questionFormData.id
             ? {
@@ -205,7 +194,6 @@ const TestModeUpload = () => {
             : q
         );
       } else {
-        // Add new questions
         newQuestions = [
           ...pageQuestions,
           {
@@ -246,7 +234,6 @@ const TestModeUpload = () => {
     setShowQuestionForm(true);
   };
 
-  // Submit test paper to Firestore
   const handleSubmitTestPaper = async () => {
     if (!paperTitle.trim() || !pdfData || !user) {
       setError("Missing paper title, PDF data, or user not logged in.");
@@ -259,19 +246,16 @@ const TestModeUpload = () => {
 
     let fileUrl = "";
     try {
-      // Upload the test paper file to Firebase Storage
       const fileRef = ref(storage, `testpapers/${user.uid}/${paperId}/${selectedFile.name}`);
       await uploadBytes(fileRef, selectedFile);
       fileUrl = await getDownloadURL(fileRef);
       setFileUrl(fileUrl);
     } catch (err) {
-      console.error("Error uploading test paper file:", err);
       setError("Failed to upload test paper file.");
       return;
     }
 
     try {
-      // Map and upload "Other" type answers
       const questions = await Promise.all(
         Object.entries(questionsByPage).map(async ([page, questionList]) => {
           const resolvedQuestions = await Promise.all(
@@ -290,7 +274,6 @@ const TestModeUpload = () => {
                     url,
                   };
                 } catch (err) {
-                  console.error("Error uploading answer file:", err);
                   setError("Failed to upload answer file.");
                   throw err;
                 }
@@ -332,7 +315,6 @@ const TestModeUpload = () => {
       });
       alert("Test paper submitted successfully!");
     } catch (err) {
-      console.error("Error submitting test paper:", err);
       setError("Failed to submit test paper to Firestore.");
     }
   };
@@ -343,7 +325,6 @@ const TestModeUpload = () => {
       <main></main>
       <div className="upload-card">
         <h1 className="upload-title">Upload Test Paper</h1>
-
         <div className="title-input-section">
           <label htmlFor="paperTitle">Test Paper Title:</label>
           <input
@@ -355,7 +336,6 @@ const TestModeUpload = () => {
             required
           />
         </div>
-
         <div className="file-upload-section">
           <label>Upload PDF/DOCX:</label><br />
           <label className="custom-file-upload">
@@ -367,92 +347,102 @@ const TestModeUpload = () => {
             />
           </label>
           {selectedFile && (
-            <div className="selected-filename">
-              {selectedFile.name}
-            </div>
+            <a
+              className="selected-filename"
+              href={URL.createObjectURL(selectedFile)}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#1976d2', textDecoration: 'underline' }}
+            >
+              {truncate(selectedFile.name)}
+            </a>
           )}
         </div>
         {error && <div className="error-message">{error}</div>}
-
         {selectedFile && pdfData && (
           <div>
             <Document
               file={pdfData}
               onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={(error) => {
-                console.error('PDF load error:', error);
-                setError('Failed to load PDF file.');
-              }}
+              onLoadError={() => setError('Failed to load PDF file.')}
               loading="Loading PDF..."
               error="Failed to load PDF."
             >
               <Page pageNumber={currentPage} width={800} />
             </Document>
             <div className="pdf-nav">
-              <button onClick={goToPreviousPage} disabled={currentPage <= 1} aria-label="Previous Page">
+              <button onClick={goToPreviousPage} disabled={currentPage <= 1} className="nav-btn">
                 ←
               </button>
               <span>
                 Page {currentPage} of {numPages}
               </span>
-              <button onClick={goToNextPage} disabled={currentPage >= numPages} aria-label="Next Page">
-                →
+              <button onClick={goToNextPage} disabled={currentPage >= numPages} className="nav-btn">
+                → 
               </button>
             </div>
-
             <div className="question-panel">
-              {(questionsByPage[currentPage] || []).length === 0 && (
-                <p>No questions added for this page.</p>
-              )}
               <ul>
                 {(questionsByPage[currentPage] || []).map((q) => (
-                  <li key={q.id}>
-                <strong>{q.questionNumber}.</strong> {q.type} — Marks: {q.marks} — Correct Answer:&nbsp;
-                    {q.type === 'Other' ? (
-                      q.correctAnswer?.url ? (
-                        <a
-                          href={q.correctAnswer.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="question-answer-link"
-                        >
-                          {q.correctAnswer.name || 'PDF/DOCX file'}
-                        </a>
-                      ) : q.correctAnswer instanceof File ? (
-                        <a
-                          href={URL.createObjectURL(q.correctAnswer)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="question-answer-link"
-                        >
-                          {q.correctAnswer.name}
-                        </a>
+                  <li key={q.id} className="question-list-item question-list-row">
+                    <span className="question-type"><strong>{q.questionNumber}.</strong> {q.type}</span>
+                    <span className="question-marks">Marks: <span>{q.marks}</span></span>
+                    <span className="question-answer-label">Correct Answer: </span>
+                    <span className="question-answer-value">
+                      {q.type === 'Other' ? (
+                        q.correctAnswer?.url ? (
+                          <a
+                            href={q.correctAnswer.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="question-answer-link"
+                          >
+                            {truncate(q.correctAnswer.name) || 'PDF/DOCX file'}
+                          </a>
+                        ) : q.correctAnswer instanceof File ? (
+                          <a
+                            href={URL.createObjectURL(q.correctAnswer)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="question-answer-link"
+                          >
+                            {truncate(q.correctAnswer.name)}
+                          </a>
+                        ) : (
+                          <span className="fallback-answer">
+                            {truncate(q.correctAnswer?.name) || 'PDF/DOCX file (not uploaded)'}
+                          </span>
+                        )
                       ) : (
-                        <span className="fallback-answer">
-                          {q.correctAnswer?.name || 'PDF/DOCX file (not uploaded)'}
+                        <span
+                          className="open-ended-answer"
+                          title={Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer}
+                        >
+                          {truncate(Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer)}
                         </span>
-                      )
-                    ) : (
-                      <span
-                        className="open-ended-answer"
-                        title={Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer}
-                      >
-                        {Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer}
-                      </span>
-                    )}
-                    <button
-                      onClick={() => handleDeleteQuestion(currentPage, q.id)}
-                      className="delete-question-button"
-                      aria-label="Delete question"
-                    >
-                      Delete
-                    </button>
+                      )}
+                    </span>
                     <button
                       onClick={() => handleEditQuestion(currentPage, q)}
-                      className="edit-question-button"
-                      aria-label="Edit question"
+                      className="icon-edit-button"
+                      aria-label="Edit"
                     >
-                      Edit
+                      <svg width="28" height="28" fill="none" stroke="#43a047" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteQuestion(currentPage, q.id)}
+                      className="icon-delete-button"
+                      aria-label="Delete"
+                    >
+                      <svg width="28" height="28" fill="none" stroke="#e53935" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
                     </button>
                   </li>
                 ))}
@@ -460,13 +450,9 @@ const TestModeUpload = () => {
               <button onClick={() => openQuestionForm()} className="add-question-button">
                 + Add Question
               </button>
-
               {showQuestionForm && (
-                <div
-                  className="question-form"
-                >
+                <div className="question-form">
                   <h4>{questionFormData.id ? 'Edit Question' : 'New Question'}</h4>
-
                   <label>
                     Question Number (e.g. 2a, 3bii):
                     <input
@@ -477,7 +463,6 @@ const TestModeUpload = () => {
                       }
                     />
                   </label>
-
                   <label>
                     Question Type:
                     <select
@@ -496,8 +481,6 @@ const TestModeUpload = () => {
                       <option value="Other">Other</option>
                     </select>
                   </label>
-                  <br />
-
                   <label>
                     Marks:
                     <input
@@ -509,7 +492,6 @@ const TestModeUpload = () => {
                       }
                     />
                   </label>
-
                   {questionFormData.type === 'MCQ' && (
                     <>
                       <label>
@@ -542,7 +524,6 @@ const TestModeUpload = () => {
                       </label>
                     </>
                   )}
-
                   {(questionFormData.type === 'Open-ended') && (
                     <label>
                       Correct Answer:
@@ -555,7 +536,6 @@ const TestModeUpload = () => {
                       />
                     </label>
                   )}
-
                   {questionFormData.type === 'Other' && (
                     <div className="file-upload-wrapper">
                       <label htmlFor="correctAnswerFile">Upload Correct Answer File (PDF/DOCX):</label>
@@ -579,17 +559,16 @@ const TestModeUpload = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          {questionFormData.correctAnswerFile.name || (typeof questionFormData.correctAnswerFile === "string" ? questionFormData.correctAnswerFile : "Answer File")}
+                          {truncate(questionFormData.correctAnswerFile.name) || (typeof questionFormData.correctAnswerFile === "string" ? questionFormData.correctAnswerFile : "Answer File")}
                         </a>
                       )}
                     </div>
                   )}
-
-                  <div>
-                    <button onClick={handleSaveQuestion} disabled={!isFormValid(questionFormData)}>
+                  <div className="form-actions">
+                    <button onClick={handleSaveQuestion} disabled={!isFormValid(questionFormData)} className="submit-button">
                       Save Question
                     </button>
-                    <button onClick={closeQuestionForm}>
+                    <button onClick={closeQuestionForm} className="cancel-edit-button">
                       Cancel
                     </button>
                   </div>
@@ -609,8 +588,9 @@ const TestModeUpload = () => {
               href={fileUrl}
               target="_blank"
               rel="noopener noreferrer"
+              style={{ color: '#1976d2', textDecoration: 'underline' }}
             >
-              View Uploaded Test Paper
+              {selectedFile ? truncate(selectedFile.name) : 'View Uploaded Test Paper'}
             </a>
           </div>
         )}

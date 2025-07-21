@@ -1,18 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import {
   collection, deleteDoc, doc, onSnapshot,
-  query, where, orderBy, updateDoc
+  query, orderBy, updateDoc, getDoc
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import '../styles/Dashboard.css';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
-import { getDoc } from 'firebase/firestore';
 import { handleDownload } from '../utils/exportUtils';
-
 import ExportMindmapModal from '../components/ExportMindmapModel';
 import CustomNode from '../components/CustomNode'; 
 import CustomEdge from '../components/CustomEdge'; 
@@ -27,17 +24,14 @@ const Dashboard = () => {
   const [mindmapExportFormats, setMindmapExportFormats] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState({ visible: false, id: '', isMindmap: false, isTestpaper: false });
   const [view, setView] = useState('summaries');
-  // Tag modal state
   const [tagModal, setTagModal] = useState({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false });
   const [newTag, setNewTag] = useState('');
-  // Tag autocomplete
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
-
-  // Tag search bar state
   const [tagSearchInput, setTagSearchInput] = useState('');
   const [tagSearchSuggestions, setTagSearchSuggestions] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
-  // All unique tags from summaries, mindmaps, testpapers
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const allTags = useMemo(() => {
     const tagsSet = new Set();
     [...summaries, ...mindmaps, ...testpapers].forEach(item => {
@@ -46,16 +40,13 @@ const Dashboard = () => {
     return Array.from(tagsSet);
   }, [summaries, mindmaps, testpapers]);
 
-  // Handler for tag input change (autocomplete)
   const onTagInputChange = (e) => {
     const val = e.target.value;
     setNewTag(val);
-
     if (!val.trim()) {
       setFilteredSuggestions([]);
       return;
     }
-
     const filtered = allTags.filter(tag =>
       tag.toLowerCase().includes(val.toLowerCase()) &&
       tag.toLowerCase() !== val.toLowerCase()
@@ -63,7 +54,6 @@ const Dashboard = () => {
     setFilteredSuggestions(filtered);
   };
 
-  // Handler for tag search bar input (autocomplete for filter bar)
   const onTagSearchInputChange = (e) => {
     const val = e.target.value;
     setTagSearchInput(val);
@@ -78,7 +68,6 @@ const Dashboard = () => {
     setTagSearchSuggestions(filtered);
   };
 
-  // Add tag to filter bar
   const addTagToFilter = (tag) => {
     if (!selectedTags.includes(tag)) {
       setSelectedTags(prev => [...prev, tag]);
@@ -87,12 +76,10 @@ const Dashboard = () => {
     setTagSearchSuggestions([]);
   };
 
-  // Remove tag from filter bar
   const removeTagFromFilter = (tag) => {
     setSelectedTags(prev => prev.filter(t => t !== tag));
   };
 
-  // TagChip helper component
   const TagChip = ({ tag, onRemove }) => (
     <span className="tag-chip">
       {tag}
@@ -102,104 +89,79 @@ const Dashboard = () => {
     </span>
   );
 
-  // Filter items by tags (OR logic)
   const filterByTags = (items) => {
     if (selectedTags.length === 0) return items;
     return items.filter(item => (item.tags || []).some(tag => selectedTags.includes(tag)));
   };
   const navigate = useNavigate();
 
-  // States for ExportMindmapModel
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [exportMindmap, setExportMindmap] = useState(null);
   const [exportFormat, setExportFormat] = useState('png');
   const [exportNodes, setExportNodes] = useState([]);
   const [exportEdges, setExportEdges] = useState([]);
-  // Pass in custom nodes and edges
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
   const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
   const mindmapRefs = useRef({});
- 
-  // Tag modal open function
+
   const openTagModal = (id, tags = [], isMindmap = false, isTestpaper = false) => {
     setNewTag('');
     setTagModal({ visible: true, id, tags, isMindmap, isTestpaper });
   };
 
-  // Save new tag function
   const handleSaveTag = async () => {
     if (!newTag.trim()) return;
     try {
       const { id, tags, isMindmap, isTestpaper } = tagModal;
       const docPath = isMindmap ? 'mindmaps' : isTestpaper ? 'testpapers' : 'summaries';
       const docRef = doc(db, 'users', user.uid, docPath, id);
-
-      // Add new tag only if not duplicate
       const updatedTags = tags.includes(newTag.trim()) ? tags : [...tags, newTag.trim()];
-
       await updateDoc(docRef, { tags: updatedTags });
-
       setTagModal({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false });
-    } catch (error) {
-      console.error('Error saving tag:', error);
-    }
+    } catch (error) {}
   };
 
-  // Remove tag function
   const handleRemoveTag = async (id, tagToRemove, isMindmap = false, isTestpaper = false) => {
     try {
       const docPath = isMindmap ? 'mindmaps' : isTestpaper ? 'testpapers' : 'summaries';
       const docRef = doc(db, 'users', user.uid, docPath, id);
-
-      // Find the document's tags
       let currentTags = [];
       if (isMindmap) currentTags = mindmaps.find(m => m.id === id)?.tags || [];
       else if (isTestpaper) currentTags = testpapers.find(t => t.id === id)?.tags || [];
       else currentTags = summaries.find(s => s.id === id)?.tags || [];
-
       const updatedTags = currentTags.filter(t => t !== tagToRemove);
-
       await updateDoc(docRef, { tags: updatedTags });
-    } catch (error) {
-      console.error('Error removing tag:', error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
     const unsubscribeAuth = getAuth().onAuthStateChanged((user) => {
       if (user) {
         setUser(user);
-
         const q = query(
           collection(db, 'users', user.uid, 'summaries'),
           orderBy('timestamp', 'desc')
         );
-
         const unsubscribeSummaries = onSnapshot(q, (snapshot) => {
           const summariesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setSummaries(summariesList);
         });
-
         const mindmapQuery = query(
           collection(db, 'users', user.uid, 'mindmaps'),
           orderBy('timestamp', 'desc')
         );
-
         const unsubscribeMindmaps = onSnapshot(mindmapQuery, (snapshot) => {
           const mindmapList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setMindmaps(mindmapList);
         });
-
         const testpaperQuery = query(
           collection(db, 'users', user.uid, 'testpapers'),
           orderBy('uploadedAt', 'desc')
         );
-
         const unsubscribeTestpapers = onSnapshot(testpaperQuery, (snapshot) => {
           const paperList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setTestpapers(paperList);
         });
-
         return () => {
           unsubscribeSummaries();
           unsubscribeMindmaps();
@@ -209,11 +171,9 @@ const Dashboard = () => {
         navigate('/login');
       }
     });
-
     return () => unsubscribeAuth();
   }, [navigate]);
 
-  // For displaying text styles in dashboard
   useEffect(() => {
     summaries.forEach((summary) => {
       const container = document.getElementById(`summary-${summary.id}`);
@@ -231,55 +191,39 @@ const Dashboard = () => {
     navigate(`/${basePath}/${user.uid}/${id}`);
   };
 
-  // Delete files from firestore
   const handleDelete = async (id) => {
     try {
       const isMindmap = deleteConfirm.isMindmap;
       const isTestpaper = deleteConfirm.isTestpaper;
       const docPath = isMindmap ? 'mindmaps' : isTestpaper ? 'testpapers' : 'summaries';
       const docRef = doc(db, 'users', user.uid, docPath, id);
-
-      // Only for testpapers: delete associated files from Storage
       if (isTestpaper) {
         const paperDoc = await getDoc(docRef);
         if (paperDoc.exists()) {
           const data = paperDoc.data();
           const storage = getStorage();
-
-          // Delete test paper file
           if (data.fileName) {
             const fileRef = ref(storage, `testpapers/${user.uid}/${id}/${data.fileName}`);
-            await deleteObject(fileRef).catch(err =>
-              console.warn('Failed to delete test paper file:', err)
-            );
+            await deleteObject(fileRef).catch(err => {});
           }
-
-          // Delete "Other" type answer files
           if (Array.isArray(data.questionsByPage)) {
             for (const pageData of data.questionsByPage) {
               for (const question of pageData.questions) {
                 if (question.type === 'Other' && question.correctAnswer?.url) {
                   const answerFileName = question.correctAnswer.name;
                   const answerRef = ref(storage, `testpapers/${user.uid}/${id}/answers/${answerFileName}`);
-                  await deleteObject(answerRef).catch(err =>
-                    console.warn('Failed to delete answer file:', err)
-                  );
+                  await deleteObject(answerRef).catch(err => {});
                 }
               }
             }
           }
         }
       }
-
       await deleteDoc(docRef);
       setDeleteConfirm({ visible: false, id: '', isMindmap: false, isTestpaper: false });
-    } catch (error) {
-      const type = deleteConfirm.isMindmap ? 'mindmap' : deleteConfirm.isTestpaper ? 'testpaper' : 'summary';
-      console.error(`Error deleting ${type}:`, error);
-    }
+    } catch (error) {}
   };
 
-  // Rename files saved in firestore
   const handleRename = async () => {
     const { id, title, isMindmap, isTestpaper } = renameModal;
     if (!title.trim()) return;
@@ -287,57 +231,66 @@ const Dashboard = () => {
       const updatePayload = {};
       if (isTestpaper) updatePayload.paperTitle = title;
       else updatePayload.title = title;
-
       await updateDoc(
         doc(db, 'users', user.uid, isMindmap ? 'mindmaps' : isTestpaper ? 'testpapers' : 'summaries', id),
         updatePayload
       );
       setRenameModal({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false });
-    } catch (error) {
-      let type = 'summary';
-      if (isMindmap) type = 'mindmap';
-      else if (isTestpaper) type = 'testpaper';
-      console.error(`Error renaming ${type}:`, error);
-    }
+    } catch (error) {}
   };
 
-
-  // Delete files
   const openDeleteConfirm = (id) => {
     setDeleteConfirm({ visible: true, id, isMindmap: false, isTestpaper: false });
   };
 
-  // Cancel delete operation
   const cancelDelete = () => {
     setDeleteConfirm({ visible: false, id: '', isMindmap: false, isTestpaper: false });
   };
 
-
   return (
     <div className="dashboard-container">
       <NavbarLoggedin user={user} />
-      <main>
-        <div className="left-sidebar">
-          <div className="dashboard-toggle-buttons">
+      <div>
+        <div className="sidebar-hamburger-container" style={{ position: "fixed", top: 0, left: 0, height: "100vh", width: "60px", zIndex: 3000 }}>
+          <div className="sidebar-hamburger-btn">
             <button
-              className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
-              onClick={() => setView('summaries')}
+              className="menu-toggle-button"
+              aria-label="Show menu"
+              style={{ fontSize: "2.2rem", background: "none", border: "none", color: "white", cursor: "pointer" }}
+              onMouseEnter={() => setSidebarOpen(true)}
+              onMouseLeave={() => setSidebarOpen(false)}
             >
-              SUMMARIES
-            </button>
-            <button
-              className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
-              onClick={() => setView('mindmaps')}
-            >
-              MINDMAPS
-            </button>
-            <button
-              className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
-              onClick={() => setView('testpapers')}
-            >
-              TEST PAPERS
+              ☰
             </button>
           </div>
+          {sidebarOpen && (
+            <div
+              className="dashboard-toggle-float-menu"
+              onMouseEnter={() => setSidebarOpen(true)}
+              onMouseLeave={() => setSidebarOpen(false)}
+            >
+              <button
+                className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
+                onClick={() => setView('summaries')}
+              >
+                SUMMARIES
+              </button>
+              <button
+                className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
+                onClick={() => setView('mindmaps')}
+              >
+                MINDMAPS
+              </button>
+              <button
+                className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
+                onClick={() => setView('testpapers')}
+              >
+                TEST PAPERS
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="topright-filter-bar">
           <div className="tag-filter-bar">
             <div className="tag-filter-input-wrapper" style={{ position: 'relative' }}>
               <input
@@ -376,6 +329,7 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      </div>
       <div className="main-content">
         {view === 'summaries' && (
           <div className="summary-list">
@@ -384,7 +338,7 @@ const Dashboard = () => {
               <p>No summaries found.</p>
             ) : (
               filterByTags(summaries).map((summary) => (
-                <div key={summary.id} className="summary-card">
+                <div key={summary.id} className="summary-card" id={`summary-${summary.id}`}>
                   <div className="summary-header">
                     <p><strong>Title:</strong> {summary.title || 'Untitled'}</p>
                     <button
@@ -502,7 +456,6 @@ const Dashboard = () => {
                     <button
                       className="download-button"
                       onClick={async () => {
-                        // Fetch the latest nodes/edges for this mindmap
                         const docRef = doc(db, 'users', user.uid, 'mindmaps', mindmap.id);
                         const mindmapDoc = await getDoc(docRef);
                         if (mindmapDoc.exists()) {
@@ -646,7 +599,6 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-      {/* Tag Modal */}
       {tagModal.visible && (
         <div className="rename-modal-overlay">
           <div className="rename-modal">
@@ -703,7 +655,6 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-
       {renameModal.visible && (
         <div className="rename-modal-overlay">
           <div className="rename-modal">
@@ -744,7 +695,6 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-
       {deleteConfirm.visible && (
         <div className="delete-modal-overlay">
           <div className="delete-modal">
@@ -762,7 +712,6 @@ const Dashboard = () => {
           </div>
         </div>
       )}
-      {/* Mindmap Export Modal */}
       <ExportMindmapModal
         open={exportModalOpen}
         onClose={() => setExportModalOpen(false)}
@@ -774,9 +723,8 @@ const Dashboard = () => {
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
       />
-    </main>
     </div>
   );
-}
+};
 
 export default Dashboard;

@@ -19,7 +19,6 @@ const TestAttempt = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const duration = location.state?.duration || 60;
-
   const [testpaper, setTestpaper] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [answers, setAnswers] = useState({});
@@ -30,7 +29,6 @@ const TestAttempt = () => {
   const [submitTimeTaken, setSubmitTimeTaken] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [showTimeExpiredPopup, setShowTimeExpiredPopup] = useState(false);
-
   const intervalRef = useRef(null);
   const startTimeRef = useRef(null);
 
@@ -54,11 +52,9 @@ const TestAttempt = () => {
         navigate('/dashboard');
       }
     };
-
     fetchTestpaper();
   }, [uid, id, navigate]);
 
-  // Timer effect
   useEffect(() => {
     if (!timerActive) return;
     intervalRef.current = setInterval(() => {
@@ -77,7 +73,6 @@ const TestAttempt = () => {
     };
   }, [timerActive]);
 
-  // Change state of "answers" prop whenever user inputs answer
   const handleChange = (questionId, value) => {
     setAnswers((prev) => {
       const newAnswers = { ...prev, [questionId]: value };
@@ -86,29 +81,21 @@ const TestAttempt = () => {
     });
   };
 
-  // Save submission details to firestore
   const submitAttempt = async () => {
     if (submitting) return;
     setSubmitting(true);
     const timeTaken = (Date.now() - startTimeRef.current) / 1000;
     try {
       setTimerActive(false);
-
       const attemptRef = collection(db, 'users', uid, 'testpapers', id, 'attempts');
       const newAttempt = doc(attemptRef);
       const attemptId = newAttempt.id;
-
       const processedAnswers = {};
-
       for (const q of testpaper?.questionsByPage?.flatMap(p => p.questions) || []) {
         const answer = answersRef.current[q.id];
         if (answer === undefined) continue;
-
         if (q.type === 'Other' && answer instanceof File) {
-          const storageRef = ref(
-            storage,
-            `testpapers/${uid}/${id}/attempts/${attemptId}/answers/${q.id}/${answer.name}`
-          );
+          const storageRef = ref(storage, `testpapers/${uid}/${id}/attempts/${attemptId}/answers/${q.id}/${answer.name}`);
           await uploadBytes(storageRef, answer);
           const url = await getDownloadURL(storageRef);
           processedAnswers[q.id] = { name: answer.name, url };
@@ -116,7 +103,6 @@ const TestAttempt = () => {
           processedAnswers[q.id] = answer;
         }
       }
-
       const attemptData = {
         answers: processedAnswers,
         timeTaken,
@@ -147,18 +133,17 @@ const TestAttempt = () => {
 
   const pageQuestions = testpaper?.questionsByPage?.find(p => p.page === currentPage)?.questions || [];
 
-  // Format timer
   const formatTime = () => {
     const mins = Math.floor(timeLeft / 60);
     const secs = timeLeft % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    return `Time left: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   return (
     <div className="test-attempt-container">
       <NavbarLoggedin />
       <main>
-        <div className="timer">Time Left: {formatTime()}</div>
+        <div className="timer">{formatTime()}</div>
         <div className="pdf-viewer">
           {testpaper?.fileUrl ? (
             <Document file={testpaper.fileUrl}>
@@ -179,41 +164,47 @@ const TestAttempt = () => {
           {pageQuestions.map((q) => (
             <div key={q.id} className="question-block">
               <p><strong>{q.questionNumber}. ({q.type}) — {q.marks} marks</strong></p>
-
               {q.type === 'MCQ' && Array.isArray(q.options) && (
                 <div className="mcq-answer">
                   {q.options.map((opt) => (
-                    <label key={opt} style={{ marginRight: '1rem' }}>
+                    <label key={opt}>
                       <input
-                        type="checkbox"
+                        type="radio"
                         name={q.id}
                         value={opt}
-                        checked={(answers[q.id] || []).includes(opt)}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const selected = new Set(answers[q.id] || []);
-                          if (selected.has(value)) selected.delete(value);
-                          else selected.add(value);
-                          handleChange(q.id, Array.from(selected));
-                        }}
+                        checked={answers[q.id] === opt}
+                        onChange={(e) => handleChange(q.id, e.target.value)}
                       />
                       {opt}
                     </label>
                   ))}
                 </div>
               )}
-
               {q.type === 'Open-ended' && (
                 <div className="open-ended-answer">
                   <textarea
-                    rows={4}
+                    rows={8}
                     placeholder="Your answer..."
                     value={answers[q.id] || ''}
                     onChange={(e) => handleChange(q.id, e.target.value)}
+                    style={{
+                      width: "100%",
+                      minWidth: "100%",
+                      maxWidth: "100%",
+                      minHeight: "180px",
+                      boxSizing: "border-box",
+                      display: "block",
+                      padding: "1rem 1.2rem",
+                      fontSize: "1.2rem",
+                      border: "2px solid #5f27cd",
+                      borderRadius: "10px",
+                      backgroundColor: "#fff",
+                      color: "#222",
+                      resize: "vertical"
+                    }}
                   />
                 </div>
               )}
-
               {q.type === 'Other' && (
                 <div className="other-answer">
                   <>
@@ -224,20 +215,11 @@ const TestAttempt = () => {
                       style={{ display: 'none' }}
                       onChange={(e) => handleChange(q.id, e.target.files[0])}
                     />
-                    <label
-                      htmlFor={`file-upload-${q.id}`}
-                      className="submit-button"
-                      style={{ display: 'inline-block', marginBottom: '8px', cursor: 'pointer' }}
-                    >
+                    <label htmlFor={`file-upload-${q.id}`} className="submit-button" style={{ display: 'inline-block', marginBottom: '8px', cursor: 'pointer' }}>
                       Choose File
                     </label>
                     {answers[q.id] && typeof answers[q.id] === 'object' && (
-                      <a
-                        className="selected-filename"
-                        href={URL.createObjectURL(answers[q.id])}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
+                      <a className="selected-filename" href={URL.createObjectURL(answers[q.id])} target="_blank" rel="noopener noreferrer">
                         {answers[q.id].name}
                       </a>
                     )}
@@ -248,37 +230,18 @@ const TestAttempt = () => {
           ))}
         </div>
         <div className="submit-button-wrapper">
-          <button className="submit-button" onClick={handleSubmitClick} disabled={submitting}>
-            Submit
-          </button>
+          <button className="submit-button" onClick={handleSubmitClick} disabled={submitting}>Submit</button>
         </div>
       </main>
       {showSubmitConfirm && (
         <div className="delete-modal-overlay">
           <div className="delete-modal">
-            <p>
-              Are you sure you want to submit this test?<br />
-              Your answers will be saved and cannot be changed.<br />
-              <strong>Time taken: {formatTimeTaken(submitTimeTaken)}</strong>
-            </p>
+            <p>Are you sure you want to submit this test?<br />Your answers will be saved and cannot be changed.<br /><strong>Time taken: {formatTimeTaken(submitTimeTaken)}</strong></p>
             <div className="delete-modal-buttons">
-              <button
-                className="delete-confirm-button"
-                onClick={async () => {
-                  setShowSubmitConfirm(false);
-                  await submitAttempt();
-                }}
-                disabled={submitting}
-              >
+              <button className="delete-confirm-button" onClick={async () => { setShowSubmitConfirm(false); await submitAttempt(); }} disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>
-              <button
-                className="delete-cancel-button"
-                onClick={() => setShowSubmitConfirm(false)}
-                disabled={submitting}
-              >
-                Cancel
-              </button>
+              <button className="delete-cancel-button" onClick={() => setShowSubmitConfirm(false)} disabled={submitting}>Cancel</button>
             </div>
           </div>
         </div>
@@ -286,26 +249,12 @@ const TestAttempt = () => {
       {showTimeExpiredPopup && (
         <div className="delete-modal-overlay">
           <div className="delete-modal">
-            <p>
-              Time is up! Would you like to submit your attempt or continue?
-            </p>
+            <p>Time is up! Would you like to submit your attempt or continue?</p>
             <div className="delete-modal-buttons">
-              <button className="delete-confirm-button" onClick={() => {
-                setShowTimeExpiredPopup(false);
-                setShowSubmitConfirm(true);
-                const timeTaken = (Date.now() - startTimeRef.current) / 1000;
-                setSubmitTimeTaken(timeTaken);
-              }} disabled={submitting}>
+              <button className="delete-confirm-button" onClick={() => { setShowTimeExpiredPopup(false); setShowSubmitConfirm(true); const timeTaken = (Date.now() - startTimeRef.current) / 1000; setSubmitTimeTaken(timeTaken); }} disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>
-              <button className="delete-cancel-button" onClick={() => {
-                setShowTimeExpiredPopup(false);
-                // Keep timer stopped at zero so user can continue answering
-                setTimerActive(false);
-                setTimeLeft(0);
-              }}>
-                Continue
-              </button>
+              <button className="delete-cancel-button" onClick={() => { setShowTimeExpiredPopup(false); setTimerActive(false); setTimeLeft(0); }}>Continue</button>
             </div>
           </div>
         </div>

@@ -9,6 +9,14 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+
+const truncate = (str) => {
+  if (Array.isArray(str)) {
+    str = str.join(', ');
+  }
+  return typeof str === 'string' && str.length > 5 ? str.slice(0, 5) + '...' : str;
+};
+
 const TestPaperDetail = () => {
   const { uid, id } = useParams();
   const navigate = useNavigate();
@@ -66,12 +74,10 @@ const TestPaperDetail = () => {
     const pageData = questionsByPage.find(p => p.page === currentPage) || { page: currentPage, questions: [] };
     const isEditing = editingQuestionId !== null;
     let newQ = { ...newQuestion, id: isEditing ? editingQuestionId : uuidv4(), marks: Number(newQuestion.marks) };
-
     if (newQ.type === 'MCQ') {
       newQ.options = (newQ.options || '').split(',').map((opt) => opt.trim().toUpperCase()).filter(Boolean);
       newQ.correctAnswer = (newQ.correctAnswer || '').split(',').map((ans) => ans.trim().toUpperCase()).filter(Boolean);
     }
-
     if (newQ.type === 'Other') {
       if (otherAnswerFile) {
         const storageRef = ref(getStorage(), `testpapers/${uid}/${id}/answers/${otherAnswerFile.name}`);
@@ -82,13 +88,11 @@ const TestPaperDetail = () => {
         newQ.correctAnswer = '';
       }
     }
-
     if (isEditing) {
       pageData.questions = pageData.questions.map(q => q.id === editingQuestionId ? newQ : q);
     } else {
       pageData.questions.push(newQ);
     }
-
     const updated = questionsByPage.filter(p => p.page !== currentPage).concat(pageData);
     setQuestionsByPage(updated);
     setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', options: '' });
@@ -162,6 +166,18 @@ const TestPaperDetail = () => {
       <main>
         <div className="paper-container">
           <h1>{testpaper.paperTitle || 'Untitled Test Paper'}</h1>
+          <div className="file-view-section view-uploaded-paper-link">
+            {testpaper.fileUrl && (
+              <a
+                href={testpaper.fileUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="selected-filename"
+              >
+                {truncate(testpaper.fileName)}
+              </a>
+            )}
+          </div>
           <div className="pdf-wrapper">
             <Document
               file={testpaper.fileUrl}
@@ -184,26 +200,47 @@ const TestPaperDetail = () => {
           <div className="question-panel">
             <ul className="question-list">
               {questionsByPage.find(p => p.page === currentPage)?.questions.map((q) => (
-                <li key={q.id}>
-                  <strong>{q.questionNumber ? `${q.questionNumber}. ` : ''}{q.type}</strong> — Marks: {q.marks} — Correct Answer:&nbsp;
-                  {Array.isArray(q.correctAnswer)
-                    ? q.correctAnswer.join(', ')
-                    : typeof q.correctAnswer === 'object' && q.correctAnswer?.url
-                    ? <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer" style={{ color: '#81d4fa' }}>{q.correctAnswer.name || 'File'}</a>
-                    : <span className="open-ended-answer" title={q.correctAnswer}>{q.correctAnswer}</span>}
-                  <button className="edit-button" onClick={() => {
-                    setNewQuestion({
-                      type: q.type || 'MCQ',
-                      questionNumber: q.questionNumber || '',
-                      marks: q.marks || '',
-                      correctAnswer: q.correctAnswer || '',
-                      options: Array.isArray(q.options) ? q.options.join(', ') : (q.options || '')
-                    });
-                    setEditingQuestionId(q.id);
-                    setOtherAnswerFile(null);
-                    setShowAddQuestion(true);
-                  }}>Edit</button>
-                  <button onClick={() => handleDeleteQuestion(q.id)}>Delete</button>
+                <li key={q.id} className="question-list-item">
+                  <div className="question-info-row">
+                    <span className="question-type">
+                      <strong>{q.questionNumber ? `${q.questionNumber}. ` : ''}{q.type}</strong>
+                    </span>
+                    <span className="question-marks">Marks: <span>{q.marks}</span></span>
+                    <span className="question-answer-label">Correct Answer:</span>
+                    <span className="question-answer-value">
+                      {Array.isArray(q.correctAnswer)
+                        ? <span className="open-ended-answer" title={q.correctAnswer.join(', ')}>{truncate(q.correctAnswer.join(', '))}</span>
+                        : typeof q.correctAnswer === 'object' && q.correctAnswer?.url
+                        ? <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="question-answer-link">{truncate(q.correctAnswer.name) || 'File'}</a>
+                        : <span className="open-ended-answer" title={q.correctAnswer}>{truncate(q.correctAnswer)}</span>
+                      }
+                    </span>
+                    <button className="icon-edit-button" onClick={() => {
+                      setNewQuestion({
+                        type: q.type || 'MCQ',
+                        questionNumber: q.questionNumber || '',
+                        marks: q.marks || '',
+                        correctAnswer: q.correctAnswer || '',
+                        options: Array.isArray(q.options) ? q.options.join(', ') : (q.options || '')
+                      });
+                      setEditingQuestionId(q.id);
+                      setOtherAnswerFile(null);
+                      setShowAddQuestion(true);
+                    }}>
+                      <svg width="28" height="28" fill="none" stroke="#43a047" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                      </svg>
+                    </button>
+                    <button className="icon-delete-button" onClick={() => handleDeleteQuestion(q.id)}>
+                      <svg width="28" height="28" fill="none" stroke="#e53935" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <polyline points="3 6 5 6 21 6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -249,7 +286,7 @@ const TestPaperDetail = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {otherAnswerFile.name || (typeof otherAnswerFile === "string" ? otherAnswerFile : "Answer File")}
+                      {truncate(otherAnswerFile.name) || (typeof otherAnswerFile === "string" ? otherAnswerFile : "Answer File")}
                     </a>
                   )}
                 </div>

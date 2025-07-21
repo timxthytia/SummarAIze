@@ -129,29 +129,85 @@ input[type="file"] {
   border-radius: 8px;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
   align-items: center;
   justify-content: space-between;
 }
 
-.question-panel button {
-  margin-left: 0.5rem;
-  padding: 0.3rem 0.7rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
+.question-list-item .question-info-row {
+  display: grid;
+  grid-template-columns: 140px 90px 150px 1fr 40px 40px;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1rem;
+  width: 100%;
+}
+
+.question-type {
+  min-width: 120px;
+  text-align: left;
+}
+
+.question-marks {
+  min-width: 70px;
+  text-align: left;
+}
+
+.question-answer-label {
+  min-width: 125px;
   font-weight: bold;
+  text-align: left;
 }
 
-.question-panel button[aria-label="Delete question"] {
-  background-color: #ff6b6b;
-  color: white;
+.question-answer-value {
+  min-width: 60px;
+  text-align: left;
 }
 
-.question-panel button[aria-label="Edit question"] {
-  background-color: #00d2d3;
-  color: black;
+.icon-edit-button,
+.icon-delete-button {
+  border: 2px solid;
+  background: transparent;
+  padding: 0.3rem 0.6rem;
+  border-radius: 10px;
+  transition: box-shadow 0.2s, transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.icon-edit-button {
+  border-color: #43a047;
+}
+
+.icon-delete-button {
+  border-color: #e53935;
+}
+
+.icon-edit-button:hover svg {
+  transform: scale(1.2);
+}
+
+.icon-delete-button:hover svg {
+  transform: scale(1.2);
+}
+
+.icon-edit-button svg,
+.icon-delete-button svg {
+  width: 28px;
+  height: 28px;
+  transition: transform 0.2s;
+}
+
+
+.open-ended-answer {
+  display: inline-block;
+  max-width: 60px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
 }
 
 .add-question-toggle {
@@ -226,15 +282,6 @@ input[type="file"] {
 .question-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.open-ended-answer {
-  display: inline-block;
-  max-width: 220px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
 }
 
 .loading-container {
@@ -406,4 +453,15 @@ input[type="file"] {
   margin-left: 8px;
   font-size: 0.97em;
   vertical-align: middle;
+}
+
+.save-button-wrapper {
+  position: fixed;
+  bottom: 32px;
+  right: 40px;
+  width: auto;
+  margin: 0;
+  z-index: 100;
+  background: none;
+  box-shadow: none;
 }
