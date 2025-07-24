@@ -129,28 +129,28 @@ const MindmapGenerator = () => {
               rows={5}
             />
             <button className="mindmap-button" onClick={handleGenerate} disabled={loading}>
-              {loading ? 'Generating...' : 'Generate Mind Map'}
+              {loading ? 'Generating...' : 'Generate'}
             </button>
           </div>
         ) : (
-          <div className="file-upload-section">
-            <label>Upload PDF/ DOCX/ Image:</label><br />
-            <label className="custom-file-upload">
-              Choose File
-              <input
-                type="file"
-                accept=".pdf,.docx,.jpg,.jpeg,.png"
-                onChange={e => setSelectedFile(e.target.files[0])}
-              />
-            </label>
-            {selectedFile && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
-                {selectedFile.name}
-              </div>
-            )}
-            <button className="mindmap-button" onClick={handleGenerate} disabled={loading || !selectedFile}>
-              {loading ? 'Generating...' : 'Generate Mind Map'}
-            </button>
+          <div className="file-upload-controls">
+            <label>Upload PDF/ DOCX/ Image:</label>
+            <div className="file-upload-row">
+              {selectedFile && (
+                <span className="file-name">{selectedFile.name}</span>
+              )}
+              <label className="custom-file-upload">
+                Choose File
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.jpg,.jpeg,.png"
+                  onChange={e => setSelectedFile(e.target.files[0])}
+                />
+              </label>
+              <button className="mindmap-button" onClick={handleGenerate} disabled={loading || !selectedFile}>
+                {loading ? 'Generating...' : 'Generate'}
+              </button>
+            </div>
           </div>
         )}
 
