@@ -10,7 +10,10 @@ import io
 
 app = FastAPI()
 
-origins = ["http://localhost:5173", "https://orbital-summaraize.vercel.app",]
+origins = ["http://localhost:5173", 
+           "https://orbital-summaraize.vercel.app",
+           "https://fastapi-tesseract-742870183372.asia-southeast1.run.app"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -46,4 +49,3 @@ async def generate_docx(data: DocxRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-

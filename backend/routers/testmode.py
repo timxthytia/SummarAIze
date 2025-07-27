@@ -41,19 +41,30 @@ async def upload_test_paper(file: UploadFile = File(...), title: str = Form(...)
 
 
 # DOCX to PDF conversion endpoint
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
+
 @router.post("/convert-docx-to-pdf")
 async def convert_docx_endpoint(file: UploadFile = File(...)):
-    UPLOAD_DIR = "uploads"
-    PDF_DIR = "converted_pdfs"
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    os.makedirs(PDF_DIR, exist_ok=True)
+    try:
+        UPLOAD_DIR = "uploads"
+        PDF_DIR = "converted_pdfs"
+        os.makedirs(UPLOAD_DIR, exist_ok=True)
+        os.makedirs(PDF_DIR, exist_ok=True)
 
-    file_id = str(uuid.uuid4())
-    docx_path = os.path.join(UPLOAD_DIR, f"{file_id}.docx")
+        file_id = str(uuid.uuid4())
+        docx_path = os.path.join(UPLOAD_DIR, f"{file_id}.docx")
 
-    with open(docx_path, "wb") as f:
-        f.write(await file.read())
+        with open(docx_path, "wb") as f:
+            f.write(await file.read())
 
-    pdf_path = convert_docx_to_pdf(docx_path, PDF_DIR)
+        pdf_path = convert_docx_to_pdf(docx_path, PDF_DIR)
 
-    return FileResponse(pdf_path, media_type="application/pdf", filename=os.path.basename(pdf_path))
+        return FileResponse(pdf_path, media_type="application/pdf", filename=os.path.basename(pdf_path))
+    except Exception as e:
+        print(f"Error converting DOCX to PDF: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Failed to convert DOCX to PDF", "error": str(e)},
+            headers={"Access-Control-Allow-Origin": "*"}
+        )

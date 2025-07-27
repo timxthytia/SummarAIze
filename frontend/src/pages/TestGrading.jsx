@@ -167,7 +167,11 @@ const TestGrading = () => {
                       min="0"
                       max={Number(q.marks)}
                       value={scores[q.id] === undefined ? '' : scores[q.id]}
-                      onChange={(e) => handleScoreChange(q.id, e.target.value)}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        const clamped = Math.min(Number(q.marks), Math.max(0, val));
+                        handleScoreChange(q.id, isNaN(clamped) ? '' : clamped);
+                      }}
                     />
                   </label>
                 </div>

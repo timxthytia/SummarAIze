@@ -38,7 +38,6 @@ const truncate = (str) => {
 
 const TestModeUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [fileType, setFileType] = useState(null);
   const [pdfData, setPdfData] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
@@ -78,19 +77,13 @@ const TestModeUpload = () => {
     setQuestionsByPage({});
     setFileUrl('');
     setSelectedFile(null);
-    setFileType(null);
     setPdfData(null);
     setCurrentPage(1);
     setNumPages(0);
 
-    if (!file) {
-      return;
-    }
+    if (!file) return;
 
-    const type = file.type;
-    setFileType(type);
-
-    if (type === 'application/pdf') {
+    if (file.type === 'application/pdf') {
       const reader = new FileReader();
       reader.onload = (event) => {
         const arrayBuffer = event.target.result;
@@ -101,31 +94,8 @@ const TestModeUpload = () => {
         setError('Failed to read PDF file.');
       };
       reader.readAsArrayBuffer(file);
-    } else if (
-      type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      file.name.endsWith('.docx')
-    ) {
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const API_URL = import.meta.env?.VITE_API_URL;
-        const response = await axios.post(`${API_URL}/convert-docx-to-pdf`, formData, {
-          responseType: 'blob',
-        });
-
-        const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-
-        setPdfData(pdfUrl);
-        setSelectedFile(file);
-        setCurrentPage(1);
-        setNumPages(0);
-      } catch (err) {
-        setError('Failed to convert DOCX to PDF.');
-      }
     } else {
-      setError('Unsupported file type. Please upload PDF or DOCX.');
+      setError('Unsupported file type. Please upload a PDF.');
     }
   };
 
@@ -340,12 +310,12 @@ const TestModeUpload = () => {
           />
         </div>
         <div className="file-upload-section">
-          <label>Upload PDF/DOCX:</label><br />
+          <label>Upload PDF:</label><br />
           <label className="custom-file-upload">
             Choose File
             <input
               type="file"
-              accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              accept=".pdf,application/pdf"
               onChange={handleFileChange}
             />
           </label>
