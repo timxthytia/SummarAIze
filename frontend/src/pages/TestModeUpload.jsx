@@ -36,6 +36,27 @@ const truncate = (str) => {
   return typeof str === 'string' && str.length > 5 ? str.slice(0, 5) + '...' : str;
 };
 
+export const isFormValid = (question) => {
+  if (!question.marks || isNaN(Number(question.marks)) || Number(question.marks) < 0) {
+    return false;
+  }
+  if (question.type === 'MCQ') {
+    if (!question.options || question.options.trim() === '') return false;
+    if (!question.correctAnswer || question.correctAnswer.length === 0) return false;
+    const options = question.options.split(',').map(opt => opt.trim().toUpperCase());
+    const answers = question.correctAnswer.split(',').map(ans => ans.trim().toUpperCase()).filter(Boolean);
+    const allAnswersValid = answers.every(ans => options.includes(ans));
+    if (!allAnswersValid) return false;
+  }
+  if (question.type === 'Open-ended' && (!question.correctAnswer || question.correctAnswer.trim() === '')) {
+    return false;
+  }
+  if (question.type === 'Other' && !question.correctAnswerFile) {
+    return false;
+  }
+  return true;
+};
+
 const TestModeUpload = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [pdfData, setPdfData] = useState(null);
@@ -124,26 +145,6 @@ const TestModeUpload = () => {
     setShowQuestionForm(false);
   };
 
-  const isFormValid = (question) => {
-    if (!question.marks || isNaN(Number(question.marks)) || Number(question.marks) < 0) {
-      return false;
-    }
-    if (question.type === 'MCQ') {
-      if (!question.options || question.options.trim() === '') return false;
-      if (!question.correctAnswer || question.correctAnswer.length === 0) return false;
-      const options = question.options.split(',').map(opt => opt.trim().toUpperCase());
-      const answers = question.correctAnswer.split(',').map(ans => ans.trim().toUpperCase()).filter(Boolean);
-      const allAnswersValid = answers.every(ans => options.includes(ans));
-      if (!allAnswersValid) return false;
-    }
-    if (question.type === 'Open-ended' && (!question.correctAnswer || question.correctAnswer.trim() === '')) {
-      return false;
-    }
-    if (question.type === 'Other' && !question.correctAnswerFile) {
-      return false;
-    }
-    return true;
-  };
 
 
   const handleSaveQuestion = () => {

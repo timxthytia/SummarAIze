@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { API_URL } from '../config';
 import { getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -377,7 +378,7 @@ const Dashboard = () => {
                           summary.title,
                           summary.summary,
                           downloadFormats[summary.id] || 'pdf',
-                          import.meta.env.VITE_API_URL
+                          API_URL
                         )
                       }
                     >
