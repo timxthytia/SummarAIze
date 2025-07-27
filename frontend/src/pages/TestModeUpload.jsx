@@ -12,7 +12,22 @@ import { db } from '../services/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
+
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+
+export const parseCorrectAnswer = (data) => {
+  if (data.type === 'MCQ') {
+    return data.correctAnswer
+      .split(',')
+      .map((a) => a.trim().toUpperCase());
+  }
+  if (data.type === 'Open-ended') {
+    return data.correctAnswer.trim();
+  }
+  if (data.type === 'Other') {
+    return data.correctAnswerFile;
+  }
+};
 
 const truncate = (str) => {
   if (Array.isArray(str)) {
@@ -94,7 +109,8 @@ const TestModeUpload = () => {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/convert-docx-to-pdf`, formData, {
+        const API_URL = import.meta.env?.VITE_API_URL;
+        const response = await axios.post(`${API_URL}/convert-docx-to-pdf`, formData, {
           responseType: 'blob',
         });
 
@@ -159,19 +175,6 @@ const TestModeUpload = () => {
     return true;
   };
 
-  const parseCorrectAnswer = (data) => {
-    if (data.type === 'MCQ') {
-      return data.correctAnswer
-        .split(',')
-        .map((a) => a.trim().toUpperCase());
-    }
-    if (data.type === 'Open-ended') {
-      return data.correctAnswer.trim();
-    }
-    if (data.type === 'Other') {
-      return data.correctAnswerFile;
-    }
-  };
 
   const handleSaveQuestion = () => {
     if (!isFormValid(questionFormData)) return;

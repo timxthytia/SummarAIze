@@ -169,11 +169,22 @@ const TestAttempt = () => {
                   {q.options.map((opt) => (
                     <label key={opt}>
                       <input
-                        type="radio"
+                        type="checkbox"
                         name={q.id}
                         value={opt}
-                        checked={answers[q.id] === opt}
-                        onChange={(e) => handleChange(q.id, e.target.value)}
+                        checked={Array.isArray(answers[q.id]) && answers[q.id].includes(opt)}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setAnswers((prev) => {
+                            const currentAnswers = Array.isArray(prev[q.id]) ? prev[q.id] : [];
+                            const newAnswers = isChecked
+                              ? [...currentAnswers, opt]
+                              : currentAnswers.filter((item) => item !== opt);
+                            const updatedAnswers = { ...prev, [q.id]: newAnswers };
+                            answersRef.current = updatedAnswers;
+                            return updatedAnswers;
+                          });
+                        }}
                       />
                       {opt}
                     </label>
