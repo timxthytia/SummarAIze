@@ -26,3 +26,10 @@ globalThis.import = {
     env: globalThis.importMetaEnv,
   },
 };
+
+// Mock ResizeObserver for tests involving React Flow or similar libraries
+global.ResizeObserver = class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
