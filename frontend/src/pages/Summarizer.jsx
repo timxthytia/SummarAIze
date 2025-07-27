@@ -1,3 +1,4 @@
+import { API_URL } from '../config';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { db, auth } from '../services/firebase';
@@ -29,6 +30,25 @@ const TextSummarizer = () => {
     return () => unsubscribe();
   }, []);
 
+  const allowedTypes = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'image/jpeg',
+    'image/png'
+  ];
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!allowedTypes.includes(file.type)) {
+      setError('Unsupported file type');
+      setSelectedFile(null);
+      return;
+    }
+    setSelectedFile(file);
+    setError('');
+  };
+
   const handleSummarize = async () => {
     if (authLoading || !user) {
       alert("You must be logged in to use this feature.");
@@ -48,7 +68,7 @@ const TextSummarizer = () => {
           return;
         }
 
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/summarize`, {
+        const response = await axios.post(`${API_URL}/summarize`, {
           text: inputText,
           type: summaryType
         });
@@ -66,7 +86,7 @@ const TextSummarizer = () => {
         formData.append('file', selectedFile);
         formData.append('type', summaryType);
 
-        const response = await axios.post(`${import.meta.env.VITE_API_URL}/summarize-file`, formData, {
+        const response = await axios.post(`${API_URL}/summarize-file`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
 
@@ -131,7 +151,7 @@ const TextSummarizer = () => {
               <input
                 type="file"
                 accept=".pdf,.docx,.jpg,.jpeg,.png"
-                onChange={(e) => setSelectedFile(e.target.files[0])}
+                onChange={handleFileUpload}
               />
             </label>
             {selectedFile && (
@@ -151,16 +171,17 @@ const TextSummarizer = () => {
         </button>
 
         <div className="summary-options">
-          <label>Summary Type:</label>
-          <select
-            value={summaryType}
-            onChange={(e) => setSummaryType(e.target.value)}
-            className="summary-select"
-          >
-            <option value="short">Short</option>
-            <option value="long">Long</option>
-            <option value="bullet">Bullet Points</option>
-          </select>
+          <label htmlFor="summaryTypeSelect">Summary Type:</label>
+            <select
+              id="summaryTypeSelect"
+              value={summaryType}
+              onChange={(e) => setSummaryType(e.target.value)}
+              className="summary-select"
+            >
+              <option value="short">Short</option>
+              <option value="long">Long</option>
+              <option value="bullet">Bullet Points</option>
+            </select>
         </div>
 
         {error && <div className="error-message">{error}</div>}
