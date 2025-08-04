@@ -1,4 +1,3 @@
-# routers/summarizer.py
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from utils.openai_client import client

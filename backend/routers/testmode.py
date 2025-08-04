@@ -1,6 +1,5 @@
-# routers/testmode.py
 from fastapi import APIRouter, UploadFile, File, Form
-from utils.parser import parse_test_paper  # You will need to implement this function
+from utils.parser import parse_test_paper 
 import fitz
 import docx2txt
 import os
@@ -31,7 +30,6 @@ async def upload_test_paper(file: UploadFile = File(...), title: str = Form(...)
     else:
         return {"error": "Unsupported file type"}
 
-    # You will need a parsing function to structure the questions
     try:
         questions = parse_test_paper(content)
     except Exception as e:

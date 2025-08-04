@@ -69,7 +69,6 @@ def add_html_to_docx(doc: DocxDocument, html: str):
             '0000FF': WD_COLOR_INDEX.BLUE,
             'FFC0CB': WD_COLOR_INDEX.PINK,
             '800080': WD_COLOR_INDEX.VIOLET,
-            # add more if needed
         }
         rgb_color = rgb_color.upper()
         highlight_color = color_map.get(rgb_color, None)
@@ -83,7 +82,6 @@ def add_html_to_docx(doc: DocxDocument, html: str):
             run.italic = True
         if style.get('underline'):
             run.underline = True
-        # Strikethrough ignored as per user request
         if style.get('code'):
             run.font.name = 'Courier New'
         if 'color' in style:

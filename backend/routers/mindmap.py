@@ -44,7 +44,6 @@ async def generate_mindmap(request: MindMapRequest):
             temperature=0.5,
         )
         content = extract_json(response.choices[0].message.content or "")
-        # print("Raw OpenAI response:\n", content)
         if content is None:
             raise HTTPException(status_code=500, detail="OpenAI returned no content.")
 
@@ -102,13 +101,6 @@ async def generate_mindmap_file(file: UploadFile = File(...)):
             content = pytesseract.image_to_string(image)
         else:
             return {"error": "Unsupported file type. Please upload a PDF, DOCX or Image File."}
-        
-        # Log extracted content for debugging
-        # preview = content[:1000] + ('...[truncated]' if len(content) > 1000 else '')
-        # print("\n========== FILE EXTRACTED ==========")
-        # print(f"Filename: {file.filename}")
-        # print(f"Extracted text preview:\n{preview}\n")
-        # print("========== END OF EXTRACTED ==========\n")
 
         return await generate_mindmap(MindMapRequest(text=content))
     except Exception as e:
