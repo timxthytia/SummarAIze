@@ -291,7 +291,6 @@ const MindmapDetail = () => {
               <button
                 onClick={handleConfirmEdgeLabel}
                 className="confirm-rename-button"
-                //disabled={!edgeModal.label.trim()}
               >
                 {edgeModal.connection ? 'Create' : 'Save'}
               </button>
