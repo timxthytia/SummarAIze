@@ -23,6 +23,7 @@ const MindmapGenerator = () => {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [mode, setMode] = useState('text');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -90,6 +91,7 @@ const MindmapGenerator = () => {
 
   const handleSaveMindmap = async () => {
     if (!user || !mapTitle.trim() || nodes.length === 0) return;
+    setSaving(true);
     try {
       await addDoc(collection(db, 'users', user.uid, 'mindmaps'), {
         title: mapTitle,
@@ -100,9 +102,12 @@ const MindmapGenerator = () => {
       });
       alert('Mindmap saved successfully!');
       setMapTitle('');
+      window.location.href = '/dashboard';
     } catch (err) {
       console.error('Error saving mindmap:', err);
       alert('Failed to save mindmap.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -191,7 +196,13 @@ const MindmapGenerator = () => {
               value={mapTitle}
               onChange={e => setMapTitle(e.target.value)}
             />
-            <button className="mindmap-button" onClick={handleSaveMindmap}>Save to Dashboard</button>
+            <button 
+              className="save-mindmap-button" 
+              onClick={handleSaveMindmap}
+              disabled={saving}
+            >
+              {saving ? 'Saving...': 'Save to Dashboard'}
+            </button>
           </div>
         )}
       </div>
