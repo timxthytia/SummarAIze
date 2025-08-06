@@ -57,7 +57,13 @@
 .input-textarea::placeholder,
 .summary-title-input::placeholder {
   color: #888;
+  text-align: center;;
 }
+
+.summary-title-input {
+  text-align: center;
+}
+
 
 .file-upload-section {
   margin-bottom: 1rem;
@@ -210,7 +216,7 @@ button:focus {
   }
 }
 
-.summarizer-container .custom-file-upload {
+.summarizer-container{
   display: inline-block;
   padding: 0.6rem 1.4rem;
   background-color: #ffffff;

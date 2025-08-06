@@ -110,7 +110,6 @@ const MindmapGenerator = () => {
     <ReactFlowProvider>
       <div className="mindmap-generator-container">
         <NavbarLoggedin user={user} />
-        <h1>Mind Map Generator</h1>
         <div className="mode-toggle">
           <button className={mode === 'text' ? 'active' : ''} onClick={() => setMode('text')}>
             Text Mode
@@ -120,25 +119,21 @@ const MindmapGenerator = () => {
           </button>
         </div>
 
-        {mode === 'text' ? (
-          <div className="input-section">
-            <textarea
-              placeholder="Enter your text here..."
-              value={inputText}
-              onChange={e => setInputText(e.target.value)}
-              rows={5}
-            />
-            <button className="mindmap-button" onClick={handleGenerate} disabled={loading}>
-              {loading ? 'Generating...' : 'Generate'}
-            </button>
-          </div>
-        ) : (
-          <div className="file-upload-controls">
-            <label>Upload PDF/ DOCX/ Image:</label>
-            <div className="file-upload-row">
-              {selectedFile && (
-                <span className="file-name">{selectedFile.name}</span>
-              )}
+        <div className="mindmap-card">
+          <h1 className="mindmap-title">Generate a Mind Map</h1>
+          {mode === 'text' ? (
+            <div className="input-section">
+              <textarea
+                className="input-textarea"
+                placeholder="Enter your text here..."
+                value={inputText}
+                onChange={e => setInputText(e.target.value)}
+                rows={5}
+              />
+            </div>
+          ) : (
+            <div className="file-upload-section">
+              <label>Upload PDF/ DOCX/ Image:</label><br />
               <label className="custom-file-upload">
                 Choose File
                 <input
@@ -147,12 +142,26 @@ const MindmapGenerator = () => {
                   onChange={e => setSelectedFile(e.target.files[0])}
                 />
               </label>
-              <button className="mindmap-button" onClick={handleGenerate} disabled={loading || !selectedFile}>
-                {loading ? 'Generating...' : 'Generate'}
-              </button>
+              {selectedFile && (
+                <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#ccc' }}>
+                  {selectedFile.name}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
+          <button
+            className="mindmap-button"
+            onClick={handleGenerate}
+            disabled={
+              loading ||
+              (mode === 'text' ? false : !selectedFile)
+            }
+            style={{ marginTop: '1rem' }}
+          >
+            {loading ? 'Generating...' : 'Generate'}
+          </button>
+        </div>
+        
 
         <div className="mindmap-flow-wrapper">
           <ReactFlow
@@ -178,12 +187,11 @@ const MindmapGenerator = () => {
           <div className="save-container">
             <input
               type="text"
-              placeholder="Enter mind map title..."
+              placeholder="Enter title for your mindmap"
               value={mapTitle}
               onChange={e => setMapTitle(e.target.value)}
-              style={{ padding: '0.5rem', borderRadius: '8px', width: '60%', marginRight: '1rem' }}
             />
-            <button className="mindmap-button" onClick={handleSaveMindmap}>Save</button>
+            <button className="mindmap-button" onClick={handleSaveMindmap}>Save to Dashboard</button>
           </div>
         )}
       </div>
