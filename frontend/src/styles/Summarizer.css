@@ -1,7 +1,7 @@
 .summarizer-container {
   width: 100%;
   min-height: 100vh;
-  padding: 6rem 2rem 2rem;
+  padding: 8rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(-45deg, #3a506b, #4a6270, #5c7484);
   background-size: 300% 300%;
@@ -214,27 +214,4 @@ button:focus {
     font-size: 0.95rem;
     padding: 0.6rem 1.2rem;
   }
-}
-
-.summarizer-container{
-  display: inline-block;
-  padding: 0.6rem 1.4rem;
-  background-color: #ffffff;
-  color: #3a505b;
-  font-weight: bold;
-  border-radius: 10px;
-  border: 2px solid #ffffff;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  text-align: center;
-  font-size: 1rem;
-}
-
-.summarizer-container .custom-file-upload:hover {
-  background-color: #f0f0f0;
-  color: #2c3e50;
-}
-
-.summarizer-container input[type="file"] {
-  display: none;
 }

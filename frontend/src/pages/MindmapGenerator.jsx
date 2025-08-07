@@ -4,6 +4,7 @@ import NavbarLoggedin from '../components/NavbarLoggedin';
 import PopupModal from '../components/PopupModal';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
+import { useNavigate } from 'react-router-dom';
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
@@ -26,6 +27,8 @@ const MindmapGenerator = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [saving, setSaving] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
+  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -209,10 +212,11 @@ const MindmapGenerator = () => {
         {showPopup && (
           <PopupModal
             message="Mindmap saved successfully!"
-            onClose={() => {
+            onConfirm={() => {
               setShowPopup(false);
-              window.location.href = '/dashboard';
+              navigate('/dashboard');
             }}
+            confirmText="OK"
           />
         )}
 
