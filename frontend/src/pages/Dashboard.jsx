@@ -32,7 +32,6 @@ const Dashboard = () => {
   const [tagSearchInput, setTagSearchInput] = useState('');
   const [tagSearchSuggestions, setTagSearchSuggestions] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const allTags = useMemo(() => {
     const tagsSet = new Set();
@@ -252,83 +251,62 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <NavbarLoggedin user={user} />
-      <div>
-        <div className="sidebar-hamburger-container" style={{ position: "fixed", top: 0, left: 0, height: "100vh", width: "60px", zIndex: 3000 }}>
-          <div className="sidebar-hamburger-btn">
-            <button
-              className="menu-toggle-button"
-              aria-label="Show menu"
-              style={{ fontSize: "2.2rem", background: "none", border: "none", color: "white", cursor: "pointer" }}
-              onMouseEnter={() => setSidebarOpen(true)}
-              onMouseLeave={() => setSidebarOpen(false)}
-            >
-              ☰
-            </button>
+      <div className="fixed-sidebar">
+        <button
+          className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
+          onClick={() => setView('summaries')}
+        >
+          SUMMARIES
+        </button>
+        <button
+          className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
+          onClick={() => setView('mindmaps')}
+        >
+          MINDMAPS
+        </button>
+        <button
+          className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
+          onClick={() => setView('testpapers')}
+        >
+          TEST PAPERS
+        </button>
+      </div>
+      <div className="topright-filter-bar">
+        <div className="tag-filter-bar">
+          <div className="tag-filter-input-wrapper" style={{ position: 'relative' }}>
+            <input
+              type="text"
+              value={tagSearchInput}
+              onChange={onTagSearchInputChange}
+              placeholder="Filter by tag..."
+              autoComplete="off"
+              className="tag-filter-input"
+              onKeyDown={e => {
+                if (e.key === 'Enter' && tagSearchInput.trim()) {
+                  addTagToFilter(tagSearchInput.trim());
+                }
+              }}
+            />
+            {tagSearchSuggestions.length > 0 && (
+              <div className="autocomplete-container">
+                <ul className="autocomplete-list">
+                  {tagSearchSuggestions.map((tag, idx) => (
+                    <li
+                      key={idx}
+                      className="autocomplete-item"
+                      onClick={() => addTagToFilter(tag)}
+                    >
+                      {tag}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
-          {sidebarOpen && (
-            <div
-              className="dashboard-toggle-float-menu"
-              onMouseEnter={() => setSidebarOpen(true)}
-              onMouseLeave={() => setSidebarOpen(false)}
-            >
-              <button
-                className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
-                onClick={() => setView('summaries')}
-              >
-                SUMMARIES
-              </button>
-              <button
-                className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
-                onClick={() => setView('mindmaps')}
-              >
-                MINDMAPS
-              </button>
-              <button
-                className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
-                onClick={() => setView('testpapers')}
-              >
-                TEST PAPERS
-              </button>
-            </div>
-          )}
-        </div>
-        <div className="topright-filter-bar">
-          <div className="tag-filter-bar">
-            <div className="tag-filter-input-wrapper" style={{ position: 'relative' }}>
-              <input
-                type="text"
-                value={tagSearchInput}
-                onChange={onTagSearchInputChange}
-                placeholder="Filter by tag..."
-                autoComplete="off"
-                className="tag-filter-input"
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && tagSearchInput.trim()) {
-                    addTagToFilter(tagSearchInput.trim());
-                  }
-                }}
-              />
-              {tagSearchSuggestions.length > 0 && (
-                <div className="autocomplete-container">
-                  <ul className="autocomplete-list">
-                    {tagSearchSuggestions.map((tag, idx) => (
-                      <li
-                        key={idx}
-                        className="autocomplete-item"
-                        onClick={() => addTagToFilter(tag)}
-                      >
-                        {tag}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-            <div className="tag-filter-chips">
-              {selectedTags.map((tag, idx) => (
-                <TagChip key={idx} tag={tag} onRemove={() => removeTagFromFilter(tag)} />
-              ))}
-            </div>
+          <div className="tag-filter-chips">
+            {selectedTags.map((tag, idx) => (
+              <TagChip key={idx} tag={tag} onRemove={() => removeTagFromFilter(tag)} />
+            ))}
           </div>
         </div>
       </div>
