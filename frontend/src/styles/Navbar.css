@@ -28,7 +28,6 @@ body {
   color: white;
   font-size: 1.5rem;
   font-weight: 600;
-  overflow: hidden;
 }
 
 .navbar-title {
@@ -87,9 +86,47 @@ body {
 }
 
 .navbar-user {
+  position: relative;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.navbar-dropdown {
+  position: absolute;
+  right: 0;
+  top: 60px;
+  background-color: #444;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+  padding: 1rem;
+  color: white;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 200px;
+}
+
+.navbar-dropdown p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.navbar-dropdown span {
+  font-size: 0.75rem;
+  color: #ccc;
+}
+
+.navbar-dropdown button {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
 }
 
 .navbar-avatar {
@@ -98,22 +135,4 @@ body {
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid white;
-}
-
-.navbar-user-info {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-  font-size: 0.85rem;
-  color: white;
-}
-
-.navbar-user-info p {
-  margin: 0;
-  font-weight: bold;
-}
-
-.navbar-user-info span {
-  font-size: 0.75rem;
-  color: #eee;
 }

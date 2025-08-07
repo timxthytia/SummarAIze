@@ -8,9 +8,11 @@ import '../styles/Navbar.css';
 const NavbarLoggedin = () => {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
+  const [dropdownVisible, setDropdownVisible] = React.useState(false);
+  const toggleDropdown = () => setDropdownVisible(!dropdownVisible);
 
   const handleLogout = () => {
-    signOut(auth).then(() => navigate('/login'));
+    signOut(auth).then(() => navigate('/'));
   };
 
   
@@ -24,21 +26,21 @@ const NavbarLoggedin = () => {
           <button className="navbar-home" onClick={() => navigate('/testmodeupload')}>Test Mode</button>
           <button className="navbar-home" onClick={() => navigate('/mindmapgenerator')}>Mindmap</button>
           <button className="navbar-home" onClick={() => navigate('/summarizer')}>Summarizer</button>
-          <button className="navbar-home" onClick={handleLogout}>Logout</button>
         </div>
         {user && (
-          <div className="navbar-user">
-            {user.photoURL && (
-              <img
-                src={user.photoURL}
-                alt="Profile"
-                className="navbar-avatar"
-              />
+          <div className="navbar-user" onClick={toggleDropdown}>
+            <img
+              src={user.photoURL || '/default-avatar.png'}
+              alt="Profile"
+              className="navbar-avatar"
+            />
+            {dropdownVisible && (
+              <div className="navbar-dropdown">
+                <p>{user.displayName || 'User'}</p>
+                <span>{user.email}</span>
+                <button onClick={handleLogout}>Logout</button>
+              </div>
             )}
-            <div className="navbar-user-info">
-              <p>{user.displayName || 'User'}</p>
-              <span>{user.email}</span>
-            </div>
           </div>
         )}
       </div>
