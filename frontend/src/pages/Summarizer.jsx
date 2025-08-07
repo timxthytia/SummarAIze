@@ -5,6 +5,8 @@ import { db, auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import NavbarLoggedin from '../components/NavbarLoggedin';
+import { useNavigate } from 'react-router-dom';
+import PopupModal from '../components/PopupModal';
 import '../styles/Summarizer.css';
 import DOMPurify from 'dompurify';
 
@@ -21,6 +23,8 @@ const TextSummarizer = () => {
   const [showSaveOption, setShowSaveOption] = useState(false);
   const [title, setTitle] = useState('');
   const [saving, setSaving] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -112,9 +116,9 @@ const TextSummarizer = () => {
         type: summaryType,
         timestamp: serverTimestamp()
       });
-      alert('Saved to Dashboard!');
       setTitle('');
       setShowSaveOption(false);
+      setShowPopup(true);
     } catch (err) {
       console.error(err);
     } finally {
@@ -220,6 +224,16 @@ const TextSummarizer = () => {
           </div>
         )}
       </div>
+      {showPopup && (
+        <PopupModal
+          message="Summary saved successfully!"
+          onConfirm={() => {
+            setShowPopup(false);
+            navigate('/dashboard');
+          }}
+          confirmText="OK"
+        />
+      )}
     </div>
   );
 };

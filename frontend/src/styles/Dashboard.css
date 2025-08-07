@@ -202,41 +202,15 @@
   color: #ccc;
 }
 
-.delete-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1100;
-}
-
-.delete-modal {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 2rem 2.5rem;
-  border-radius: 12px;
-  text-align: center;
-  max-width: 320px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.25);
-  color: #5f27cd;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-.rename-modal-buttons,
-.delete-modal-buttons {
+ 
+.rename-modal-buttons {
   margin-top: 1.5rem;
   display: flex;
   gap: 1rem;
   justify-content: center;
 }
 
-.confirm-rename-button,
-.delete-confirm-button {
+.confirm-rename-button {
   background-color: #5f27cd;
   border: none;
   color: white;
@@ -247,8 +221,7 @@
   transition: background-color 0.3s ease;
 }
 
-.confirm-rename-button:hover,
-.delete-confirm-button:hover {
+.confirm-rename-button:hover {
   background-color: #833471;
 }
 

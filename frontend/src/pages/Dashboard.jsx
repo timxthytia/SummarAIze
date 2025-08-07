@@ -12,6 +12,7 @@ import NavbarLoggedin from '../components/NavbarLoggedin';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { handleDownload } from '../utils/exportUtils';
 import ExportMindmapModal from '../components/ExportMindmapModel';
+import PopupModal from '../components/PopupModal';
 import CustomNode from '../components/CustomNode'; 
 import CustomEdge from '../components/CustomEdge'; 
 
@@ -697,21 +698,19 @@ const Dashboard = () => {
         </div>
       )}
       {deleteConfirm.visible && (
-        <div className="delete-modal-overlay">
-          <div className="delete-modal">
-            <p>
-              {deleteConfirm.isMindmap
-                ? 'Are you sure you want to delete this mind map?'
-                : deleteConfirm.isTestpaper
-                  ? 'Are you sure you want to delete this test paper?'
-                  : 'Are you sure you want to delete this summary?'}
-            </p>
-            <div className="delete-modal-buttons">
-              <button className="modal-cancel-button" onClick={() => handleDelete(deleteConfirm.id)}>Yes</button>
-              <button className="modal-cancel-button" onClick={cancelDelete}>No</button>
-            </div>
-          </div>
-        </div>
+        <PopupModal
+          message={
+            deleteConfirm.isMindmap
+              ? 'Are you sure you want to delete this mind map?'
+              : deleteConfirm.isTestpaper
+                ? 'Are you sure you want to delete this test paper?'
+                : 'Are you sure you want to delete this summary?'
+          }
+          onConfirm={() => handleDelete(deleteConfirm.id)}
+          onCancel={cancelDelete}
+          confirmText="Yes"
+          cancelText="No"
+        />
       )}
       <ExportMindmapModal
         open={exportModalOpen}

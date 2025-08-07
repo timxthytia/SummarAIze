@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/MindmapGenerator.css';
 import NavbarLoggedin from '../components/NavbarLoggedin';
+import PopupModal from '../components/PopupModal';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
 import ReactFlow, {
@@ -24,6 +25,7 @@ const MindmapGenerator = () => {
   const [mode, setMode] = useState('text');
   const [selectedFile, setSelectedFile] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -100,9 +102,8 @@ const MindmapGenerator = () => {
         uid: user.uid,
         timestamp: serverTimestamp()
       });
-      alert('Mindmap saved successfully!');
+      setShowPopup(true);
       setMapTitle('');
-      window.location.href = '/dashboard';
     } catch (err) {
       console.error('Error saving mindmap:', err);
       alert('Failed to save mindmap.');
@@ -205,6 +206,16 @@ const MindmapGenerator = () => {
             </button>
           </div>
         )}
+        {showPopup && (
+          <PopupModal
+            message="Mindmap saved successfully!"
+            onClose={() => {
+              setShowPopup(false);
+              window.location.href = '/dashboard';
+            }}
+          />
+        )}
+
       </div>
     </ReactFlowProvider>
   );
