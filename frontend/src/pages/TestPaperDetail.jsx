@@ -264,33 +264,77 @@ const TestPaperDetail = () => {
               + Add Question
             </button>
             {showAddQuestion && (
-              <div className="question-form">
+              <div className="question-form popup-question-form">
                 <h3>{editingQuestionId ? 'Update Question' : 'Add Question'}</h3>
-                <input type="text" placeholder="Question Number" value={newQuestion.questionNumber} onChange={(e) => setNewQuestion({ ...newQuestion, questionNumber: e.target.value })} />
-                <select value={newQuestion.type} onChange={(e) => setNewQuestion({ ...newQuestion, type: e.target.value })}>
-                  <option value="MCQ">MCQ</option>
-                  <option value="Open-ended">Open-Ended</option>
-                  <option value="Other">Other</option>
-                </select>
-                <input type="number" placeholder="Marks" value={newQuestion.marks} onChange={(e) => setNewQuestion({ ...newQuestion, marks: e.target.value })} />
-                {newQuestion.type === 'MCQ' ? (
+                <div className="popup-form-group">
+                  <label htmlFor="popup-question-number">Question Number</label>
+                  <input
+                    id="popup-question-number"
+                    type="text"
+                    placeholder="Enter question number"
+                    value={newQuestion.questionNumber}
+                    onChange={e => setNewQuestion({ ...newQuestion, questionNumber: e.target.value })}
+                  />
+                </div>
+                <div className="popup-form-group">
+                  <label htmlFor="popup-question-type">Question Type</label>
+                  <select
+                    id="popup-question-type"
+                    value={newQuestion.type}
+                    onChange={e => setNewQuestion({ ...newQuestion, type: e.target.value })}
+                  >
+                    <option value="MCQ">MCQ</option>
+                    <option value="Open-ended">Open-Ended</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div className="popup-form-group">
+                  <label htmlFor="popup-marks">Marks</label>
+                  <input
+                    id="popup-marks"
+                    type="number"
+                    placeholder="Enter marks"
+                    value={newQuestion.marks}
+                    onChange={e => setNewQuestion({ ...newQuestion, marks: e.target.value })}
+                  />
+                </div>
+                {newQuestion.type === 'MCQ' && (
                   <>
-                    <input type="text" placeholder="Options (comma-separated)" value={newQuestion.options || ''} onChange={(e) => setNewQuestion({ ...newQuestion, options: e.target.value.toUpperCase() })} />
-                    <input type="text" placeholder="Correct Answer(s)" value={newQuestion.correctAnswer || ''} onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value.toUpperCase() })} />
+                    <div className="popup-form-group">
+                      <label htmlFor="popup-options">Options <span style={{ fontWeight: 400, fontSize: '0.95em' }}>(comma-separated, e.g. A,B,C)</span></label>
+                      <input
+                        id="popup-options"
+                        type="text"
+                        placeholder="Enter options (comma-separated)"
+                        value={newQuestion.options || ''}
+                        onChange={e => setNewQuestion({ ...newQuestion, options: e.target.value.toUpperCase() })}
+                      />
+                    </div>
+                    <div className="popup-form-group">
+                      <label htmlFor="popup-correct-answer">Correct Answer(s) <span style={{ fontWeight: 400, fontSize: '0.95em' }}>(comma-separated if multiple)</span></label>
+                      <input
+                        id="popup-correct-answer"
+                        type="text"
+                        placeholder="Enter correct answer(s)"
+                        value={newQuestion.correctAnswer || ''}
+                        onChange={e => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value.toUpperCase() })}
+                      />
+                    </div>
                   </>
-                ) : newQuestion.type === 'Other' ? (
-                  <div style={{ margin: '8px 0' }}>
-                    <label htmlFor="other-answer-upload" className="file-upload-label">
+                )}
+                {newQuestion.type === 'Other' && (
+                  <div className="popup-form-group">
+                    <label htmlFor="popup-other-answer-upload">
                       {editingQuestionId ? 'Update Answer File:' : 'Upload Answer File:'}
                     </label>
-                    <label htmlFor="other-answer-upload" className="choose-file-btn">
+                    <label htmlFor="popup-other-answer-upload" className="choose-file-btn">
                       Choose File
                       <input
-                        id="other-answer-upload"
+                        id="popup-other-answer-upload"
                         type="file"
                         accept=".pdf,.doc,.docx"
                         style={{ display: 'none' }}
-                        onChange={(e) => setOtherAnswerFile(e.target.files[0])}
+                        onChange={e => setOtherAnswerFile(e.target.files[0])}
                       />
                     </label>
                     {otherAnswerFile && (
@@ -308,18 +352,40 @@ const TestPaperDetail = () => {
                       </a>
                     )}
                   </div>
-                ) : (
-                  <input type="text" placeholder="Correct Answer" value={newQuestion.correctAnswer} onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })} />
                 )}
-                <button onClick={handleAddQuestion} disabled={isAddUpdateDisabled()} className={`submit-button ${isAddUpdateDisabled() ? 'disabled' : ''}`}>
-                  {editingQuestionId ? 'Update' : 'Add'}
-                </button>
-                <button type="button" className="cancel-edit-button" onClick={() => {
-                  setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', options: '' });
-                  setEditingQuestionId(null);
-                  setOtherAnswerFile(null);
-                  setShowAddQuestion(false);
-                }}>Cancel</button>
+                {newQuestion.type === 'Open-ended' && (
+                  <div className="popup-form-group">
+                    <label htmlFor="popup-open-ended-answer">Correct Answer</label>
+                    <input
+                      id="popup-open-ended-answer"
+                      type="text"
+                      placeholder="Enter correct answer"
+                      value={newQuestion.correctAnswer}
+                      onChange={e => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })}
+                    />
+                  </div>
+                )}
+                <div className="popup-form-actions">
+                  <button
+                    onClick={handleAddQuestion}
+                    disabled={isAddUpdateDisabled()}
+                    className={`popup-form-button ${isAddUpdateDisabled() ? 'disabled' : ''}`}
+                  >
+                    {editingQuestionId ? 'Update' : 'Add'}
+                  </button>
+                  <button
+                    type="button"
+                    className="popup-form-button"
+                    onClick={() => {
+                      setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', options: '' });
+                      setEditingQuestionId(null);
+                      setOtherAnswerFile(null);
+                      setShowAddQuestion(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             )}
           </div>

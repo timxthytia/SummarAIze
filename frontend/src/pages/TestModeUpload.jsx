@@ -456,7 +456,7 @@ const TestModeUpload = () => {
               </button>
               {showQuestionForm && (
                 <div className="question-form popup-question-form">
-                  <h4>{questionFormData.id ? 'Edit Question' : 'New Question'}</h4>
+                  <h3>{questionFormData.id ? 'Edit Question' : 'Add Question'}</h3>
                   <label>
                     Question Number:
                     <input
