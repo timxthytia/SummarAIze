@@ -9,7 +9,7 @@
   min-height: 100vh;
   padding: 6rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(-45deg, #0b132b, #1b233a, #2e3b50, #1b233a);
+  background: linear-gradient(-45deg, #0b3d0b, #145214, #1f6a1f, #145214);
   background-size: 300% 300%;
   animation: animatedGradient 15s ease-in-out infinite;
   color: white;

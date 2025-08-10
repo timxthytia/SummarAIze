@@ -249,64 +249,67 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard-container">
+    <div className={`dashboard-container ${view}`}>
       <NavbarLoggedin user={user} />
       <div className="fixed-sidebar">
         <button
           className={`toggle-button ${view === 'summaries' ? 'active' : ''}`}
+          data-view="summaries"
           onClick={() => setView('summaries')}
         >
           SUMMARIES
         </button>
         <button
           className={`toggle-button ${view === 'mindmaps' ? 'active' : ''}`}
+          data-view="mindmaps"
           onClick={() => setView('mindmaps')}
         >
           MINDMAPS
         </button>
         <button
           className={`toggle-button ${view === 'testpapers' ? 'active' : ''}`}
+          data-view="testpapers"
           onClick={() => setView('testpapers')}
         >
           TEST PAPERS
         </button>
-      </div>
-      <div className="topright-filter-bar">
-        <div className="tag-filter-bar">
-          <div className="tag-filter-input-wrapper" style={{ position: 'relative' }}>
-            <input
-              type="text"
-              value={tagSearchInput}
-              onChange={onTagSearchInputChange}
-              placeholder="Filter by tag..."
-              autoComplete="off"
-              className="tag-filter-input"
-              onKeyDown={e => {
-                if (e.key === 'Enter' && tagSearchInput.trim()) {
-                  addTagToFilter(tagSearchInput.trim());
-                }
-              }}
-            />
-            {tagSearchSuggestions.length > 0 && (
-              <div className="autocomplete-container">
-                <ul className="autocomplete-list">
-                  {tagSearchSuggestions.map((tag, idx) => (
-                    <li
-                      key={idx}
-                      className="autocomplete-item"
-                      onClick={() => addTagToFilter(tag)}
-                    >
-                      {tag}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-          <div className="tag-filter-chips">
-            {selectedTags.map((tag, idx) => (
-              <TagChip key={idx} tag={tag} onRemove={() => removeTagFromFilter(tag)} />
-            ))}
+        <div className="sidebar-tag-filter">
+          <div className="tag-filter-bar">
+            <div className="tag-filter-input-wrapper" style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={tagSearchInput}
+                onChange={onTagSearchInputChange}
+                placeholder="Filter by tag..."
+                autoComplete="off"
+                className="tag-filter-input"
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && tagSearchInput.trim()) {
+                    addTagToFilter(tagSearchInput.trim());
+                  }
+                }}
+              />
+              {tagSearchSuggestions.length > 0 && (
+                <div className="autocomplete-container">
+                  <ul className="autocomplete-list">
+                    {tagSearchSuggestions.map((tag, idx) => (
+                      <li
+                        key={idx}
+                        className="autocomplete-item"
+                        onClick={() => addTagToFilter(tag)}
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div className="tag-filter-chips">
+              {selectedTags.map((tag, idx) => (
+                <TagChip key={idx} tag={tag} onRemove={() => removeTagFromFilter(tag)} />
+              ))}
+            </div>
           </div>
         </div>
       </div>

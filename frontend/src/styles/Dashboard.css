@@ -4,14 +4,30 @@
   100% { background-position: 0% 50%; }
 }
 
+
+.dashboard-container.summaries {
+  background: linear-gradient(-45deg, #0b132b, #1b233a, #2e3b50, #1b233a);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
+}
+
+.dashboard-container.mindmaps {
+  background: linear-gradient(-45deg, #e65c3a, #cc4c2f, #a63a1f);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
+}
+
+.dashboard-container.testpapers {
+  background: linear-gradient(-45deg, #0b3d0b, #145214, #1f6a1f, #145214);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
+}
+
 .dashboard-container {
   width: 100%;
   min-height: 100vh;
   padding: 6rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(-45deg, #5f27cd, #341f97, #833471);
-  background-size: 300% 300%;
-  animation: animatedGradient 15s ease-in-out infinite;
   box-sizing: border-box;
   color: white;
 }
@@ -245,38 +261,69 @@
 /* Persistent fixed sidebar styles */
 .fixed-sidebar {
   position: fixed;
-  top: 6rem;
+  top: 1.5rem;
   left: 0;
-  width: 180px;
-  height: calc(100vh - 6rem);
-  background: rgba(255,255,255,0.1);
-  padding: 2rem 1rem;
+  width: 220px;
+  height: 100vh;
+  background-color: #2a2a2a;
+  padding-top: 4rem;
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
   align-items: center;
-  z-index: 1000;
-  border-right: 2px solid white;
+  z-index: 900;
   backdrop-filter: blur(10px);
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
 }
 
+/* Sidebar button styles (toggle-button) */
 .fixed-sidebar .toggle-button {
+  display: block;
   width: 100%;
-  padding: 1rem;
-  border: 2px solid #5f27cd;
   background-color: transparent;
-  color: #5f27cd;
-  border-radius: 12px;
+  color: white;
+  border: none;
+  border-radius: 0;
+  text-align: center;
   font-weight: bold;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  padding: 1.5rem 0;
+  margin: 0;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.fixed-sidebar .tag-filter-input {
+  width: auto;
+  margin-left: 1rem;
+  margin-right: 1rem;
+  box-sizing: border-box;
 }
 
-.fixed-sidebar .toggle-button.active,
+/* Sidebar active button styles */
+.fixed-sidebar .toggle-button.active[data-view='summaries'] {
+  background-color: #1b233a;
+}
+.fixed-sidebar .toggle-button.active[data-view='mindmaps'] {
+  background-color: #cc4c2f;
+}
+.fixed-sidebar .toggle-button.active[data-view='testpapers'] {
+  background-color: #145214;
+}
+
+/* Sidebar button hover effects */
 .fixed-sidebar .toggle-button:hover {
-  background-color: #5f27cd;
-  color: white;
+  transform: scale(1.05);
+}
+.fixed-sidebar .toggle-button[data-view='summaries']:hover {
+  background-color: #0b132b;
+  transform: scale(1.05);
+}
+.fixed-sidebar .toggle-button[data-view='mindmaps']:hover {
+  background-color: #cc4c2f;
+  transform: scale(1.05);
+}
+.fixed-sidebar .toggle-button[data-view='testpapers']:hover {
+  background-color: #145214;
+  transform: scale(1.05);
 }
 
 .left-sidebar {
@@ -433,24 +480,6 @@
   gap: 0.5rem;
 }
 
-.right-sidebar {
-  position: fixed;
-  top: 6rem;
-  right: 0;
-  bottom: 0;
-  width: 260px;
-  padding: 2rem 1.5rem 2rem 1rem;
-  background: rgba(50, 40, 95, 0.15);
-  backdrop-filter: blur(8px);
-  border-left: 2px solid white;
-  z-index: 20;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  color: white;
-}
-
 .tag-filter-bar {
   width: 100%;
   margin-top: 0;
@@ -460,41 +489,43 @@
   gap: 0.8rem;
 }
 
-.topright-filter-bar {
-  position: fixed;
-  top: 5.2rem;
-  right: 2.5rem;
-  z-index: 100;
-  width: 320px;
-  max-width: 96vw;
-  padding: 1.2rem 1.5rem 1rem 1.5rem;
+
+/* Sidebar tag filter styles */
+.sidebar-tag-filter {
+  margin-top: 3rem;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  min-height: 80px;
+  align-items: center;
 }
 
-.topright-filter-bar .tag-filter-bar {
+.sidebar-tag-filter .tag-filter-bar {
   width: 100%;
-  margin-top: 0;
   gap: 0.7rem;
 }
 
-.topright-filter-bar .tag-filter-input {
-  width: 100%;
+.sidebar-tag-filter .tag-filter-input {
   background-color: #2a2a2a;
   color: white;
 }
 
-.topright-filter-bar .tag-filter-chips {
+.sidebar-tag-filter .tag-filter-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
   padding-top: 5px;
+  justify-content: center;
 }
 
 @media (max-width: 1400px) {
   .main-content {
     margin-left: 200px;
   }
+}
+/* Remove focus and active outlines/borders from sidebar toggle buttons */
+.fixed-sidebar .toggle-button:focus,
+.fixed-sidebar .toggle-button:active {
+  outline: none;
+  border: none;
+  box-shadow: none;
 }
