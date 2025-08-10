@@ -455,13 +455,14 @@ const TestModeUpload = () => {
                 + Add Question
               </button>
               {showQuestionForm && (
-                <div className="question-form">
+                <div className="question-form popup-question-form">
                   <h4>{questionFormData.id ? 'Edit Question' : 'New Question'}</h4>
                   <label>
-                    Question Number (e.g. 2a, 3bii):
+                    Question Number:
                     <input
                       type="text"
                       value={questionFormData.questionNumber}
+                      placeholder='(e.g. 2a, 3bii)'
                       onChange={(e) =>
                         setQuestionFormData((prev) => ({ ...prev, questionNumber: e.target.value }))
                       }
@@ -534,6 +535,7 @@ const TestModeUpload = () => {
                       <input
                         type="text"
                         value={questionFormData.correctAnswer}
+                        placeholder='Enter the correct answer'
                         onChange={(e) =>
                           setQuestionFormData((prev) => ({ ...prev, correctAnswer: e.target.value }))
                         }
@@ -569,10 +571,17 @@ const TestModeUpload = () => {
                     </div>
                   )}
                   <div className="form-actions">
-                    <button onClick={handleSaveQuestion} disabled={!isFormValid(questionFormData)} className="submit-button">
-                      Save Question
+                    <button
+                      onClick={handleSaveQuestion}
+                      disabled={!isFormValid(questionFormData)}
+                      className="popup-form-button"
+                    >
+                      Add
                     </button>
-                    <button onClick={closeQuestionForm} className="cancel-edit-button">
+                    <button
+                      onClick={closeQuestionForm}
+                      className="popup-form-button"
+                    >
                       Cancel
                     </button>
                   </div>

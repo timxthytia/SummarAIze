@@ -2,6 +2,11 @@
     padding: 2rem;
     font-family: 'Arial', sans-serif;
     min-height: 100vh;
+    background: linear-gradient(-45deg, #0b3d0b, #145214, #1f6a1f, #145214);
+    background-size: 300% 300%;
+    animation: animatedGradient 15s ease-in-out infinite;
+    color: white;
+    box-sizing: border-box;
 }
 
 h2 {

@@ -181,8 +181,8 @@ input[type="file"] {
 
 .add-question-button {
   margin-top: 1rem;
-  background-color: transparent;
-  color: #ffffff;
+  background-color: white;
+  color: black;
   border: 2px solid #ffffff;
   border-radius: 10px;
   padding: 0.6rem 1rem;
@@ -192,8 +192,8 @@ input[type="file"] {
 }
 
 .add-question-button:hover {
-  background: #ffffff;
-  color: #0b132b;
+  background: #2e3b50;
+  color: white;
   border: 2px solid #ffffff;
 }
 
@@ -202,7 +202,7 @@ input[type="file"] {
   padding: 1rem;
   border: 1px solid #ffffff;
   border-radius: 8px;
-  background-color: #1f2c48;
+  background-color: #2e3b50;
   color: white;
 }
 
@@ -221,7 +221,7 @@ input[type="file"] {
 .question-form input[type="text"],
 .question-form input[type="number"],
 .question-form select {
-  background-color: #1c2a4a;
+  background-color: #2e3b50;
   color: white;
   padding: 0.5rem;
   border-radius: 6px;
@@ -277,7 +277,7 @@ input[type="file"] {
 
 .submit-testpaper-button:hover {
   background-color: #ffffff;
-  color: #0b132b;
+  color: #2e3b50;
   border-color: #ffffff;
 }
 
@@ -450,4 +450,48 @@ input[type="file"] {
     max-width: 100%;
     width: 100%;
   }
+}
+/* Popup form button styles */
+.popup-form-button {
+  background-color: white !important;
+  color: black !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  margin-right: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+.popup-form-button:hover {
+  background: #2e3b50 !important;
+  color: white !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* Popup question form to match .question-list-row width and layout */
+.popup-question-form {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.add-question-button {
+  margin-top: 1rem;
+  background-color: white;
+  color: black;
+  border: 2px solid #ffffff;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+
+.add-question-button:hover {
+  background: #2e3b50;
+  color: white;
+  border: 2px solid #ffffff;
 }

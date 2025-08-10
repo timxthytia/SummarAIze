@@ -161,24 +161,26 @@ const TestPaperDetail = () => {
   if (!testpaper) return null;
 
   return (
-    <>
+    <div className="paper-container">
       <NavbarLoggedin />
-      <main>
-        <div className="paper-container">
-          <h1>{testpaper.paperTitle || 'Untitled Test Paper'}</h1>
-          <div className="file-view-section view-uploaded-paper-link">
-            {testpaper.fileUrl && (
-              <a
-                href={testpaper.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="selected-filename"
-              >
-                {truncate(testpaper.fileName)}
-              </a>
-            )}
-          </div>
-          <div className="pdf-wrapper">
+      <main></main>
+      <h1 className='upload-title'>{testpaper.paperTitle || 'Untitled Test Paper'}</h1>
+      <div className="file-view-section view-uploaded-paper-link">
+        View Uploaded File:
+        {testpaper.fileUrl && (
+          <a
+            href={testpaper.fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="selected-filename"
+          >
+            {truncate(testpaper.fileName)}
+          </a>
+        )}
+      </div>
+      <div className="pdf-and-questions">
+        <div className="pdf-viewer-section">
+          <div className="pdf-viewer-container">
             <Document
               file={testpaper.fileUrl}
               onLoadSuccess={({ numPages }) => setNumPages(numPages)}
@@ -191,31 +193,39 @@ const TestPaperDetail = () => {
                 renderTextLayer={false}
               />
             </Document>
+            <div className="pdf-nav">
+              <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1} className="nav-btn">
+                ←
+              </button>
+              <span>Page {currentPage} of {numPages}</span>
+              <button onClick={() => setCurrentPage((p) => Math.min(p + 1, numPages))} disabled={currentPage === numPages} className="nav-btn">
+                →
+              </button>
+            </div>
           </div>
-          <div className="pdf-nav">
-            <button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>←</button>
-            <span>Page {currentPage} of {numPages}</span>
-            <button onClick={() => setCurrentPage((p) => Math.min(p + 1, numPages))} disabled={currentPage === numPages}>→</button>
-          </div>
+        </div>
+        <div className="questions-section">
           <div className="question-panel">
-            <ul className="question-list">
+            <ul>
               {questionsByPage.find(p => p.page === currentPage)?.questions.map((q) => (
-                <li key={q.id} className="question-list-item">
-                  <div className="question-info-row">
-                    <span className="question-type">
-                      <strong>{q.questionNumber ? `${q.questionNumber}. ` : ''}{q.type}</strong>
-                    </span>
-                    <span className="question-marks">Marks: <span>{q.marks}</span></span>
-                    <span className="question-answer-label">Correct Answer:</span>
-                    <span className="question-answer-value">
-                      {Array.isArray(q.correctAnswer)
-                        ? <span className="open-ended-answer" title={q.correctAnswer.join(', ')}>{truncate(q.correctAnswer.join(', '))}</span>
-                        : typeof q.correctAnswer === 'object' && q.correctAnswer?.url
-                        ? <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="question-answer-link">{truncate(q.correctAnswer.name) || 'File'}</a>
-                        : <span className="open-ended-answer" title={q.correctAnswer}>{truncate(q.correctAnswer)}</span>
-                      }
-                    </span>
-                    <button className="icon-edit-button" onClick={() => {
+                <li key={q.id} className="question-list-item question-list-row">
+                  <span className="question-type">
+                    <strong>{q.questionNumber ? `${q.questionNumber}. ` : ''}{q.type}</strong>
+                  </span>
+                  <span className="question-marks">Marks: <span>{q.marks}</span></span>
+                  <span className="question-answer-label">Correct Answer:</span>
+                  <span className="question-answer-value">
+                    {Array.isArray(q.correctAnswer)
+                      ? <span className="open-ended-answer" title={q.correctAnswer.join(', ')}>{truncate(q.correctAnswer.join(', '))}</span>
+                      : typeof q.correctAnswer === 'object' && q.correctAnswer?.url
+                      ? <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="question-answer-link">{truncate(q.correctAnswer.name) || 'File'}</a>
+                      : <span className="open-ended-answer" title={q.correctAnswer}>{truncate(q.correctAnswer)}</span>
+                    }
+                  </span>
+                  <button 
+                    className="icon-edit-button" 
+                    aria-label="Edit"
+                    onClick={() => {
                       setNewQuestion({
                         type: q.type || 'MCQ',
                         questionNumber: q.questionNumber || '',
@@ -227,91 +237,98 @@ const TestPaperDetail = () => {
                       setOtherAnswerFile(null);
                       setShowAddQuestion(true);
                     }}>
-                      <svg width="28" height="28" fill="none" stroke="#43a047" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                        <path d="M12 20h9"></path>
-                        <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
-                      </svg>
-                    </button>
-                    <button className="icon-delete-button" onClick={() => handleDeleteQuestion(q.id)}>
-                      <svg width="28" height="28" fill="none" stroke="#e53935" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                        <polyline points="3 6 5 6 21 6"></polyline>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
-                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                      </svg>
-                    </button>
-                  </div>
+                    <svg width="28" height="28" fill="none" stroke="#43a047" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                    </svg>
+                  </button>
+                  <button 
+                    className="icon-delete-button" 
+                    onClick={() => handleDeleteQuestion(q.id)}
+                    aria-label="Delete"
+                  >
+                    <svg width="28" height="28" fill="none" stroke="#e53935" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                  </button>
                 </li>
               ))}
             </ul>
-          </div>
-          {showAddQuestion ? (
-            <div className="question-form">
-              <h3>{editingQuestionId ? 'Update Question' : 'Add Question'}</h3>
-              <input type="text" placeholder="Question Number" value={newQuestion.questionNumber} onChange={(e) => setNewQuestion({ ...newQuestion, questionNumber: e.target.value })} />
-              <select value={newQuestion.type} onChange={(e) => setNewQuestion({ ...newQuestion, type: e.target.value })}>
-                <option value="MCQ">MCQ</option>
-                <option value="Open-ended">Open-Ended</option>
-                <option value="Other">Other</option>
-              </select>
-              <input type="number" placeholder="Marks" value={newQuestion.marks} onChange={(e) => setNewQuestion({ ...newQuestion, marks: e.target.value })} />
-              {newQuestion.type === 'MCQ' ? (
-                <>
-                  <input type="text" placeholder="Options (comma-separated)" value={newQuestion.options || ''} onChange={(e) => setNewQuestion({ ...newQuestion, options: e.target.value.toUpperCase() })} />
-                  <input type="text" placeholder="Correct Answer(s)" value={newQuestion.correctAnswer || ''} onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value.toUpperCase() })} />
-                </>
-              ) : newQuestion.type === 'Other' ? (
-                <div style={{ margin: '8px 0' }}>
-                  <label htmlFor="other-answer-upload" className="file-upload-label">
-                    {editingQuestionId ? 'Update Answer File:' : 'Upload Answer File:'}
-                  </label>
-                  <label htmlFor="other-answer-upload" className="choose-file-btn">
-                    Choose File
-                    <input
-                      id="other-answer-upload"
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      style={{ display: 'none' }}
-                      onChange={(e) => setOtherAnswerFile(e.target.files[0])}
-                    />
-                  </label>
-                  {otherAnswerFile && (
-                    <a
-                      className="selected-filename"
-                      href={
-                        otherAnswerFile instanceof File
-                          ? URL.createObjectURL(otherAnswerFile)
-                          : otherAnswerFile.url || '#'
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {truncate(otherAnswerFile.name) || (typeof otherAnswerFile === "string" ? otherAnswerFile : "Answer File")}
-                    </a>
-                  )}
-                </div>
-              ) : (
-                <input type="text" placeholder="Correct Answer" value={newQuestion.correctAnswer} onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })} />
-              )}
-              <button onClick={handleAddQuestion} disabled={isAddUpdateDisabled()} className={`submit-button ${isAddUpdateDisabled() ? 'disabled' : ''}`}>
-                {editingQuestionId ? 'Update' : 'Add'}
-              </button>
-              <button type="button" className="cancel-edit-button" onClick={() => {
-                setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', options: '' });
-                setEditingQuestionId(null);
-                setOtherAnswerFile(null);
-                setShowAddQuestion(false);
-              }}>Cancel</button>
-            </div>
-          ) : (
-            <button className="add-question-toggle" onClick={() => setShowAddQuestion(true)}>Add Question</button>
-          )}
-          <div className="save-button-wrapper">
-            <button className="save-buttonn" onClick={handleSaveChanges}>Save Changes</button>
+            <button
+              className="add-question-button"
+              onClick={() => setShowAddQuestion(true)}
+            >
+              + Add Question
+            </button>
+            {showAddQuestion && (
+              <div className="question-form">
+                <h3>{editingQuestionId ? 'Update Question' : 'Add Question'}</h3>
+                <input type="text" placeholder="Question Number" value={newQuestion.questionNumber} onChange={(e) => setNewQuestion({ ...newQuestion, questionNumber: e.target.value })} />
+                <select value={newQuestion.type} onChange={(e) => setNewQuestion({ ...newQuestion, type: e.target.value })}>
+                  <option value="MCQ">MCQ</option>
+                  <option value="Open-ended">Open-Ended</option>
+                  <option value="Other">Other</option>
+                </select>
+                <input type="number" placeholder="Marks" value={newQuestion.marks} onChange={(e) => setNewQuestion({ ...newQuestion, marks: e.target.value })} />
+                {newQuestion.type === 'MCQ' ? (
+                  <>
+                    <input type="text" placeholder="Options (comma-separated)" value={newQuestion.options || ''} onChange={(e) => setNewQuestion({ ...newQuestion, options: e.target.value.toUpperCase() })} />
+                    <input type="text" placeholder="Correct Answer(s)" value={newQuestion.correctAnswer || ''} onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value.toUpperCase() })} />
+                  </>
+                ) : newQuestion.type === 'Other' ? (
+                  <div style={{ margin: '8px 0' }}>
+                    <label htmlFor="other-answer-upload" className="file-upload-label">
+                      {editingQuestionId ? 'Update Answer File:' : 'Upload Answer File:'}
+                    </label>
+                    <label htmlFor="other-answer-upload" className="choose-file-btn">
+                      Choose File
+                      <input
+                        id="other-answer-upload"
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        style={{ display: 'none' }}
+                        onChange={(e) => setOtherAnswerFile(e.target.files[0])}
+                      />
+                    </label>
+                    {otherAnswerFile && (
+                      <a
+                        className="selected-filename"
+                        href={
+                          otherAnswerFile instanceof File
+                            ? URL.createObjectURL(otherAnswerFile)
+                            : otherAnswerFile.url || '#'
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {truncate(otherAnswerFile.name) || (typeof otherAnswerFile === "string" ? otherAnswerFile : "Answer File")}
+                      </a>
+                    )}
+                  </div>
+                ) : (
+                  <input type="text" placeholder="Correct Answer" value={newQuestion.correctAnswer} onChange={(e) => setNewQuestion({ ...newQuestion, correctAnswer: e.target.value })} />
+                )}
+                <button onClick={handleAddQuestion} disabled={isAddUpdateDisabled()} className={`submit-button ${isAddUpdateDisabled() ? 'disabled' : ''}`}>
+                  {editingQuestionId ? 'Update' : 'Add'}
+                </button>
+                <button type="button" className="cancel-edit-button" onClick={() => {
+                  setNewQuestion({ type: 'MCQ', questionNumber: '', marks: '', correctAnswer: '', options: '' });
+                  setEditingQuestionId(null);
+                  setOtherAnswerFile(null);
+                  setShowAddQuestion(false);
+                }}>Cancel</button>
+              </div>
+            )}
           </div>
         </div>
-      </main>
-    </>
+      </div>
+      <div className="save-button-wrapper">
+        <button className="save-buttonn" onClick={handleSaveChanges}>Save Changes</button>
+      </div>
+    </div>
   );
 };
 

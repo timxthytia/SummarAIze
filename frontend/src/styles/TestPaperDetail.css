@@ -1,9 +1,11 @@
-.testpaper-container {
+.paper-container {
   width: 100%;
   min-height: 100vh;
   padding: 6rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+  background: linear-gradient(-45deg, #0b3d0b, #145214, #1f6a1f, #145214);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
   color: white;
   box-sizing: border-box;
 }
@@ -231,6 +233,24 @@ input[type="file"] {
   transform: translateY(-1px);
 }
 
+.add-question-button {
+  margin-top: 1rem;
+  background-color: white;
+  color: black;
+  border: 2px solid black;
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+
+.add-question-button:hover {
+  background: #2e3b50;
+  color: white;
+  border: 2px solid #ffffff;
+}
+
 .question-form {
   margin-top: 1rem;
   padding: 1rem;
@@ -287,15 +307,6 @@ input[type="file"] {
 .loading-container {
   padding: 2rem;
   text-align: center;
-}
-
-.paper-container {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .pdf-wrapper {
@@ -362,23 +373,30 @@ input[type="file"] {
 
 .pdf-nav button {
   background-color: transparent;
-  color: white;
+  color: #ffffff;
   border: none;
   padding: 0.5rem 1rem;
   font-size: 1.5rem;
   font-weight: bold;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s;
+}
+.pdf-nav button:hover:not(:disabled) {
+  background-color: transparent !important;
+  color: inherit;
+  transform: scale(1.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.pdf-nav button:focus,
+.pdf-nav button:active {
+  border-color: transparent;
+  outline: none;
 }
 
 .pdf-nav button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.pdf-nav button:hover:not(:disabled) {
-  background-color: #5f27cd;
-  color: white;
 }
 
 .question-answer-link {
@@ -464,4 +482,91 @@ input[type="file"] {
   z-index: 100;
   background: none;
   box-shadow: none;
+}
+
+/* Layout for PDF and Questions side by side */
+.pdf-and-questions {
+  display: flex;
+  flex-direction: row;
+  gap: 2.5rem;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  margin: 2.5rem auto 0 auto;
+  max-width: 1400px;
+}
+
+.pdf-viewer-section {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 860px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.questions-section {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+@media (max-width: 1100px) {
+  .pdf-and-questions {
+    flex-direction: column;
+    gap: 2rem;
+    align-items: stretch;
+  }
+  .pdf-viewer-section,
+  .questions-section {
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+/* Popup form button styles */
+.popup-form-button {
+  background-color: white !important;
+  color: black !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  margin-right: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s, border 0.3s;
+}
+.popup-form-button:hover {
+  background: #2e3b50 !important;
+  color: white !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* Popup question form to match .question-list-row width and layout */
+.popup-question-form {
+  width: 100%;
+  max-width: none;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.question-list-row,
+.popup-question-form {
+  max-width: 700px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.question-list-row {
+  padding: 0.5rem 1rem;
+}
+
+.popup-question-form {
+  padding: 1rem 1.5rem;
 }
