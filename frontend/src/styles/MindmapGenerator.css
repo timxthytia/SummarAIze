@@ -124,7 +124,6 @@ input[type="file"] {
   color: white;
   cursor: pointer;
   font-weight: bold;
-  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .mode-toggle button.active {

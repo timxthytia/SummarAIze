@@ -6,7 +6,6 @@ import { auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestModeUpload.css';
-import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../services/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
@@ -333,28 +332,59 @@ const TestModeUpload = () => {
           )}
         </div>
         {error && <div className="error-message">{error}</div>}
-        {selectedFile && pdfData && (
-          <div>
-            <Document
-              file={pdfData}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={() => setError('Failed to load PDF file.')}
-              loading="Loading PDF..."
-              error="Failed to load PDF."
+        
+        <div className="submit-testpaper-container">
+          <button onClick={handleSubmitTestPaper} className="submit-testpaper-button">
+            Upload Test Paper
+          </button>
+        </div>
+        {fileUrl && (
+          <div className="view-uploaded-paper-link">
+            <a
+              href={fileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#1976d2', textDecoration: 'underline' }}
             >
-              <Page pageNumber={currentPage} width={800} />
-            </Document>
-            <div className="pdf-nav">
-              <button onClick={goToPreviousPage} disabled={currentPage <= 1} className="nav-btn">
-                ←
-              </button>
-              <span>
-                Page {currentPage} of {numPages}
-              </span>
-              <button onClick={goToNextPage} disabled={currentPage >= numPages} className="nav-btn">
-                → 
-              </button>
+              {selectedFile ? truncate(selectedFile.name) : 'View Uploaded Test Paper'}
+            </a>
+          </div>
+        )}
+      </div>
+      {selectedFile && pdfData && (
+        <div className="pdf-and-questions">
+          <div className="pdf-viewer-section">
+            <div className="pdf-viewer-container">
+              <Document
+                file={pdfData}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={() => setError('Failed to load PDF file.')}
+                loading="Loading PDF..."
+                error="Failed to load PDF."
+              >
+                <Page
+                  pageNumber={currentPage}
+                  width={800}
+                  className="pdf-page"
+                  // renderTextLayer and renderAnnotationLayer default to true; included for clarity
+                  renderTextLayer={true}
+                  renderAnnotationLayer={true}
+                />
+              </Document>
+              <div className="pdf-nav">
+                <button onClick={goToPreviousPage} disabled={currentPage <= 1} className="nav-btn">
+                  ←
+                </button>
+                <span>
+                  Page {currentPage} of {numPages}
+                </span>
+                <button onClick={goToNextPage} disabled={currentPage >= numPages} className="nav-btn">
+                  → 
+                </button>
+              </div>
             </div>
+          </div>
+          <div className="questions-section">
             <div className="question-panel">
               <ul>
                 {(questionsByPage[currentPage] || []).map((q) => (
@@ -550,25 +580,8 @@ const TestModeUpload = () => {
               )}
             </div>
           </div>
-        )}
-        <div className="submit-testpaper-container">
-          <button onClick={handleSubmitTestPaper} className="submit-testpaper-button">
-            Upload Test Paper
-          </button>
         </div>
-        {fileUrl && (
-          <div className="view-uploaded-paper-link">
-            <a
-              href={fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#1976d2', textDecoration: 'underline' }}
-            >
-              {selectedFile ? truncate(selectedFile.name) : 'View Uploaded Test Paper'}
-            </a>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };

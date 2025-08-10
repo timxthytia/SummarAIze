@@ -151,11 +151,6 @@ const MindmapGenerator = () => {
                   onChange={e => setSelectedFile(e.target.files[0])}
                 />
               </label>
-              {selectedFile && (
-                <div style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#ccc' }}>
-                  {selectedFile.name}
-                </div>
-              )}
             </div>
           )}
           <button
@@ -170,6 +165,12 @@ const MindmapGenerator = () => {
             {loading ? 'Generating...' : 'Generate'}
           </button>
         </div>
+
+        {mode === 'file' && selectedFile && (
+          <div className="uploaded-file-info" style={{ marginTop: '1rem', color: '#ccc', fontSize: '0.9rem', maxWidth: '900px', marginLeft: 'auto', marginRight: 'auto', textAlign: 'center', fontStyle: 'italic' }}>
+            <p>Uploaded File: {selectedFile.name}</p>
+          </div>
+        )}
         
 
         <div className="mindmap-flow-wrapper">
