@@ -1,11 +1,49 @@
 .timer-title-row {
   display: grid;
   grid-template-columns: auto 1fr auto; /* left timer, centered title, right button */
+  grid-template-areas: "timer title topbar";
   align-items: center;
   margin-bottom: 1.5rem;
   margin-left: 1.5rem;
   gap: 1rem;
   padding: 0 1rem;
+}
+
+.timer {
+  grid-area: timer;
+}
+.paper-title {
+  grid-area: title;
+}
+.topbar-submit {
+  grid-area: topbar;
+}
+.paper-title-center-wrapper {
+  grid-area: title;
+}
+
+@media (max-width: 700px) {
+  .timer-title-row {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "title"
+      "timer"
+      "topbar";
+  }
+  .paper-title,
+  .paper-title-center-wrapper {
+    text-align: center;
+    justify-self: center;
+  }
+  .timer {
+    text-align: center;
+    justify-self: center;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+  }
+  .topbar-submit {
+    justify-self: center;
+  }
 }
 
 .paper-title {
@@ -188,13 +226,15 @@ main {
 
 .testattempt-open-ended-answer {
   width: 100%;
+  max-width: 100%;
   min-height: 100px;
   padding: 0.75rem;
   border-radius: 8px;
   background-color: white;
-  color: white;
+  color: black;
   resize: vertical;
   box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .testattempt-other-answer button {
@@ -242,10 +282,25 @@ main {
   color: #5f27cd;
 }
 
-.testattempt-submit-button-wrapper {
+/* Removed obsolete .testattempt-submit-button-wrapper styles */
+
+/* New bottom right wrapper for grading summary and save button */
+.testgrading-bottom-right-wrapper {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   justify-content: flex-end;
-  margin-top: 2rem;
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  gap: 1rem;
+}
+
+.testgrading-grading-summary {
+  font-size: 1.6rem;
+  color: white;
+  text-align: right;
+  margin-left: 0;
 }
 
 .testattempt-delete-modal-overlay {
@@ -336,10 +391,7 @@ main {
   cursor: pointer;
 }
 
-.testattempt-open-ended-answer {
-  width: 100%;
-  max-width: 100%;
-}
+
 
 @media (max-width: 1100px) {
   .pdf-and-questions {

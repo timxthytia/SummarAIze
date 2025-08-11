@@ -136,11 +136,21 @@ input[type="file"] {
   background-color: #1f2c48 !important;
   margin-bottom: 0.7rem;
   flex-wrap: nowrap !important;
-  justify-content: space-between;
+  justify-content: flex-start;
   white-space: nowrap;
   overflow: hidden;
   flex-wrap: nowrap !important;
   white-space: nowrap;
+}
+
+/* Force edit/delete to flush right and sit together */
+.question-list-row .edit-question-button,
+.question-list-row .icon-edit-button {
+  margin-left: auto; /* pushes actions to far right */
+}
+.question-list-row .delete-question-button,
+.question-list-row .icon-delete-button {
+  margin-left: 0.5rem; /* tight spacing next to edit */
 }
 
 .question-type,

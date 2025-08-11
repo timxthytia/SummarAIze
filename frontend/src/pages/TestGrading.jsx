@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
-import '../styles/TestGrading.css';
+import '../styles/TestAttempt.css';
 
 import { Document, Page, pdfjs } from 'react-pdf';
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -102,112 +102,161 @@ const TestGrading = () => {
   };
 
   return (
-    <div className="test-grading-container">
+    <div className="upload-container">
       <NavbarLoggedin />
-      <main>
-        <h2>Grade Your Attempt</h2>
-      <div className="pdf-viewer-container">
-        {testpaper?.fileUrl && (
-          <Document
-            file={testpaper.fileUrl}
-            onLoadSuccess={({ numPages }) => {
-              setCurrentPage(1);
-              setNumPages(numPages);
-            }}
+      <main></main>
+        {/* Top bar row */}
+        <div className="timer-title-row">
+          <div
+            className="timer"
+            style={{ marginBottom: 0, color: "white", fontSize: '1.8rem' }}
           >
-            <Page pageNumber={currentPage} />
-          </Document>
-        )}
-        <div className="pdf-nav">
-          <button onClick={handlePreviousPage} disabled={currentPage === 1}>←</button>
-          <span>Page {currentPage} of {numPages}</span>
-          <button onClick={handleNextPage} disabled={currentPage === numPages}>→</button>
-        </div>
-      </div>
-      <main>
-        {testpaper?.questionsByPage?.filter(p => p.page === currentPage).map((p) => (
-          <div key={p.page} className="grading-page-block">
-            <h3>Page {p.page}</h3>
-            {p.questions.map((q) => {
-              return (
-                <div key={q.id} className="grading-question-block">
-                  <p><strong>{q.questionNumber} ({q.type}) — {Number(q.marks)} marks</strong></p>
-                  <p><strong>Correct Answer:</strong></p>
-                  {q.type === 'MCQ' && Array.isArray(q.correctAnswer) && (
-                    <p>{q.correctAnswer.join(', ')}</p>
-                  )}
-                  {q.type === 'Open-ended' && (
-                    <p>{q.correctAnswer}</p>
-                  )}
-                  {q.type === 'Other' && q.correctAnswer?.url && (
-                    <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="selected-filename">
-                      {q.correctAnswer.name}
-                    </a>
-                  )}
-                  <p><strong>Your Answer:</strong></p>
-                  {q.type === 'MCQ' && (
-                    <p>{Array.isArray(answers?.[q.id]) && answers[q.id].length > 0 ? answers[q.id].join(', ') : 'No answer submitted'}</p>
-                  )}
-                  {q.type === 'Open-ended' && (
-                    <p>{typeof answers?.[q.id] === 'string' && answers[q.id] !== '' ? answers[q.id] : 'No answer submitted'}</p>
-                  )}
-                  {q.type === 'Other' && (
-                    answers?.[q.id]?.url ? (
-                      <a href={answers[q.id].url} target="_blank" rel="noopener noreferrer" className="selected-filename">
-                        {answers[q.id].name}
-                      </a>
-                    ) : (
-                      <p>No answer submitted</p>
-                    )
-                  )}
-                  <label>
-                    Marks You Scored:
-                    <input
-                      type="number"
-                      min="0"
-                      max={Number(q.marks)}
-                      value={scores[q.id] === undefined ? '' : scores[q.id]}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        const clamped = Math.min(Number(q.marks), Math.max(0, val));
-                        handleScoreChange(q.id, isNaN(clamped) ? '' : clamped);
-                      }}
-                    />
-                  </label>
-                </div>
-              );
-            })}
+            Time Taken: {formatTimeTaken(timeTaken)}
           </div>
-        ))}
-        <div className="grading-summary">
-          <p>Total Scored: {totalScored} / {totalMarks}</p>
-          <button onClick={openSaveConfirm} disabled={saving}>Save Attempt</button>
+          <div className="paper-title-center-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2.5rem' }}>
+            <div className="paper-title">
+              {testpaper?.title || testpaper?.name || testpaper?.paperTitle || "Untitled Paper"}
+            </div>
+          </div>
+          <div className="topbar-submit">
+          </div>
         </div>
-      </main>
+        {/* Removed .testattempt-submit-button-wrapper and total scored from top */}
 
-      {saveConfirm.visible && (
-        <div className="delete-modal-overlay">
-          <div className="delete-modal">
-            <p>
-              You scored {totalScored} out of {totalMarks}.
-              <br />
-              Time taken: {formatTimeTaken(timeTaken)}
-              <br />
-              Are you sure you want to save this attempt?
-            </p>
-            <div className="delete-modal-buttons">
-              <button className="delete-confirm-button" onClick={confirmSave} disabled={saving}>
-                {saving ? 'Saving...' : 'Save'}
-              </button>
-              <button className="delete-cancel-button" onClick={cancelSave} disabled={saving}>
-                Cancel
-              </button>
+        {/* Two-column layout */}
+        <div className="pdf-and-questions">
+          <div className="pdf-viewer-section">
+            <div className="pdf-viewer-container">
+              {testpaper?.fileUrl ? (
+                <Document
+                  file={testpaper.fileUrl}
+                  onLoadSuccess={({ numPages }) => {
+                    setCurrentPage(1);
+                    setNumPages(numPages);
+                  }}
+                >
+                  <Page
+                    pageNumber={currentPage}
+                    width={800}
+                    className="pdf-page"
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                  />
+                </Document>
+              ) : (
+                <p>Loading test paper...</p>
+              )}
+              <div className="pdf-nav">
+                <button onClick={handlePreviousPage} disabled={currentPage === 1}>←</button>
+                <span>Page {currentPage} of {numPages}</span>
+                <button onClick={handleNextPage} disabled={currentPage === numPages}>→</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="questions-section">
+            <div className="question-panel">
+              <ul>
+                {(testpaper?.questionsByPage?.find(p => p.page === currentPage)?.questions || []).map((q) => (
+                  <li key={q.id} className="testattempt-question-block">
+                    <div className="testattempt-question-header">
+                      <span className="testattempt-question-number"><strong>{q.questionNumber}.</strong></span>
+                      <span className="testattempt-question-marks">Marks: {Number(q.marks)}</span>
+                    </div>
+
+                    <div className="testattempt-answer-label">Correct Answer:</div>
+                    <div className="testattempt-answer-input">
+                      {q.type === 'MCQ' && Array.isArray(q.correctAnswer) && (
+                        <div>{q.correctAnswer.join(', ')}</div>
+                      )}
+                      {q.type === 'Open-ended' && (
+                        <div>{q.correctAnswer}</div>
+                      )}
+                      {q.type === 'Other' && q.correctAnswer?.url && (
+                        <a href={q.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="testattempt-selected-filename">
+                          {q.correctAnswer.name}
+                        </a>
+                      )}
+                    </div>
+
+                    <div className="testattempt-answer-label">Your Answer:</div>
+                    <div className="testattempt-answer-input">
+                      {q.type === 'MCQ' && (
+                        <div>{Array.isArray(answers?.[q.id]) && answers[q.id].length > 0 ? answers[q.id].join(', ') : 'No answer submitted'}</div>
+                      )}
+                      {q.type === 'Open-ended' && (
+                        <div>{typeof answers?.[q.id] === 'string' && answers[q.id] !== '' ? answers[q.id] : 'No answer submitted'}</div>
+                      )}
+                      {q.type === 'Other' && (
+                        answers?.[q.id]?.url ? (
+                          <a href={answers[q.id].url} target="_blank" rel="noopener noreferrer" className="testattempt-selected-filename">
+                            {answers[q.id].name}
+                          </a>
+                        ) : (
+                          <div>No answer submitted</div>
+                        )
+                      )}
+                    </div>
+
+                    <div className="testattempt-answer-label">Marks You Scored:</div>
+                    <div className="testattempt-answer-input">
+                      <input
+                        type="number"
+                        min="0"
+                        max={Number(q.marks)}
+                        value={scores[q.id] === undefined ? '' : scores[q.id]}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          const clamped = Math.min(Number(q.marks), Math.max(0, val));
+                          handleScoreChange(q.id, isNaN(clamped) ? '' : clamped);
+                        }}
+                        style={{ width: '120px' }}
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
-      )}
-    </main>
+
+        <div className="testgrading-bottom-right-wrapper">
+          <div
+            className="testgrading-grading-summary"
+            style={{ fontSize: '1.6rem', color: 'white', textAlign: 'right' }}
+          >
+            <span>Total Scored: {totalScored} / {totalMarks}</span>
+          </div>
+          <button
+            className="testattempt-submit-button"
+            onClick={openSaveConfirm}
+            disabled={saving}
+          >
+            Save Attempt
+          </button>
+        </div>
+
+        {saveConfirm.visible && (
+          <div className="testattempt-delete-modal-overlay">
+            <div className="testattempt-delete-modal">
+              <p>
+                You scored {totalScored} out of {totalMarks}.
+                <br />
+                Are you sure you want to save this attempt?
+              </p>
+              <div className="testattempt-delete-modal-buttons">
+                <button className="testattempt-delete-confirm-button" onClick={confirmSave} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
+                <button className="testattempt-delete-cancel-button" onClick={cancelSave} disabled={saving}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
+    
   );
 };
 

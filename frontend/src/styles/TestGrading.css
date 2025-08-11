@@ -1,60 +1,56 @@
-.test-grading-container {
-  padding: 20px;
+main {
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  font-family: Arial, sans-serif;
 }
 
-.grading-page-block {
-  margin-bottom: 40px;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+.testgrading-container {
+  padding: 2rem;
+  font-family: 'Arial', sans-serif;
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: linear-gradient(-45deg, #0b3d0b, #145214, #1f6a1f, #145214);
 }
 
-.grading-question-block {
-  border: 1px solid #ccc;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 6px;
+/* Top bar row — mirror TestAttempt's timer-title-row */
+.testgrading-topbar-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* left timer, centered title, right button */
+  align-items: center;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  padding: 0 1rem;
 }
 
-.grading-question-block p {
-  margin: 5px 0;
+/* Left: timer/time-taken — match TestAttempt timer look */
+.testgrading-topbar-left {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.03em;
+  width: fit-content;
 }
 
-.grading-question-block a {
-  color: #007bff;
-  text-decoration: underline;
-}
-
-.grading-question-block label {
-  display: block;
-  margin-top: 10px;
+/* Middle: paper title — same as TestAttempt .paper-title */
+.testgrading-paper-title {
+  font-size: 2.4rem;
   font-weight: bold;
+  color: white;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.grading-question-block input[type="number"] {
-  width: 80px;
-  padding: 5px;
-  margin-top: 5px;
-  border: 1px solid #999;
-  border-radius: 4px;
+/* Right: submit/save button alignment */
+.testgrading-topbar-submit {
+  justify-self: end;
 }
 
-.grading-summary {
-  margin-top: 30px;
-  padding: 15px;
-  border-top: 2px solid #333;
-  text-align: right;
-}
-
-.grading-summary p {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.grading-summary button {
+/* Style the Save button in the top bar to match TestAttempt's submit */
+.testgrading-grading-save-button {
   background-color: rgba(255, 255, 255, 0.004);
   color: white;
   border: 2px solid white;
@@ -66,7 +62,127 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.grading-summary button:hover {
+.testgrading-grading-save-button:hover {
+  background-color: white;
+  color: #5f27cd;
+}
+
+.testgrading-pdf-and-questions {
+  display: flex;
+  flex-direction: row;
+  gap: 2.5rem;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  margin: 2.5rem auto 0 auto;
+  max-width: 1800px !important;
+  flex-wrap: nowrap;
+}
+
+.testgrading-pdf-viewer-section {
+  flex-grow: 2 !important;
+  min-width: 0;
+  max-width: 1100px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.testgrading-questions-section {
+  flex-grow: 1 !important;
+  min-width: 0;
+  max-width: 600px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+.testgrading-question-block {
+  background-color: #2e3b50 !important;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 800px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left !important;
+}
+
+.testgrading-question-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  text-align: left !important;
+  gap: 0;
+}
+
+.testgrading-question-number {
+  margin-right: auto;
+}
+
+.testgrading-question-marks {
+  margin-left: auto;
+}
+
+.testgrading-question-block p {
+  margin: 5px 0;
+}
+
+.testgrading-question-block a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.testgrading-answer-label {
+  display: block;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.testgrading-answer-input[type="number"] {
+  width: 80px;
+  padding: 5px;
+  margin-top: 5px;
+  border: 1px solid #999;
+  border-radius: 4px;
+}
+
+.testgrading-grading-summary {
+  margin-top: 30px;
+  padding: 15px;
+  border-top: 2px solid #333;
+  text-align: right;
+}
+
+.testgrading-grading-summary p {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.testgrading-grading-summary button {
+  background-color: rgba(255, 255, 255, 0.004);
+  color: white;
+  border: 2px solid white;
+  padding: 0.6rem 1.4rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.testgrading-grading-summary button:hover {
   background-color: white;
   color: #5f27cd;
 }
@@ -88,30 +204,38 @@
   color: #5f27cd;
 }
 
-.pdf-viewer-container {
+.testgrading-pdf-viewer-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 20px;
+  justify-content: flex-start;
+  padding: 2rem 0 2rem 0;
+  margin: 2rem auto 0 auto;
+  border-radius: 18px;
+  max-width: 1000px;
+  width: 100%;
 }
 
-.pdf-viewer-container canvas {
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
+.testgrading-pdf-viewer-container .pdf-page {
+  margin: 0 auto;
+  box-shadow: 0 3px 18px rgba(0,0,0,0.18);
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.pdf-nav {
+.testgrading-pdf-nav {
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 1rem;
 }
 
-.pdf-nav span {
+.testgrading-pdf-nav span {
   margin: 0 1rem;
 }
 
-.pdf-nav button {
+.testgrading-pdf-nav button {
   background-color: transparent;
   color: white;
   border: none;
@@ -122,26 +246,34 @@
   transition: opacity 0.3s ease;
 }
 
-.pdf-nav button:disabled {
+.testgrading-pdf-nav button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-.pdf-nav button:hover:not(:disabled) {
+.testgrading-pdf-nav button:hover:not(:disabled) {
   background-color: #5f27cd;
   color: white;
 }
 
-.selected-filename {
-  display: block;            
-  color: #1976d2;               
-  margin-top: 6px;           
-  text-decoration: none;      
-  cursor: default;            
+.testgrading-selected-filename {
+  display: block;
+  color: #1976d2;
+  margin-top: 6px;
+  text-decoration: underline;
+  cursor: pointer;
   font-size: 0.97em;
 }
 
-.selected-filename:hover {
-  cursor: pointer;            
-  text-decoration: underline #1976d2;  
+@media (max-width: 1100px) {
+  .testgrading-pdf-and-questions {
+    flex-direction: column;
+    gap: 2rem;
+    align-items: stretch;
+  }
+  .testgrading-pdf-viewer-section,
+  .testgrading-questions-section {
+    max-width: 100%;
+    width: 100%;
+  }
 }
