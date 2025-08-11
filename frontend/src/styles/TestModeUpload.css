@@ -135,6 +135,12 @@ input[type="file"] {
   border-radius: 8px;
   background-color: #1f2c48 !important;
   margin-bottom: 0.7rem;
+  flex-wrap: nowrap !important;
+  justify-content: space-between;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-wrap: nowrap !important;
+  white-space: nowrap;
 }
 
 .question-type,
@@ -364,6 +370,8 @@ input[type="file"] {
 
 .question-list-row > *:not(.icon-edit-button):not(.icon-delete-button) {
   margin-right: 10px;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .icon-edit-button,
@@ -378,6 +386,7 @@ input[type="file"] {
   justify-content: center;
   border-radius: 10px;
   border-width: 2px;
+  flex: 0 0 auto;
 }
 
 .icon-edit-button {
@@ -494,4 +503,26 @@ input[type="file"] {
   background: #2e3b50;
   color: white;
   border: 2px solid #ffffff;
+}
+/* Ensure no wrapping for .question-list-row even on small screens */
+@media (max-width: 1100px) {
+  .question-list-row {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+}
+
+/* Style for selected filename in popup-question-form */
+.popup-question-form .selected-filename {
+  white-space: normal;
+  color: #1976d2;
+  margin-bottom: 1rem;
+  display: block;
+  word-break: break-word;
+  text-decoration: underline;
+}
+@media (max-width: 600px) {
+  .question-list-row {
+    overflow-x: auto;
+  }
 }
