@@ -142,106 +142,124 @@ const TestAttempt = () => {
   return (
     <div className="test-attempt-container">
       <NavbarLoggedin />
-      <main>
+      <main className="test-attempt-main">
         <div className="timer">{formatTime()}</div>
-        <div className="pdf-viewer">
-          {testpaper?.fileUrl ? (
-            <Document file={testpaper.fileUrl}>
-              <div className="pdf-page">
-                <Page pageNumber={currentPage} width={600} />
-              </div>
-            </Document>
-          ) : (
-            <p>Loading test paper...</p>
-          )}
-        </div>
-        <div className="pdf-nav">
-          <button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>←</button>
-          <span>Page {currentPage} of {testpaper?.numPages}</span>
-          <button disabled={currentPage === testpaper?.numPages} onClick={() => setCurrentPage(currentPage + 1)}>→</button>
-        </div>
-        <div className="question-list">
-          {pageQuestions.map((q) => (
-            <div key={q.id} className="question-block">
-              <p><strong>{q.questionNumber}. ({q.type}) — {q.marks} marks</strong></p>
-              {q.type === 'MCQ' && Array.isArray(q.options) && (
-                <div className="mcq-answer">
-                  {q.options.map((opt) => (
-                    <label key={opt}>
-                      <input
-                        type="checkbox"
-                        name={q.id}
-                        value={opt}
-                        checked={Array.isArray(answers[q.id]) && answers[q.id].includes(opt)}
-                        onChange={(e) => {
-                          const isChecked = e.target.checked;
-                          setAnswers((prev) => {
-                            const currentAnswers = Array.isArray(prev[q.id]) ? prev[q.id] : [];
-                            const newAnswers = isChecked
-                              ? [...currentAnswers, opt]
-                              : currentAnswers.filter((item) => item !== opt);
-                            const updatedAnswers = { ...prev, [q.id]: newAnswers };
-                            answersRef.current = updatedAnswers;
-                            return updatedAnswers;
-                          });
-                        }}
-                      />
-                      {opt}
-                    </label>
-                  ))}
-                </div>
-              )}
-              {q.type === 'Open-ended' && (
-                <div className="open-ended-answer">
-                  <textarea
-                    rows={8}
-                    placeholder="Your answer..."
-                    value={answers[q.id] || ''}
-                    onChange={(e) => handleChange(q.id, e.target.value)}
-                    style={{
-                      width: "100%",
-                      minWidth: "100%",
-                      maxWidth: "100%",
-                      minHeight: "180px",
-                      boxSizing: "border-box",
-                      display: "block",
-                      padding: "1rem 1.2rem",
-                      fontSize: "1.2rem",
-                      border: "2px solid #5f27cd",
-                      borderRadius: "10px",
-                      backgroundColor: "#fff",
-                      color: "#222",
-                      resize: "vertical"
-                    }}
-                  />
-                </div>
-              )}
-              {q.type === 'Other' && (
-                <div className="other-answer">
-                  <>
-                    <input
-                      id={`file-upload-${q.id}`}
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      style={{ display: 'none' }}
-                      onChange={(e) => handleChange(q.id, e.target.files[0])}
-                    />
-                    <label htmlFor={`file-upload-${q.id}`} className="submit-button" style={{ display: 'inline-block', marginBottom: '8px', cursor: 'pointer' }}>
-                      Choose File
-                    </label>
-                    {answers[q.id] && typeof answers[q.id] === 'object' && (
-                      <a className="selected-filename" href={URL.createObjectURL(answers[q.id])} target="_blank" rel="noopener noreferrer">
-                        {answers[q.id].name}
-                      </a>
-                    )}
-                  </>
-                </div>
+        <div className="content-container">
+          <div className="pdf-nav-container">
+            <div className="pdf-viewer">
+              {testpaper?.fileUrl ? (
+                <Document file={testpaper.fileUrl}>
+                  <div className="pdf-page">
+                    <Page pageNumber={currentPage} width={600} />
+                  </div>
+                </Document>
+              ) : (
+                <p>Loading test paper...</p>
               )}
             </div>
-          ))}
-        </div>
-        <div className="submit-button-wrapper">
-          <button className="submit-button" onClick={handleSubmitClick} disabled={submitting}>Submit</button>
+            <div className="pdf-nav">
+              <button
+                className="pdf-nav-button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                ← Prev
+              </button>
+              <span>Page {currentPage} of {testpaper?.numPages}</span>
+              <button
+                className="pdf-nav-button"
+                disabled={currentPage === testpaper?.numPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                Next →
+              </button>
+            </div>
+          </div>
+          <div className="questions-section">
+            <div className="question-list">
+              {pageQuestions.map((q) => (
+                <div key={q.id} className="question-block">
+                  <p><strong>{q.questionNumber}. ({q.type}) — {q.marks} marks</strong></p>
+                  {q.type === 'MCQ' && Array.isArray(q.options) && (
+                    <div className="mcq-answer">
+                      {q.options.map((opt) => (
+                        <label key={opt}>
+                          <input
+                            type="checkbox"
+                            name={q.id}
+                            value={opt}
+                            checked={Array.isArray(answers[q.id]) && answers[q.id].includes(opt)}
+                            onChange={(e) => {
+                              const isChecked = e.target.checked;
+                              setAnswers((prev) => {
+                                const currentAnswers = Array.isArray(prev[q.id]) ? prev[q.id] : [];
+                                const newAnswers = isChecked
+                                  ? [...currentAnswers, opt]
+                                  : currentAnswers.filter((item) => item !== opt);
+                                const updatedAnswers = { ...prev, [q.id]: newAnswers };
+                                answersRef.current = updatedAnswers;
+                                return updatedAnswers;
+                              });
+                            }}
+                          />
+                          {opt}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                  {q.type === 'Open-ended' && (
+                    <div className="open-ended-answer">
+                      <textarea
+                        rows={8}
+                        placeholder="Your answer..."
+                        value={answers[q.id] || ''}
+                        onChange={(e) => handleChange(q.id, e.target.value)}
+                        style={{
+                          width: "100%",
+                          minWidth: "100%",
+                          maxWidth: "100%",
+                          minHeight: "180px",
+                          boxSizing: "border-box",
+                          display: "block",
+                          padding: "1rem 1.2rem",
+                          fontSize: "1.2rem",
+                          border: "2px solid #5f27cd",
+                          borderRadius: "10px",
+                          backgroundColor: "#fff",
+                          color: "#222",
+                          resize: "vertical"
+                        }}
+                      />
+                    </div>
+                  )}
+                  {q.type === 'Other' && (
+                    <div className="other-answer">
+                      <>
+                        <input
+                          id={`file-upload-${q.id}`}
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleChange(q.id, e.target.files[0])}
+                        />
+                        <label htmlFor={`file-upload-${q.id}`} className="submit-button" style={{ display: 'inline-block', marginBottom: '8px', cursor: 'pointer' }}>
+                          Choose File
+                        </label>
+                        {answers[q.id] && typeof answers[q.id] === 'object' && (
+                          <a className="selected-filename" href={URL.createObjectURL(answers[q.id])} target="_blank" rel="noopener noreferrer">
+                            {answers[q.id].name}
+                          </a>
+                        )}
+                      </>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="submit-button-wrapper">
+              <button className="submit-button" onClick={handleSubmitClick} disabled={submitting}>Submit</button>
+            </div>
+          </div>
         </div>
       </main>
       {showSubmitConfirm && (
