@@ -1,3 +1,23 @@
+.timer-title-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* left timer, centered title, right button */
+  align-items: center;
+  margin-bottom: 1.5rem;
+  margin-left: 1.5rem;
+  gap: 1rem;
+  padding: 0 1rem;
+}
+
+.paper-title {
+  font-size: 2.4rem;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.topbar-submit { justify-self: end; }
 .test-attempt-container {
   padding: 2rem;
   font-family: 'Arial', sans-serif;
@@ -13,12 +33,15 @@ main {
 }
 
 .timer {
-  font-size: 1.8rem;
+  font-size: 2.4rem;
   font-weight: 700;
-  color: #00ffcc;
+  color: white;
   margin-bottom: 1.5rem;
-  text-align: center;
-  font-family: 'Courier New', Courier, monospace;
+  text-align: left;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.03em;
+  width: fit-content;
+  margin-left: 0;
 }
 
 /* Updated layout for content-container, pdf-nav-container, and questions-section */
@@ -104,81 +127,105 @@ main {
   justify-content: flex-start;
 }
 
-.question-list {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.question-block {
-  width: 100%;
+.testattempt-question-block {
+  background-color: #2e3b50 !important;
   padding: 1rem;
-  border: 2px solid white;
-  border-radius: 8px;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 800px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  background: transparent;
+  align-items: flex-start; /* align children to start horizontally */
+  text-align: left !important;
 }
 
-.mcq-answer label {
-  display: inline-block;
-  margin-right: 1rem;
+.testattempt-question-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* number left, marks right */
+  width: 100%;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  text-align: left !important;
+  gap: 0; /* no extra gap since we use space-between */
+}
+
+.testattempt-question-number { margin-right: auto; }
+.testattempt-question-marks { margin-left: auto; }
+
+.testattempt-answer-label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: left !important;
+  width: 100%;
+}
+
+.testattempt-answer-input {
+  width: 100%;
+  text-align: left !important;
+}
+
+.testattempt-mcq-answer {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: flex-start !important;
+}
+
+.testattempt-mcq-answer label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
   font-size: 1rem;
 }
 
-.open-ended-answer {
+.testattempt-open-ended-answer {
   width: 100%;
-}
-
-.open-ended-answer textarea {
-  display: block;
-  width: 100% !important;
-  min-width: 100% !important;
-  max-width: 100% !important;
-  min-height: 180px;
-  padding: 1rem 1.2rem;
-  font-size: 1.2rem;
-  border: 2px solid #5f27cd;
-  border-radius: 10px;
-  background-color: #fff;
-  color: #222;
+  min-height: 100px;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background-color: white;
+  color: white;
   resize: vertical;
   box-sizing: border-box;
 }
 
-.open-ended-answer textarea:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-
-.other-answer {
-  width: 100%;
-}
-
-.other-answer input[type="file"] {
-  display: block;
-  width: 100%;
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  background-color: #fff;
-  color: #333;
+.testattempt-other-answer button {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  border: 2px solid #5f27cd;
+  background-color: white;
+  color: #5f27cd;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-align: left !important;
   box-sizing: border-box;
-  transition: border-color 0.2s ease;
 }
 
-.other-answer input[type="file"]:hover,
-.other-answer input[type="file"]:focus {
-  border-color: #007bff;
-  outline: none;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+.testattempt-other-answer button:hover {
+  background-color: #5f27cd;
+  color: white;
+  border-color: white;
 }
 
-.submit-button {
+.testattempt-selected-filename {
+  display: block;
+  margin-top: 0.5rem;
+  color: #1976d2;
+  font-size: 0.95rem;
+  text-decoration: underline !important;
+  cursor: pointer;
+}
+
+.testattempt-submit-button {
   background-color: rgba(255, 255, 255, 0.004);
   color: white;
   border: 2px solid white;
@@ -190,18 +237,18 @@ main {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.submit-button:hover {
+.testattempt-submit-button:hover {
   background-color: white;
   color: #5f27cd;
 }
 
-.submit-button-wrapper {
+.testattempt-submit-button-wrapper {
   display: flex;
   justify-content: flex-end;
   margin-top: 2rem;
 }
 
-.delete-modal-overlay {
+.testattempt-delete-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -214,7 +261,7 @@ main {
   z-index: 1100;
 }
 
-.delete-modal {
+.testattempt-delete-modal {
   background: rgba(255, 255, 255, 0.95);
   padding: 2rem 2.5rem;
   border-radius: 12px;
@@ -226,15 +273,15 @@ main {
   font-size: 1.2rem;
 }
 
-.delete-modal-buttons {
+.testattempt-delete-modal-buttons {
   margin-top: 1.5rem;
   display: flex;
   gap: 1rem;
   justify-content: center;
 }
 
-.delete-cancel-button,
-.delete-confirm-button {
+.testattempt-delete-cancel-button,
+.testattempt-delete-confirm-button {
   background-color: transparent;
   border: 2px solid #5f27cd;
   color: #5f27cd;
@@ -245,13 +292,13 @@ main {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.delete-cancel-button:hover,
-.delete-confirm-button:hover {
+.testattempt-delete-cancel-button:hover,
+.testattempt-delete-confirm-button:hover {
   background-color: #5f27cd;
   color: white;
 }
 
-.selected-filename {
+.testattempt-selected-filename {
   display: block;            
   color: #1976d2;               
   margin-top: 6px;           
@@ -260,11 +307,11 @@ main {
   font-size: 0.97em;
 }
 
-.selected-filename:hover {
+.testattempt-selected-filename:hover {
   cursor: pointer;            
   text-decoration: underline #1976d2;  
 }
-.delete-confirm-button:disabled {
+.testattempt-delete-confirm-button:disabled {
   background-color: grey;
   color: #ccc;
   cursor: not-allowed;
@@ -272,14 +319,14 @@ main {
   border: 2px solid grey;
 }
 
-.mcq-answer input[type="radio"] {
+.testattempt-mcq-answer input[type="radio"] {
   margin-right: 0.5rem;
   accent-color: #5f27cd;
   transform: scale(1.2);
   cursor: pointer;
 }
 
-.mcq-answer label {
+.testattempt-mcq-answer label {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -289,14 +336,7 @@ main {
   cursor: pointer;
 }
 
-.question-block {
-  max-width: 800px;
-  width: 100%;
-  margin: 0 auto;
-  background: transparent;
-}
-
-.open-ended-answer {
+.testattempt-open-ended-answer {
   width: 100%;
   max-width: 100%;
 }

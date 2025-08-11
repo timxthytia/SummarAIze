@@ -23,6 +23,7 @@ const TestAttempt = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [answers, setAnswers] = useState({});
   const answersRef = useRef({});
+  const objectURLsRef = useRef({});
   const [timeLeft, setTimeLeft] = useState(duration * 60);
   const [timerActive, setTimerActive] = useState(true);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
@@ -81,6 +82,33 @@ const TestAttempt = () => {
     });
   };
 
+  // Local file select handler for Other questions
+  const handleLocalFileSelect = (questionId, file) => {
+    if (!file) return;
+    // Revoke previous object URL for this question if it exists
+    const prevUrl = objectURLsRef.current[questionId];
+    if (prevUrl) {
+      try { URL.revokeObjectURL(prevUrl); } catch (_) {}
+    }
+    const previewUrl = URL.createObjectURL(file);
+    objectURLsRef.current[questionId] = previewUrl;
+    const value = { name: file.name, file, previewUrl };
+    setAnswers((prev) => {
+      const newAnswers = { ...prev, [questionId]: value };
+      answersRef.current = newAnswers;
+      return newAnswers;
+    });
+  };
+
+  // Cleanup for object URLs on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(objectURLsRef.current).forEach((u) => {
+        try { URL.revokeObjectURL(u); } catch (_) {}
+      });
+    };
+  }, []);
+
   const submitAttempt = async () => {
     if (submitting) return;
     setSubmitting(true);
@@ -94,11 +122,17 @@ const TestAttempt = () => {
       for (const q of testpaper?.questionsByPage?.flatMap(p => p.questions) || []) {
         const answer = answersRef.current[q.id];
         if (answer === undefined) continue;
-        if (q.type === 'Other' && answer instanceof File) {
-          const storageRef = ref(storage, `testpapers/${uid}/${id}/attempts/${attemptId}/answers/${q.id}/${answer.name}`);
-          await uploadBytes(storageRef, answer);
-          const url = await getDownloadURL(storageRef);
-          processedAnswers[q.id] = { name: answer.name, url };
+        if (q.type === 'Other') {
+          if (answer && typeof answer === 'object' && answer.url) {
+            processedAnswers[q.id] = { name: answer.name, url: answer.url };
+          } else if (answer && typeof answer === 'object' && answer.file instanceof File) {
+            const storageRef = ref(storage, `testpapers/${uid}/${id}/attempts/${attemptId}/answers/${q.id}/${answer.file.name}`);
+            await uploadBytes(storageRef, answer.file);
+            const url = await getDownloadURL(storageRef);
+            processedAnswers[q.id] = { name: answer.file.name, url };
+          } else {
+            processedAnswers[q.id] = answer;
+          }
         } else {
           processedAnswers[q.id] = answer;
         }
@@ -136,15 +170,28 @@ const TestAttempt = () => {
   const formatTime = () => {
     const mins = Math.floor(timeLeft / 60);
     const secs = timeLeft % 60;
-    return `Time left: ${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
   return (
     <div className="upload-container">
       <NavbarLoggedin />
       <main></main>
-      {/* Timer above pdf-and-questions */}
-      <div className="timer" style={{ marginBottom: "1rem", fontWeight: 600 }}>{formatTime()}</div>
+      {/* Timer and paper title above pdf-and-questions */}
+      <div className="timer-title-row">
+        <div
+          className="timer"
+          style={{ marginBottom: 0, color: "white" }}
+        >
+          {formatTime()}
+        </div>
+        <div className="paper-title">
+          {testpaper?.title || testpaper?.name || testpaper?.paperTitle || "Untitled Paper"}
+        </div>
+        <div className="topbar-submit">
+          <button className="testattempt-submit-button" onClick={handleSubmitClick} disabled={submitting}>Submit</button>
+        </div>
+      </div>
       <div className="pdf-and-questions">
         <div className="pdf-viewer-section">
           <div className="pdf-viewer-container">
@@ -186,15 +233,17 @@ const TestAttempt = () => {
           <div className="question-panel">
             <ul>
               {pageQuestions.map((q) => (
-                <li key={q.id} className="question-list-item question-list-row">
-                  <span className="question-type"><strong>{q.questionNumber}.</strong> {q.type}</span>
-                  <span className="question-marks">Marks: <span>{q.marks}</span></span>
-                  <span className="question-answer-label">Your Answer: </span>
-                  <span className="question-answer-value">
+                <li key={q.id} className="testattempt-question-block">
+                  <div className="testattempt-question-header">
+                    <span className="testattempt-question-number"><strong>{q.questionNumber}.</strong></span>
+                    <span className="testattempt-question-marks">Marks: {q.marks}</span>
+                  </div>
+                  <div className="testattempt-answer-label">Your Answer:</div>
+                  <div className="testattempt-answer-input">
                     {q.type === 'MCQ' && Array.isArray(q.options) && (
-                      <span>
+                      <div className="testattempt-mcq-answer">
                         {q.options.map((opt) => (
-                          <label key={opt} style={{ marginRight: "1rem" }}>
+                          <label key={opt}>
                             <input
                               type="checkbox"
                               name={q.id}
@@ -216,83 +265,81 @@ const TestAttempt = () => {
                             {opt}
                           </label>
                         ))}
-                      </span>
+                      </div>
                     )}
                     {q.type === 'Open-ended' && (
                       <textarea
-                        rows={4}
-                        placeholder="Your answer..."
+                        className="testattempt-open-ended-answer"
+                        placeholder="Type your answer..."
                         value={answers[q.id] || ''}
                         onChange={(e) => handleChange(q.id, e.target.value)}
-                        style={{
-                          width: "100%",
-                          minWidth: "100%",
-                          maxWidth: "100%",
-                          minHeight: "80px",
-                          boxSizing: "border-box",
-                          display: "block",
-                          padding: "0.7rem 1rem",
-                          fontSize: "1rem",
-                          border: "2px solid #5f27cd",
-                          borderRadius: "8px",
-                          backgroundColor: "#fff",
-                          color: "#222",
-                          resize: "vertical"
-                        }}
                       />
                     )}
                     {q.type === 'Other' && (
-                      <>
+                      <div className="testattempt-other-answer">
+                        <button onClick={() => document.getElementById(`file-upload-${q.id}`).click()}>Upload File</button>
                         <input
                           id={`file-upload-${q.id}`}
                           type="file"
-                          accept=".pdf,.doc,.docx"
                           style={{ display: 'none' }}
-                          onChange={(e) => handleChange(q.id, e.target.files[0])}
+                          accept=".pdf,.doc,.docx"
+                          onChange={(e) => handleLocalFileSelect(q.id, e.target.files && e.target.files[0])}
                         />
-                        <label htmlFor={`file-upload-${q.id}`} className="custom-file-upload" style={{ display: 'inline-block', marginBottom: '8px', cursor: 'pointer' }}>
-                          Choose File
-                        </label>
-                        {answers[q.id] && typeof answers[q.id] === 'object' && (
-                          <a className="selected-filename" href={URL.createObjectURL(answers[q.id])} target="_blank" rel="noopener noreferrer">
-                            {answers[q.id].name}
-                          </a>
+                        {answers[q.id] && (
+                          (answers[q.id].url) ? (
+                            <a
+                              className="testattempt-selected-filename"
+                              href={answers[q.id].url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {answers[q.id].name}
+                            </a>
+                          ) : (answers[q.id].previewUrl) ? (
+                            <a
+                              className="testattempt-selected-filename"
+                              href={answers[q.id].previewUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {answers[q.id].name}
+                            </a>
+                          ) : (
+                            <span className="testattempt-selected-filename">{answers[q.id].name || String(answers[q.id])}</span>
+                          )
                         )}
-                      </>
+                      </div>
                     )}
-                  </span>
+                  </div>
                 </li>
               ))}
             </ul>
-            <div className="submit-button-wrapper">
-              <button className="submit-button" onClick={handleSubmitClick} disabled={submitting}>Submit</button>
-            </div>
           </div>
         </div>
       </div>
       {/* Modals */}
       {showSubmitConfirm && (
-        <div className="delete-modal-overlay">
-          <div className="delete-modal">
+        <div className="testattempt-delete-modal-overlay">
+          <div className="testattempt-delete-modal">
             <p>Are you sure you want to submit this test?<br />Your answers will be saved and cannot be changed.<br /><strong>Time taken: {formatTimeTaken(submitTimeTaken)}</strong></p>
-            <div className="delete-modal-buttons">
-              <button className="delete-confirm-button" onClick={async () => { setShowSubmitConfirm(false); await submitAttempt(); }} disabled={submitting}>
+            <div className="testattempt-delete-modal-buttons">
+              <button className="testattempt-delete-confirm-button" onClick={async () => { setShowSubmitConfirm(false); await submitAttempt(); }} disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>
-              <button className="delete-cancel-button" onClick={() => setShowSubmitConfirm(false)} disabled={submitting}>Cancel</button>
+              <button className="testattempt-delete-cancel-button" onClick={() => setShowSubmitConfirm(false)} disabled={submitting}>Cancel</button>
             </div>
           </div>
         </div>
       )}
       {showTimeExpiredPopup && (
-        <div className="delete-modal-overlay">
-          <div className="delete-modal">
+        <div className="testattempt-delete-modal-overlay">
+          <div className="testattempt-delete-modal">
             <p>Time is up! Would you like to submit your attempt or continue?</p>
-            <div className="delete-modal-buttons">
-              <button className="delete-confirm-button" onClick={() => { setShowTimeExpiredPopup(false); setShowSubmitConfirm(true); const timeTaken = (Date.now() - startTimeRef.current) / 1000; setSubmitTimeTaken(timeTaken); }} disabled={submitting}>
+            <div className="testattempt-delete-modal-buttons">
+              <button className="testattempt-delete-confirm-button" onClick={() => { setShowTimeExpiredPopup(false); setShowSubmitConfirm(true); const timeTaken = (Date.now() - startTimeRef.current) / 1000; setSubmitTimeTaken(timeTaken); }} disabled={submitting}>
                 {submitting ? 'Submitting...' : 'Submit'}
               </button>
-              <button className="delete-cancel-button" onClick={() => { setShowTimeExpiredPopup(false); setTimerActive(false); setTimeLeft(0); }}>Continue</button>
+              <button className="testattempt-delete-cancel-button" onClick={() => { setShowTimeExpiredPopup(false); setTimerActive(false); setTimeLeft(0); }}>Continue</button>
             </div>
           </div>
         </div>
