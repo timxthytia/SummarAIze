@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import PopupModal from '../components/PopupModal';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestAttempt.css';
 
@@ -29,6 +30,8 @@ const TestGrading = () => {
   const [saving, setSaving] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [popup, setPopup] = useState({ visible: false, message: '', isError: false });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,11 +86,12 @@ const TestGrading = () => {
         graded: true,
       });
       setSaveConfirm({ visible: false });
-      alert('Attempt saved successfully!');
-      navigate('/dashboard');
+      // Use PopupModal for success
+      setPopup({ visible: true, message: 'Attempt saved successfully!', isError: false });
     } catch (err) {
       console.error('Error updating attempt:', err);
-      alert('Failed to save attempt.');
+      // Use PopupModal for failure
+      setPopup({ visible: true, message: 'Failed to save attempt.', isError: true });
     } finally {
       setSaving(false);
     }
@@ -255,6 +259,20 @@ const TestGrading = () => {
             </div>
           </div>
         )}
+      {/* Success / Error popup modal */}
+      {popup.visible && (
+        <PopupModal
+          message={popup.message}
+          onConfirm={() => {
+            setPopup({ visible: false, message: '', isError: false });
+            if (!popup.isError) {
+              navigate('/dashboard');
+            }
+          }}
+          /* single-button modal: confirm acts as OK */
+          confirmText="OK"
+        />
+      )}
     </div>
     
   );
