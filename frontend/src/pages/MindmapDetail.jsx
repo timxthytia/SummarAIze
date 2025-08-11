@@ -238,7 +238,7 @@ const MindmapDetail = () => {
   };
 
   return (
-    <div className="summary-detail-container">
+    <div className="mindmap-detail-container">
       <NavbarLoggedin user={user} />
       <main className="page-content">
         <h2>{title}</h2>
@@ -254,7 +254,7 @@ const MindmapDetail = () => {
             Click on nodes or edges you wish to delete
           </p>
         )}
-        <div style={{ height: '600px', background: 'white', borderRadius: '10px', marginTop: '1rem' }}>
+        <div className="reactflow-container">
           <ReactFlowProvider>
             <ReactFlow
               nodes={nodes}

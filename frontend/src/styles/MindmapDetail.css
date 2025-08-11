@@ -1,8 +1,16 @@
 /* Container styling */
-.summary-detail-container {
-  padding: 2rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+.mindmap-detail-container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 6rem 2rem 2rem;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(-45deg, #e65c3a, #cc4c2f, #a63a1f);
+  background-size: 300% 300%;
+  animation: animatedGradient 15s ease-in-out infinite;
+  box-sizing: border-box;
+  color: white;
 }
+
 
 /* Buttons */
 .add-node-btn,
@@ -28,3 +36,12 @@
 }
 
 
+
+
+.reactflow-container {
+  height: 800px;
+  background: white;
+  border-radius: 10px;
+  margin-top: 1rem;
+  width: 100%;
+}

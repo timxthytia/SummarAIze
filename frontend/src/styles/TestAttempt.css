@@ -22,25 +22,44 @@ main {
 }
 
 /* Updated layout for content-container, pdf-nav-container, and questions-section */
-.content-container {
+.pdf-and-questions {
   display: flex;
   flex-direction: row;
-  gap: 2rem;
-  max-width: 1500px; 
-  margin: 0 auto;
+  gap: 2.5rem;
+  align-items: flex-start;
+  justify-content: center;
+  width: 100%;
+  margin: 2.5rem auto 0 auto;
+  max-width: 1800px !important;
 }
 
-.pdf-nav-container {
-  flex: 0 0 70%;
+.pdf-viewer-section {
+  flex-grow: 2 !important;
+  min-width: 0;
+  max-width: 1100px !important;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.pdf-viewer {
+.pdf-viewer-container {
   display: flex;
-  justify-content: center;
-  margin: 1.5rem 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2rem 0 2rem 0;
+  margin: 2rem auto 0 auto;
+  border-radius: 18px;
+  max-width: 1000px;
+  width: 100%;
+}
+
+.pdf-viewer-container .pdf-page {
+  margin: 0 auto;
+  box-shadow: 0 3px 18px rgba(0,0,0,0.18);
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .pdf-nav {
@@ -76,9 +95,13 @@ main {
 }
 
 .questions-section {
-  flex: 0.7;
+  flex-grow: 1 !important;
+  min-width: 0;
+  max-width: 600px !important;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 
 .question-list {
@@ -276,4 +299,17 @@ main {
 .open-ended-answer {
   width: 100%;
   max-width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .pdf-and-questions {
+    flex-direction: column;
+    gap: 2rem;
+    align-items: stretch;
+  }
+  .pdf-viewer-section,
+  .questions-section {
+    max-width: 100%;
+    width: 100%;
+  }
 }

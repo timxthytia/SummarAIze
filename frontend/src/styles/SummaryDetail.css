@@ -1,15 +1,9 @@
-@keyframes animatedGradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
 .summary-detail-container {
   width: 100%;
   min-height: 100vh;
   padding: 6rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(-45deg, #5f27cd, #341f97, #833471);
+  background: linear-gradient(-45deg, #0b132b, #1b233a, #2e3b50, #1b233a);
   background-size: 300% 300%;
   animation: animatedGradient 15s ease-in-out infinite;
   box-sizing: border-box;
