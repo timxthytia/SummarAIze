@@ -187,6 +187,7 @@
   text-decoration: underline #1976d2;  
 }
 
+/* Match PopupModal styles for delete popup */
 .delete-modal-overlay {
   position: fixed;
   top: 0;
@@ -195,8 +196,8 @@
   height: 100%;
   background: rgba(0,0,0,0.6);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   z-index: 1100;
 }
 
@@ -210,17 +211,39 @@
   color: #5f27cd;
   font-weight: bold;
   font-size: 1.2rem;
-  min-width: 250px;
-  min-height: 120px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .delete-modal-buttons {
-  margin-top: 18px;
   display: flex;
-  gap: 15px;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.delete-modal-buttons .modal-cancel-button,
+.delete-modal-buttons .modal-delete-button {
+  background-color: #5f27cd;
+  border: 2px solid #5f27cd;
+  color: white;
+  padding: 0.6rem 1.6rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.delete-modal-buttons .modal-cancel-button:hover,
+.delete-modal-buttons .modal-delete-button:hover {
+  background-color: white;
+  color: #5f27cd;
+  border: 2px solid #5f27cd;
+}
+
+.delete-modal-buttons .disabled-button {
+  background-color: grey !important;
+  border-color: grey !important;
+  cursor: not-allowed !important;
+  color: #ccc !important;
 }
 
 .modal-cancel-button {

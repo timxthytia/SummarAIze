@@ -13,6 +13,7 @@ const TestReview = () => {
   const [totalMarks, setTotalMarks] = useState(0);
   const [questions, setQuestions] = useState([]);
   const [deleteConfirm, setDeleteConfirm] = React.useState({ visible: false, attemptId: null });
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,12 +33,15 @@ const TestReview = () => {
   }, [uid, id, deleteConfirm.visible]);
 
   const handleDeleteAttempt = async () => {
+    setIsDeleting(true);
     try {
       const docRef = doc(db, 'users', uid, 'testpapers', id, 'attempts', deleteConfirm.attemptId);
       await deleteDoc(docRef);
       setDeleteConfirm({ visible: false, attemptId: null });
     } catch (error) {
       setDeleteConfirm({ visible: false, attemptId: null });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -233,8 +237,8 @@ const TestReview = () => {
             <div className="delete-modal">
               <p>Delete attempt?</p>
               <div className="delete-modal-buttons">
-                <button className="modal-cancel-button" onClick={() => setDeleteConfirm({ visible: false, attemptId: null })}>Cancel</button>
-                <button className="modal-cancel-button" onClick={handleDeleteAttempt}>Delete</button>
+                <button className={`modal-cancel-button ${isDeleting ? 'disabled-button' : ''}`} disabled={isDeleting} onClick={() => setDeleteConfirm({ visible: false, attemptId: null })}>Cancel</button>
+                <button className={`modal-cancel-button ${isDeleting ? 'disabled-button' : ''}`} disabled={isDeleting} onClick={handleDeleteAttempt}>{isDeleting ? "Deleting..." : "Delete"}</button>
               </div>
             </div>
           </div>
