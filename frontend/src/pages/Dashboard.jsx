@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import '../styles/Dashboard.css';
+import { FiMoreVertical } from 'react-icons/fi';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { handleDownload } from '../utils/exportUtils';
@@ -337,7 +338,9 @@ const Dashboard = () => {
                   <div key={summary.id} className="glass-card" id={`summary-${summary.id}`}>
                     <div className="card-header">
                       <p className="card-title">{summary.title || 'Untitled'}</p>
-                      <button className="card-actions-toggle" onClick={(e) => toggleMenu(summary.id, 'summary', e)}>▼</button>
+                      <button className="card-actions-toggle" onClick={(e) => toggleMenu(summary.id, 'summary', e)} aria-label="More actions">
+                        <FiMoreVertical />
+                      </button>
                       {openMenu.id === summary.id && openMenu.kind === 'summary' && (
                         <div className="card-actions-menu" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
                           <button
@@ -378,9 +381,6 @@ const Dashboard = () => {
                       )}
                     </div>
 
-                    <div className="summary-content-row">
-                      <p className="meta"><small>{summary.timestamp?.toDate().toLocaleString()}</small></p>
-                    </div>
 
                     <div className="tags-container">
                       {(summary.tags || []).map((tag, idx) => (
@@ -414,7 +414,9 @@ const Dashboard = () => {
                   <div key={mindmap.id} className="glass-card" ref={el => mindmapRefs.current[mindmap.id] = el}>
                     <div className="card-header">
                       <p className="card-title">{mindmap.title || 'Untitled'}</p>
-                      <button className="card-actions-toggle" onClick={(e) => toggleMenu(mindmap.id, 'mindmap', e)}>▼</button>
+                      <button className="card-actions-toggle" onClick={(e) => toggleMenu(mindmap.id, 'mindmap', e)} aria-label="More actions">
+                        <FiMoreVertical />
+                      </button>
                       {openMenu.id === mindmap.id && openMenu.kind === 'mindmap' && (
                         <div className="card-actions-menu" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
                           <button
@@ -448,9 +450,6 @@ const Dashboard = () => {
                       )}
                     </div>
 
-                    <div className="summary-content-row">
-                      <p className="meta"><small>{mindmap.timestamp?.toDate().toLocaleString()}</small></p>
-                    </div>
 
                     <div className="tags-container">
                       {(mindmap.tags || []).map((tag, idx) => (
@@ -481,7 +480,9 @@ const Dashboard = () => {
                   <div key={paper.id} className="glass-card">
                     <div className="card-header">
                       <p className="card-title">{paper.paperTitle || 'Untitled'}</p>
-                      <button className="card-actions-toggle" onClick={(e) => toggleMenu(paper.id, 'testpaper', e)}>▼</button>
+                      <button className="card-actions-toggle" onClick={(e) => toggleMenu(paper.id, 'testpaper', e)} aria-label="More actions">
+                        <FiMoreVertical />
+                      </button>
                       {openMenu.id === paper.id && openMenu.kind === 'testpaper' && (
                         <div className="card-actions-menu" onClick={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}>
                           <button className="card-menu-item" onClick={(e) => { e.stopPropagation(); setRenameModal({ visible: true, id: paper.id, title: paper.paperTitle || '', isTestpaper: true, isMindmap: false }); }}>Rename</button>
@@ -494,9 +495,6 @@ const Dashboard = () => {
                       )}
                     </div>
 
-                    <p className="meta"><strong>File:</strong> {paper.fileName}</p>
-                    <p className="meta"><strong>Pages:</strong> {paper.numPages}</p>
-                    <p className="meta"><small>{new Date(paper.uploadedAt).toLocaleString()}</small></p>
 
                     <div className="tags-container">
                       {(paper.tags || []).map((tag, idx) => (
