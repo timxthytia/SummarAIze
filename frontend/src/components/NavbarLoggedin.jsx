@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState }from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import '../styles/Navbar.css';
+import { FaUserCircle } from 'react-icons/fa';
 
 const NavbarLoggedin = () => {
   const navigate = useNavigate();
   const [user] = useAuthState(auth);
-  const [dropdownVisible, setDropdownVisible] = React.useState(false);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
   const toggleDropdown = () => setDropdownVisible(!dropdownVisible);
 
   const handleLogout = () => {
@@ -29,11 +30,15 @@ const NavbarLoggedin = () => {
         </div>
         {user && (
           <div className="navbar-user" onClick={toggleDropdown}>
-            <img
-              src={user.photoURL || '/default-avatar.png'}
-              alt="Profile"
-              className="navbar-avatar"
-            />
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt="Profile"
+                className="navbar-avatar"
+              />
+            ) : (
+              <FaUserCircle className="navbar-avatar" aria-label='Profile'/>
+            )}
             {dropdownVisible && (
               <div className="navbar-dropdown">
                 <p>{user.displayName || 'User'}</p>

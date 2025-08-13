@@ -45,13 +45,15 @@
   border: 1px solid #ccc;
   border-radius: 12px;
   padding: 1rem;
-  font-size: 1rem;
+  font-size: rem;
   margin-bottom: 1rem;
 }
 
 .input-textarea {
   height: 180px;
   resize: vertical;
+  font-family: 'Arial', serif; 
+  font-size: 1rem;
 }
 
 .input-textarea::placeholder,

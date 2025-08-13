@@ -9,6 +9,8 @@ import '../styles/TestAttempt.css';
 import { Document, Page, pdfjs } from 'react-pdf';
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
+
+
 const formatTimeTaken = (seconds) => {
   const mins = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
@@ -33,10 +35,11 @@ const TestGrading = () => {
 
   const [popup, setPopup] = useState({ visible: false, message: '', isError: false });
 
+
   useEffect(() => {
     const fetchData = async () => {
-      if (!testpaper || !answers) {
-        try {
+      try {
+        if (!testpaper || !answers) {
           const testpaperDocRef = doc(db, 'users', uid, 'testpapers', id);
           const testpaperSnap = await getDoc(testpaperDocRef);
           if (testpaperSnap.exists()) {
@@ -49,10 +52,10 @@ const TestGrading = () => {
             setAnswers(attemptData.answers);
             setTimeTaken(attemptData.timeTaken);
           }
-        } catch (error) {
-          console.error('Error fetching testpaper or attempt data:', error);
-          alert('Failed to load test data.');
         }
+      } catch (error) {
+        console.error('Error fetching testpaper or attempt data:', error);
+        alert('Failed to load test data.');
       }
     };
     fetchData();
@@ -105,6 +108,7 @@ const TestGrading = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
+
   return (
     <div className="upload-container">
       <NavbarLoggedin />
@@ -131,7 +135,7 @@ const TestGrading = () => {
         <div className="pdf-and-questions">
           <div className="pdf-viewer-section">
             <div className="pdf-viewer-container">
-              {testpaper?.fileUrl ? (
+              {testpaper?.fileUrl && (
                 <Document
                   file={testpaper.fileUrl}
                   onLoadSuccess={({ numPages }) => {
@@ -147,8 +151,6 @@ const TestGrading = () => {
                     renderAnnotationLayer={true}
                   />
                 </Document>
-              ) : (
-                <p>Loading test paper...</p>
               )}
               <div className="pdf-nav">
                 <button onClick={handlePreviousPage} disabled={currentPage === 1}>←</button>
