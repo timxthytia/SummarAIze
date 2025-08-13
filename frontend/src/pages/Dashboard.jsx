@@ -14,8 +14,10 @@ import { getStorage, ref, deleteObject } from 'firebase/storage';
 import { handleDownload } from '../utils/exportUtils';
 import ExportMindmapModal from '../components/ExportMindmapModel';
 import PopupModal from '../components/PopupModal';
+
 import CustomNode from '../components/CustomNode'; 
 import CustomEdge from '../components/CustomEdge'; 
+import InputModal from '../components/InputModal';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -443,7 +445,7 @@ const Dashboard = () => {
                                 alert('Mindmap not found.');
                               }
                             }}
-                          >Download (PNG)</button>
+                          >Download</button>
                           <button className="card-menu-item" onClick={() => handleNavigate(mindmap.id, true)}>View</button>
                           <button className="card-menu-item" onClick={() => setDeleteConfirm({ visible: true, id: mindmap.id, isMindmap: true })}>Delete</button>
                         </div>
@@ -515,100 +517,53 @@ const Dashboard = () => {
         )}
       </div>
       {tagModal.visible && (
-        <div className="rename-modal-overlay">
-          <div className="rename-modal">
-            <button
-              className="close-modal-button"
-              onClick={() => setTagModal({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false })}
-            >
-              ×
-            </button>
-            <h3>Add Tag</h3>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                value={newTag}
-                onChange={onTagInputChange}
-                placeholder="Enter tag keyword"
-                autoFocus
-                autoComplete="off"
-              />
-              {filteredSuggestions.length > 0 && (
-                <div className="autocomplete-popup-container">
-                  <ul className="autocomplete-list">
-                    {filteredSuggestions.map((tag, idx) => (
-                      <li
-                        key={idx}
-                        className="autocomplete-item"
-                        onClick={() => {
-                          setNewTag(tag);
-                          setFilteredSuggestions([]);
-                        }}
-                      >
-                        {tag}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+        <InputModal
+          isOpen={tagModal.visible}
+          title="Add Tag"
+          placeholder="Enter tag keyword"
+          value={newTag}
+          onChange={setNewTag}
+          onClose={() => setTagModal({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false })}
+          onSubmit={handleSaveTag}
+          submitText="Save"
+        >
+          {filteredSuggestions.length > 0 && (
+            <div className="autocomplete-popup-container" style={{ marginTop: '0.5rem' }}>
+              <ul className="autocomplete-list">
+                {filteredSuggestions.map((tag, idx) => (
+                  <li
+                    key={idx}
+                    className="autocomplete-item"
+                    onClick={() => {
+                      setNewTag(tag);
+                      setFilteredSuggestions([]);
+                    }}
+                  >
+                    {tag}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="rename-modal-buttons">
-              <button
-                onClick={handleSaveTag}
-                disabled={!newTag.trim()}
-                className="modal-cancel-button"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => setTagModal({ visible: false, id: '', tags: [], isMindmap: false, isTestpaper: false })}
-                className="modal-cancel-button"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+          )}
+        </InputModal>
       )}
       {renameModal.visible && (
-        <div className="rename-modal-overlay">
-          <div className="rename-modal">
-            <button
-              className="close-modal-button"
-              onClick={() => setRenameModal({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false })}
-            >
-              ×
-            </button>
-            <h3>
-              {renameModal.isMindmap
-                ? 'Rename Mind Map'
-                : renameModal.isTestpaper
-                  ? 'Rename Test Paper'
-                  : 'Rename Summary'}
-            </h3>
-            <input
-              type="text"
-              value={renameModal.title}
-              onChange={(e) => setRenameModal(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="New title"
-            />
-            <div className="rename-modal-buttons">
-              <button
-                onClick={handleRename}
-                className="modal-cancel-button"
-                disabled={!renameModal.title.trim()}
-              >
-                Rename
-              </button>
-              <button
-                className="modal-cancel-button"
-                onClick={() => setRenameModal({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false })}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+        <InputModal
+          isOpen={renameModal.visible}
+          title={
+            renameModal.isMindmap
+              ? 'Rename Mind Map'
+              : renameModal.isTestpaper
+                ? 'Rename Test Paper'
+                : 'Rename Summary'
+          }
+          placeholder="New title"
+          value={renameModal.title}
+          onChange={(val) => setRenameModal(prev => ({ ...prev, title: val }))}
+          onClose={() => setRenameModal({ visible: false, id: '', title: '', isMindmap: false, isTestpaper: false })}
+          onSubmit={handleRename}
+          submitText="Rename"
+        />
       )}
       {deleteConfirm.visible && (
         <PopupModal
