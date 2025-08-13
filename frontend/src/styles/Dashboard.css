@@ -436,10 +436,10 @@
 }
 
 .main-content {
-  margin-left: 200px;
+  margin-left: 260px;
   margin-right: 260px;
   min-width: 0;
-  max-width: 1200px;
+  max-width: 1600px;
   width: 100%;
   padding: 1rem;
   box-sizing: border-box;
@@ -519,7 +519,14 @@
 
 @media (max-width: 1400px) {
   .main-content {
-    margin-left: 200px;
+    margin-left: 260px;
+  }
+}
+
+@media (max-width: 813px) {
+  .card-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
   }
 }
 /* Remove focus and active outlines/borders from sidebar toggle buttons */
@@ -528,4 +535,124 @@
   outline: none;
   border: none;
   box-shadow: none;
+}
+
+/* === Glass Grid + Card Actions Dropdown === */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.glass-card {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 14px;
+  padding: 1rem 1rem 1.2rem 1rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+  backdrop-filter: blur(8px);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  color: white;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  overflow: visible; /* ensure dropdown and toggle are never clipped */
+}
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+  border-color: rgba(255, 255, 255, 0.9);
+  cursor: default;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.card-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: white;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;       /* let title take remaining space */
+  min-width: 0;  /* allow ellipsis to work and not push the toggle out */
+}
+
+.card-actions-toggle {
+  position: relative;
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  flex: 0 0 auto; /* never shrink; keep toggle visible on narrow widths */
+}
+.card-actions-toggle:hover {
+  background: white;
+  color: #5f27cd;
+}
+
+.card-actions-menu {
+  position: absolute;
+  top: 2.4rem;
+  right: 1rem;
+  background: rgba(20, 20, 28, 0.96);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  min-width: 180px;
+  padding: 0.4rem;
+  z-index: 1200;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+}
+.card-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.card-menu-item:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+.glass-card .meta {
+  font-size: 0.85rem;
+  color: #ddd;
+  margin-top: 0.35rem;
+}
+
+.glass-card .tags-container {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.summary-list, .mindmap-list, .testpaper-list {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  max-width: 100%;
+}
+.summary-list h3, .mindmap-list h3, .testpaper-list h3 {
+  margin-bottom: 0.8rem;
 }
