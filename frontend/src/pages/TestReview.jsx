@@ -12,6 +12,11 @@ const TestReview = () => {
   const [loading, setLoading] = useState(true);
   const [totalMarks, setTotalMarks] = useState(0);
   const [questions, setQuestions] = useState([]);
+  const [questionsByPage, setQuestionsByPage] = useState([]);
+  // PDF state for two-pane stats layout
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [numPages, setNumPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [deleteConfirm, setDeleteConfirm] = React.useState({ visible: false, attemptId: null });
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
@@ -52,14 +57,22 @@ const TestReview = () => {
         const testpaperSnap = await getDoc(testpaperRef);
         if (testpaperSnap.exists()) {
           const data = testpaperSnap.data();
-          const questionsByPage = data.questionsByPage || [];
-          const allQuestions = questionsByPage.flatMap(p => p.questions || []);
+          // set PDF meta for left pane
+          setPdfUrl(data.fileUrl || '');
+          const qb = data.questionsByPage || [];
+          setQuestionsByPage(qb);
+          // prefer Firestore numPages, fallback to questionsByPage length
+          const computedPages = Number(data.numPages || qb.length || 0);
+          setNumPages(computedPages);
+          const allQuestions = qb.flatMap(p => p.questions || []);
           const total = allQuestions.reduce((sum, question) => sum + Number(question.marks || 0), 0);
           setTotalMarks(total);
           setQuestions(allQuestions);
         } else {
           setTotalMarks(0);
           setQuestions([]);
+          setQuestionsByPage([]);
+          setNumPages(0);
         }
       } catch (err) {
       }
@@ -79,9 +92,9 @@ const TestReview = () => {
 
   const { avg, high, low } = calculateStats();
 
-  const getPerQuestionStats = () => {
+  const getPerQuestionStats = (sourceQuestions) => {
     if (attempts.length === 0) return [];
-    return questions.map((question, index) => {
+    return sourceQuestions.map((question) => {
       const scores = attempts
         .map(attempt => {
           const answerObj = attempt.scores?.[question.id];
@@ -104,7 +117,21 @@ const TestReview = () => {
     });
   };
 
-  const perQuestionStats = getPerQuestionStats();
+  const currentQuestions = (questionsByPage[currentPage - 1]?.questions) || [];
+  const perQuestionStats = getPerQuestionStats(currentQuestions);
+
+  useEffect(() => {
+    setCurrentPage(p => {
+      if (!numPages) return 1;
+      if (p < 1) return 1;
+      if (p > numPages) return numPages;
+      return p;
+    });
+  }, [numPages]);
+
+  // Page navigation handlers for PDF pane
+  const handlePrevPage = () => setCurrentPage(p => Math.max(1, p - 1));
+  const handleNextPage = () => setCurrentPage(p => (numPages ? Math.min(numPages, p + 1) : p + 1));
 
   return (
     <div className="test-review-container">
@@ -183,53 +210,74 @@ const TestReview = () => {
             )}
           </div>
         ) : (
-          <div className="paper-stats">
-            <h3>Overall Statistics</h3>
-            <p><strong>Average Score:</strong> {avg}</p>
-            <p><strong>Highest Score:</strong> {high}</p>
-            <p><strong>Lowest Score:</strong> {low}</p>
-            {perQuestionStats.length > 0 && perQuestionStats.map(({ question, avgScore, highScore, lowScore, scores }, idx) => (
-              <div key={idx} className="question-stats">
-                <h4>Question {idx + 1}</h4>
-                <p><strong>Marks:</strong> {question.marks}</p>
-                <p><strong>Average Score:</strong> {avgScore}</p>
-                <p><strong>Highest Score:</strong> {highScore}</p>
-                <p><strong>Lowest Score:</strong> {lowScore}</p>
-                <p><strong>Correct Answer:</strong> {typeof question.correctAnswer === 'object' && question.correctAnswer?.url ? (
-                  <a href={question.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="selected-filename">
-                    {question.correctAnswer.name}
-                  </a>
+          <div className="testreview-split">
+            {/* LEFT: PDF viewer + navigation */}
+            <section className="testreview-pdf-section">
+              <div className="testreview-pdf-container">
+                {pdfUrl ? (
+                  <iframe src={pdfUrl} title="Paper PDF" className="testreview-pdf-iframe" />
                 ) : (
-                  question.correctAnswer || 'N/A'
-                )}</p>
-                <div className="scrollable-scores">
-                  {attempts.map((attempt, index) => {
-                    const score = attempt.scores?.[question.id];
-                    const userAnswer = attempt.answers?.[question.id];
-                    const revIdx = attempts.length - 1 - index;
-                    const displayAttemptNum = attempts.length - index;
-                    return (
-                      <div key={index} className="score-entry">
-                        Attempt {displayAttemptNum}: {typeof score === 'number' && !isNaN(score) ? `${score} mark(s)` : 'Ungraded'}
-                        <div className="user-answer">
-                          {(() => {
-                            if (typeof userAnswer === 'string') {
-                              return userAnswer.length > 100 ? userAnswer.slice(0, 100) + '...' : userAnswer;
-                            } else if (typeof userAnswer === 'object' && userAnswer?.url) {
-                              return <a href={userAnswer.url} target="_blank" rel="noopener noreferrer" className="selected-filename">{userAnswer.name}</a>;
-                            } else if (Array.isArray(userAnswer)) {
-                              return userAnswer.join(', ');
-                            } else {
-                              return 'No answer submitted';
-                            }
-                          })()}
-                        </div>
-                      </div>
-                    );
-                  }).slice().reverse()}
-                </div>
+                  <div className="pdf-placeholder">No PDF available</div>
+                )}
               </div>
-            ))}
+              <div className="testreview-pdf-nav">
+                <button onClick={handlePrevPage} disabled={currentPage <= 1}>⟨</button>
+                <span>Page {currentPage} of {numPages || '?'}</span>
+                <button onClick={handleNextPage} disabled={numPages && currentPage >= numPages}>⟩</button>
+              </div>
+            </section>
+
+            {/* RIGHT: Questions list with existing info */}
+            <aside className="testreview-questions-section">
+              <div className="paper-stats" style={{ marginBottom: '1rem' }}>
+                <h3>Overall Statistics</h3>
+                <p><strong>Average Score:</strong> {avg}</p>
+                <p><strong>Highest Score:</strong> {high}</p>
+                <p><strong>Lowest Score:</strong> {low}</p>
+              </div>
+
+              {perQuestionStats.length > 0 && perQuestionStats.map(({ question, avgScore, highScore, lowScore }, idx) => (
+                <div key={idx} className="question-stats">
+                  <h4>Question {idx + 1}</h4>
+                  <p><strong>Marks:</strong> {question.marks}</p>
+                  <p><strong>Average Score:</strong> {avgScore}</p>
+                  <p><strong>Highest Score:</strong> {highScore}</p>
+                  <p><strong>Lowest Score:</strong> {lowScore}</p>
+                  <p><strong>Correct Answer:</strong> {typeof question.correctAnswer === 'object' && question.correctAnswer?.url ? (
+                    <a href={question.correctAnswer.url} target="_blank" rel="noopener noreferrer" className="selected-filename">
+                      {question.correctAnswer.name}
+                    </a>
+                  ) : (
+                    question.correctAnswer || 'N/A'
+                  )}</p>
+                  <div className="scrollable-scores">
+                    {attempts.map((attempt, index) => {
+                      const score = attempt.scores?.[question.id];
+                      const userAnswer = attempt.answers?.[question.id];
+                      const displayAttemptNum = attempts.length - index;
+                      return (
+                        <div key={index} className="score-entry">
+                          Attempt {displayAttemptNum}: {typeof score === 'number' && !isNaN(score) ? `${score} mark(s)` : 'Ungraded'}
+                          <div className="user-answer">
+                            {(() => {
+                              if (typeof userAnswer === 'string') {
+                                return userAnswer.length > 100 ? userAnswer.slice(0, 100) + '...' : userAnswer;
+                              } else if (typeof userAnswer === 'object' && userAnswer?.url) {
+                                return <a href={userAnswer.url} target="_blank" rel="noopener noreferrer" className="selected-filename">{userAnswer.name}</a>;
+                              } else if (Array.isArray(userAnswer)) {
+                                return userAnswer.join(', ');
+                              } else {
+                                return 'No answer submitted';
+                              }
+                            })()}
+                          </div>
+                        </div>
+                      );
+                    }).slice().reverse()}
+                  </div>
+                </div>
+              ))}
+            </aside>
           </div>
         )}
         {deleteConfirm.visible && (
