@@ -578,3 +578,18 @@ input[type="file"] {
 .popup-question-form {
   padding: 1rem 1.5rem;
 }
+
+/* Disabled Save Changes button styles */
+.save-buttonn.disabled,
+.save-buttonn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #888; /* muted grey */
+  color: #fff; /* keep text readable */
+}
+
+.save-buttonn.disabled:hover,
+.save-buttonn:disabled:hover {
+  background-color: #888; /* prevent hover color change */
+  color: #fff;
+}

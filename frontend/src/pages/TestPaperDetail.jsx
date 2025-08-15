@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '../services/firebase';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestPaperDetail.css';
+import PopupModal from '../components/PopupModal';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
@@ -29,6 +30,9 @@ const TestPaperDetail = () => {
   const [otherAnswerFile, setOtherAnswerFile] = useState(null);
   const [editingQuestionId, setEditingQuestionId] = useState(null);
   const [showAddQuestion, setShowAddQuestion] = useState(false);
+  const [saveDisabled, setSaveDisabled] = useState(false);
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupMsg, setPopupMsg] = useState('');
 
   useEffect(() => {
     const fetchTestpaper = async () => {
@@ -109,6 +113,9 @@ const TestPaperDetail = () => {
   };
 
   const handleSaveChanges = async () => {
+    setSaveDisabled(true);
+    setPopupMsg('');
+    // Change button label to 'Saving...'
     try {
       const docRef = doc(db, 'users', uid, 'testpapers', id);
       const transformedQuestionsByPage = questionsByPage.map(pageData => ({
@@ -121,9 +128,12 @@ const TestPaperDetail = () => {
         }),
       }));
       await updateDoc(docRef, { questionsByPage: transformedQuestionsByPage });
-      alert('Changes saved.');
+      setPopupMsg('Your updates have been saved successfully.');
+      setPopupOpen(true);
     } catch {
-      alert('Failed to save changes.');
+      setSaveDisabled(false);
+      setPopupMsg('Failed to save changes. Please try again.');
+      setPopupOpen(true);
     }
   };
 
@@ -392,8 +402,25 @@ const TestPaperDetail = () => {
         </div>
       </div>
       <div className="save-button-wrapper">
-        <button className="save-buttonn" onClick={handleSaveChanges}>Save Changes</button>
+        <button
+          className={`save-buttonn${saveDisabled ? ' disabled' : ''}`}
+          onClick={handleSaveChanges}
+          disabled={saveDisabled}
+        >
+          {popupMsg === '' && saveDisabled ? 'Saving...' : saveDisabled ? 'Saved' : 'Save Changes'}
+        </button>
       </div>
+      {popupOpen && (
+        <PopupModal
+          message={popupMsg}
+          confirmText="OK"
+          onConfirm={() => {
+            setPopupOpen(false);
+            setSaveDisabled(false);
+            setPopupMsg(''); 
+          }}
+        />
+      )}
     </div>
   );
 };
