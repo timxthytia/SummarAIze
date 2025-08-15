@@ -8,6 +8,7 @@ import CustomNode from '../components/CustomNode';
 import ReactFlow, { useNodesState, useEdgesState, addEdge, Handle, Position, ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
 import '../styles/MindmapDetail.css';
+import PopupModal from '../components/PopupModal';
 
 const nodeTypes = { custom: CustomNode };
 
@@ -22,6 +23,8 @@ const MindmapDetail = () => {
   const [user, setUser] = useState(null);
   const [deleteMode, setDeleteMode] = useState(false);
   const [edgeModal, setEdgeModal] = useState({ visible: false, edgeId: '', label: '' });
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupMsg, setPopupMsg] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -108,7 +111,7 @@ const MindmapDetail = () => {
     };
 
   const handleSaveChanges = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
       const docRef = doc(db, 'users', uid, 'mindmaps', id);
 
@@ -128,12 +131,15 @@ const MindmapDetail = () => {
         edges
       });
 
-      alert('Changes saved successfully.');
+      setPopupMsg('Changes saved successfully.');
+      setPopupOpen(true);
     } catch (error) {
       console.error('Error saving changes:', error);
-      alert('Failed to save changes.');
+      setPopupMsg('Failed to save changes. Please try again.');
+      setPopupOpen(true);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const onConnect = (params) => {
@@ -296,6 +302,16 @@ const MindmapDetail = () => {
               </button>
             </div>
           </div>
+        )}
+        {popupOpen && (
+          <PopupModal
+            message={popupMsg}
+            confirmText="OK"
+            onConfirm={() => {
+              setPopupOpen(false);
+              setSaving(false);
+            }}
+          />
         )}
       </main>
     </div>

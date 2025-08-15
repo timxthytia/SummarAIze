@@ -7,6 +7,7 @@ import { db, auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/SummaryDetail.css';
+import PopupModal from '../components/PopupModal';
 
 const SummaryDetail = () => {
   const { uid, id } = useParams();
@@ -17,6 +18,8 @@ const SummaryDetail = () => {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
   const [user, setUser] = useState(null);
+  const [popupOpen, setPopupOpen] = useState(false);
+  const [popupMsg, setPopupMsg] = useState('');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -46,13 +49,19 @@ const SummaryDetail = () => {
 
   const handleSave = async () => {
     setSaving(true);
-    const docRef = doc(db, 'users', uid, 'summaries', id);
-    await updateDoc(docRef, {
-      summary
-    });
-    setLastSaved(new Date().toLocaleString());
-    setSaving(false);
-    alert('Changes saved successfully.');
+    try {
+      const docRef = doc(db, 'users', uid, 'summaries', id);
+      await updateDoc(docRef, { summary });
+      setLastSaved(new Date().toLocaleString());
+      setPopupMsg('Changes saved successfully.');
+      setPopupOpen(true);
+    } catch (e) {
+      console.error(e);
+      setPopupMsg('Failed to save changes. Please try again.');
+      setPopupOpen(true);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -82,6 +91,16 @@ const SummaryDetail = () => {
       <button className="save-buttonn" onClick={handleSave} disabled={saving}>
         {saving ? 'Saving...' : 'Save Changes'}
       </button>
+      {popupOpen && (
+        <PopupModal
+          message={popupMsg}
+          confirmText="OK"
+          onConfirm={() => {
+            setPopupOpen(false);
+            setSaving(false); // ensure button is re-enabled after closing
+          }}
+        />
+      )}
     </div>
   );
 };

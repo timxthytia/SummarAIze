@@ -30,9 +30,16 @@
 
 .add-node-btn:hover,
 .delete-mode-btn:hover,
-.save-btn:hover {
+.save-btn:not(:disabled):hover {
   background-color: white;
   color: #5f27cd;
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #888; /* muted grey */
+  color: #fff; /* keep text readable */
 }
 
 

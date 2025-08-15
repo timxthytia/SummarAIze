@@ -128,7 +128,7 @@ const TestPaperDetail = () => {
         }),
       }));
       await updateDoc(docRef, { questionsByPage: transformedQuestionsByPage });
-      setPopupMsg('Your updates have been saved successfully.');
+      setPopupMsg('Changes saved successfully.');
       setPopupOpen(true);
     } catch {
       setSaveDisabled(false);
