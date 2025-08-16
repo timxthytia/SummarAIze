@@ -262,7 +262,7 @@ const TestReview = () => {
             </div>
           ) : (
             <>
-              {/* Overall statistics container ABOVE the split */}
+              {/* Overall statistics container */}
               <div className="paper-stats" style={{ marginBottom: '1rem' }}>
                 <h3>Overall Statistics</h3>
                 <p><strong>Average Score:</strong> {avg}</p>
@@ -270,9 +270,8 @@ const TestReview = () => {
                 <p><strong>Lowest Score:</strong> {low}</p>
               </div>
               <div className="testreview-split-wrapper">
-                {/* BELOW: two-pane layout with PDF navigation on the left and per-page questions on the right */}
+                {/* Layout for PDF nav and Question list */}
                 <div className="testreview-split">
-                  {/* LEFT: PDF viewer + navigation */}
                   <section className="testreview-pdf-section">
                     <div className="testreview-pdf-container" ref={pdfPaneRef}>
                       {pdfUrl ? (
@@ -295,7 +294,6 @@ const TestReview = () => {
                     </div>
                   </section>
 
-                  {/* RIGHT: Questions for the CURRENT PAGE with existing info */}
                   <aside
                     className="testreview-questions-section"
                     style={{ maxHeight: pdfHeight ? `${pdfHeight}px` : undefined, overflowY: pdfHeight ? 'auto' : undefined }}

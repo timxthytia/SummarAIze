@@ -38,8 +38,8 @@
 .save-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background-color: #888; /* muted grey */
-  color: #fff; /* keep text readable */
+  background-color: #888; 
+  color: #fff; 
 }
 
 

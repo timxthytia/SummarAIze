@@ -12,10 +12,10 @@ main {
   background: linear-gradient(-45deg, #0b3d0b, #145214, #1f6a1f, #145214);
 }
 
-/* Top bar row — mirror TestAttempt's timer-title-row */
+/* Top bar row */
 .testgrading-topbar-row {
   display: grid;
-  grid-template-columns: auto 1fr auto; /* left timer, centered title, right button */
+  grid-template-columns: auto 1fr auto; 
   align-items: center;
   margin-top: 0;
   margin-bottom: 1.5rem;
@@ -23,7 +23,6 @@ main {
   padding: 0 1rem;
 }
 
-/* Left: timer/time-taken — match TestAttempt timer look */
 .testgrading-topbar-left {
   font-size: 2.4rem;
   font-weight: 700;
@@ -33,7 +32,6 @@ main {
   width: fit-content;
 }
 
-/* Middle: paper title — same as TestAttempt .paper-title */
 .testgrading-paper-title {
   font-size: 2.4rem;
   font-weight: bold;
@@ -44,12 +42,10 @@ main {
   text-overflow: ellipsis;
 }
 
-/* Right: submit/save button alignment */
 .testgrading-topbar-submit {
   justify-self: end;
 }
 
-/* Style the Save button in the top bar to match TestAttempt's submit */
 .testgrading-grading-save-button {
   background-color: rgba(255, 255, 255, 0.004);
   color: white;

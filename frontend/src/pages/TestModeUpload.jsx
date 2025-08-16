@@ -366,7 +366,6 @@ const TestModeUpload = () => {
                   pageNumber={currentPage}
                   width={800}
                   className="pdf-page"
-                  // renderTextLayer and renderAnnotationLayer default to true; included for clarity
                   renderTextLayer={true}
                   renderAnnotationLayer={true}
                 />

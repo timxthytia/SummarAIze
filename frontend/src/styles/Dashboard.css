@@ -529,7 +529,6 @@
     gap: 16px;
   }
 }
-/* Remove focus and active outlines/borders from sidebar toggle buttons */
 .fixed-sidebar .toggle-button:focus,
 .fixed-sidebar .toggle-button:active {
   outline: none;
@@ -537,7 +536,7 @@
   box-shadow: none;
 }
 
-/* === Glass Grid + Card Actions Dropdown === */
+/* Glass Grid + Card Actions Dropdown */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -559,7 +558,7 @@
   min-height: 240px;
   display: flex;
   flex-direction: column;
-  overflow: visible; /* ensure dropdown and toggle are never clipped */
+  overflow: visible;
 }
 .glass-card:hover {
   transform: translateY(-2px);
@@ -582,8 +581,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  flex: 1;       /* let title take remaining space */
-  min-width: 0;  /* allow ellipsis to work and not push the toggle out */
+  flex: 1;     
+  min-width: 0; 
 }
 
 .card-actions-toggle {
@@ -664,4 +663,36 @@
 }
 .summary-list h3, .mindmap-list h3, .testpaper-list h3 {
   margin-bottom: 0.8rem;
+}
+ 
+/* Consistent spacing between fixed left sidebar and main content */
+:root {
+  --dashboard-sidebar-offset: 60px; 
+  --dashboard-sidebar-width: 240px; 
+  --dashboard-content-gap: 20px;    
+  --dashboard-right-gap: 20px;      
+}
+
+.left-sidebar {
+  width: var(--dashboard-sidebar-width);
+  margin-left: var(--dashboard-sidebar-offset);
+}
+
+.main-content {
+  margin-left: calc(var(--dashboard-sidebar-offset) + var(--dashboard-sidebar-width) + var(--dashboard-content-gap)) !important;
+  margin-right: var(--dashboard-right-gap) !important; /* keep some breathing room on the right */
+}
+
+@media (max-width: 1400px) {
+  .main-content {
+    margin-left: calc(var(--dashboard-sidebar-offset) + var(--dashboard-sidebar-width) + var(--dashboard-content-gap)) !important;
+    margin-right: var(--dashboard-right-gap) !important;
+  }
+}
+
+@media (max-width: 813px) {
+  .main-content {
+    margin-left: calc(var(--dashboard-sidebar-offset) + var(--dashboard-sidebar-width) + var(--dashboard-content-gap)) !important;
+    margin-right: var(--dashboard-right-gap) !important;
+  }
 }

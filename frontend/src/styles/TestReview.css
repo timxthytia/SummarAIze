@@ -263,7 +263,6 @@
   color: #fff;
 }
 
-/* Inserted .testreview-split-wrapper as it did not exist */
 .testreview-split-wrapper {
   display: flex;
   flex-direction: row;
@@ -275,7 +274,6 @@
   max-width: none;
 }
 
-/* ===== Two-pane layout to mirror TestAttempt (namespaced) ===== */
 .testreview-split {
   display: flex;
   flex-direction: row;
@@ -363,7 +361,6 @@
   justify-content: flex-start;
 }
 
-/* Use existing question card look inside the right pane */
 .testreview-questions-section .question-stats {
   background-color: #2e3b50;
   padding: 1rem;
@@ -372,18 +369,17 @@
   color: white;
 }
 
-/* --- Make the questions list obviously scrollable --- */
+/* Scrollable question list styling */
 .testreview-questions-section {
   position: relative;
-  overflow-y: auto !important; /* ensure scrollbars appear when capped by inline max-height */
-  scrollbar-gutter: stable both-edges; /* keeps layout steady when scrollbar appears */
+  overflow-y: auto !important; 
+  scrollbar-gutter: stable both-edges; 
 }
 
-/* Subtle top/bottom fades to hint there is more content */
 .testreview-questions-section::before,
 .testreview-questions-section::after {
   content: "";
-  position: sticky; /* stays at the edge of the scrollable area */
+  position: sticky; 
   left: 0;
   right: 0;
   height: 22px;
@@ -392,7 +388,6 @@
   display: block;
 }
 
-/* Optional helper: a tiny sticky label that nudges users to scroll */
 .testreview-questions-section .scroll-hint {
   position: sticky;
   bottom: 8px;
@@ -402,7 +397,7 @@
   opacity: 0.8;
 }
 
-/* Always-visible custom scrollbar (WebKit/Blink) */
+/* Always-visible custom scrollbar */
 .testreview-questions-section::-webkit-scrollbar {
   width: 10px;
 }
@@ -418,7 +413,6 @@
   background: rgba(255,255,255,0.5);
 }
 
-/* Responsive stack like TestAttempt */
 @media (max-width: 1100px) {
   .testreview-split {
     flex-direction: column;

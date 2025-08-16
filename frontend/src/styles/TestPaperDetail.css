@@ -546,7 +546,6 @@ input[type="file"] {
   border: 2px solid #ffffff !important;
 }
 
-/* Popup question form to match .question-list-row width and layout */
 .popup-question-form {
   width: 100%;
   max-width: none;
@@ -584,12 +583,12 @@ input[type="file"] {
 .save-buttonn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background-color: #888; /* muted grey */
-  color: #fff; /* keep text readable */
+  background-color: #888; 
+  color: #fff; 
 }
 
 .save-buttonn.disabled:hover,
 .save-buttonn:disabled:hover {
-  background-color: #888; /* prevent hover color change */
+  background-color: #888; 
   color: #fff;
 }

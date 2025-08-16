@@ -97,7 +97,7 @@ const SummaryDetail = () => {
           confirmText="OK"
           onConfirm={() => {
             setPopupOpen(false);
-            setSaving(false); // ensure button is re-enabled after closing
+            setSaving(false);
           }}
         />
       )}

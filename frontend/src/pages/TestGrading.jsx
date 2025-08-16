@@ -129,9 +129,8 @@ const TestGrading = () => {
           <div className="topbar-submit">
           </div>
         </div>
-        {/* Removed .testattempt-submit-button-wrapper and total scored from top */}
 
-        {/* Two-column layout */}
+        {/* Layout for PDF nav and Question list */}
         <div className="pdf-and-questions">
           <div className="pdf-viewer-section">
             <div className="pdf-viewer-container">
@@ -271,7 +270,6 @@ const TestGrading = () => {
               navigate('/dashboard');
             }
           }}
-          /* single-button modal: confirm acts as OK */
           confirmText="OK"
         />
       )}

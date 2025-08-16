@@ -143,14 +143,14 @@ input[type="file"] {
   white-space: nowrap;
 }
 
-/* Force edit/delete to flush right and sit together */
+/* Edit/delete to flush right and sit together */
 .question-list-row .edit-question-button,
 .question-list-row .icon-edit-button {
-  margin-left: auto; /* pushes actions to far right */
+  margin-left: auto;
 }
 .question-list-row .delete-question-button,
 .question-list-row .icon-delete-button {
-  margin-left: 0.5rem; /* tight spacing next to edit */
+  margin-left: 0.5rem; 
 }
 
 .question-type,
@@ -427,6 +427,7 @@ input[type="file"] {
   border-radius: 8px;
   overflow: hidden;
 }
+
 /* Layout for PDF and Questions side by side */
 .pdf-and-questions {
   display: flex;
@@ -488,7 +489,6 @@ input[type="file"] {
   border: 2px solid #ffffff !important;
 }
 
-/* Popup question form to match .question-list-row width and layout */
 .popup-question-form {
   width: 100%;
   max-width: none;
@@ -514,7 +514,6 @@ input[type="file"] {
   color: white;
   border: 2px solid #ffffff;
 }
-/* Ensure no wrapping for .question-list-row even on small screens */
 @media (max-width: 1100px) {
   .question-list-row {
     flex-wrap: nowrap;
@@ -522,7 +521,6 @@ input[type="file"] {
   }
 }
 
-/* Style for selected filename in popup-question-form */
 .popup-question-form .selected-filename {
   white-space: normal;
   color: #1976d2;
