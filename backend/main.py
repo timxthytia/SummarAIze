@@ -12,6 +12,7 @@ app = FastAPI()
 
 origins = ["http://localhost:5173", 
            "https://orbital-summaraize.vercel.app",
+           "summaraize-blue.vercel.app",
            "https://fastapi-tesseract-742870183372.asia-southeast1.run.app"]
 
 app.add_middleware(
