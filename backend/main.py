@@ -10,10 +10,11 @@ import io
 
 app = FastAPI()
 
-origins = ["http://localhost:5173", 
-           "https://orbital-summaraize.vercel.app",
-           "https://summaraize-blue.vercel.app",
-           "https://fastapi-tesseract-742870183372.asia-southeast1.run.app"]
+origins = [
+    "http://localhost:5173",
+    "https://orbital-summaraize.vercel.app",
+    "https://summaraize-blue.vercel.app"
+]
 
 app.add_middleware(
     CORSMiddleware,
