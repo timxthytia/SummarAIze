@@ -1,6 +1,6 @@
 .summarizer-container {
   width: 100%;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 8rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(-45deg, #0b132b, #1b233a, #2e3b50, #1b233a);
@@ -8,6 +8,36 @@
   animation: animatedGradient 15s ease-in-out infinite;
   color: white;
   box-sizing: border-box;
+  /* Prevent horizontal overflow and define per-page scale */
+  overflow-x: hidden;
+  overflow-y: auto;
+  --summ-scale: 0.8; /* render Summarizer at ~80% visual scale by default */
+}
+
+/* Prefer zoom in Chromium/Edge for cleaner visual scaling */
+@supports (zoom: 1) {
+  .summarizer-container {
+    zoom: 1;           /* keep container at native scale to preserve scrolling */
+    width: 100%;
+    min-height: 100dvh;
+  }
+  .summarizer-container > * {
+    zoom: var(--summ-scale); /* visually scale all content inside */
+  }
+}
+
+/* Fallback for browsers without zoom (e.g., Firefox) */
+@supports not (zoom: 1) {
+  .summarizer-container {
+    /* keep container unscaled so it can grow naturally and scroll */
+    width: 100%;
+    min-height: 100dvh;
+  }
+  .summarizer-container > * {
+    transform: scale(var(--summ-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--summ-scale)); /* counterbalance scale horizontally */
+  }
 }
 
 @keyframes animatedGradient {
@@ -45,7 +75,7 @@
   border: 1px solid #ccc;
   border-radius: 12px;
   padding: 1rem;
-  font-size: rem;
+  font-size: 1rem;
   margin-bottom: 1rem;
 }
 

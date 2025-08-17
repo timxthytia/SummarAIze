@@ -115,7 +115,6 @@ const TestPaperDetail = () => {
   const handleSaveChanges = async () => {
     setSaveDisabled(true);
     setPopupMsg('');
-    // Change button label to 'Saving...'
     try {
       const docRef = doc(db, 'users', uid, 'testpapers', id);
       const transformedQuestionsByPage = questionsByPage.map(pageData => ({

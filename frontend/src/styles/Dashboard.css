@@ -539,11 +539,30 @@
 /* Glass Grid + Card Actions Dropdown */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(5, minmax(260px, 260px)); /* 5 fixed-size columns at default view */
   gap: 16px;
   width: 100%;
   margin-top: 1rem;
+  justify-content: start; /* keep columns aligned left when they wrap */
 }
+
+/* Keep card size constant; reduce columns as viewport narrows */
+@media (max-width: 1600px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 260px));
+  }
+}
+@media (max-width: 1280px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 260px));
+  }
+}
+@media (max-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 260px));
+  }
+}
+/* Keep your existing ≤813px rule that forces a single column */
 
 .glass-card {
   position: relative;
@@ -694,5 +713,68 @@
   .main-content {
     margin-left: calc(var(--dashboard-sidebar-offset) + var(--dashboard-sidebar-width) + var(--dashboard-content-gap)) !important;
     margin-right: var(--dashboard-right-gap) !important;
+  }
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+.dashboard-container {
+  overflow-x: hidden;
+}
+
+/* Prevent main content from exceeding the viewport width */
+.main-content {
+  max-width: calc(100vw - (var(--dashboard-sidebar-offset) + var(--dashboard-sidebar-width) + var(--dashboard-content-gap) + var(--dashboard-right-gap)));
+  box-sizing: border-box;
+}
+
+/* === Dashboard-only 75% visual scale (default view) — apply to main content and sidebars === */
+:root {
+  --dash-scale: 0.75;
+}
+/* Prefer zoom when available (Chromium/Edge) */
+@supports (zoom: 1) {
+  .dashboard-container .main-content {
+    zoom: var(--dash-scale);
+  }
+  .dashboard-container .fixed-sidebar {
+    zoom: var(--dash-scale);
+    /* Compensate height so the scaled element still spans full viewport height */
+    height: calc(100vh / var(--dash-scale));
+    overflow-y: auto;
+  }
+  .dashboard-container .left-sidebar {
+    zoom: var(--dash-scale);
+    /* Original left-sidebar uses top: 5rem; bottom: 0; scaling would shorten visual height,
+       so explicitly set height to fill the remaining viewport space after the top offset. */
+    height: calc((100vh - 5rem) / var(--dash-scale));
+    bottom: auto; /* avoid double constraints with explicit height */
+    overflow-y: auto;
+  }
+}
+/* Fallback for browsers without zoom (e.g., Firefox) */
+@supports not (zoom: 1) {
+  /* Scale main content and compensate width to avoid horizontal clipping */
+  .dashboard-container .main-content {
+    transform: scale(var(--dash-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--dash-scale));
+  }
+  /* Scale both sidebars individually to match visual size and fill viewport */
+  .dashboard-container .left-sidebar,
+  .dashboard-container .fixed-sidebar {
+    transform: scale(var(--dash-scale));
+    transform-origin: top left;
+  }
+  .dashboard-container .fixed-sidebar {
+    height: calc(100vh / var(--dash-scale));
+    overflow-y: auto;
+  }
+  .dashboard-container .left-sidebar {
+    height: calc((100vh - 5rem) / var(--dash-scale));
+    bottom: auto;
+    overflow-y: auto;
   }
 }
