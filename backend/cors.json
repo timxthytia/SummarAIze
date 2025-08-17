@@ -1,6 +1,6 @@
 [
   {
-    "origin": ["http://localhost:5173", "https://orbital-summaraize.vercel.app"],
+    "origin": ["http://localhost:5173", "https://orbital-summaraize.vercel.app", "https://summaraize-blue.vercel.app"],
     "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     "maxAgeSeconds": 3600,
     "responseHeader": ["Content-Type"]
