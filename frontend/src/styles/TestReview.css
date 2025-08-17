@@ -1,3 +1,7 @@
+:root {
+  --review-scale: 0.8;
+}
+
 .test-review-container {
   padding: 20px;
   width: 100%;
@@ -8,6 +12,21 @@
   animation: animatedGradient 15s ease-in-out infinite;
   color: white;
   box-sizing: border-box;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+.test-review-container > *:not(.fixed-button) {
+  zoom: var(--review-scale);
+}
+@supports not (zoom: 1) {
+  .test-review-container > *:not(.fixed-button) {
+    transform: scale(var(--review-scale));
+    transform-origin: top left;
+    width: calc(100% / var(--review-scale));
+  }
 }
 
 .test-review-toggle-buttons {
@@ -424,5 +443,32 @@
     max-width: 100%;
     width: 100%;
     flex: 1 1 auto;
+  }
+}
+
+
+/* === Keep questions list aligned with PDF height on screen === */
+:root {
+  /* Adjust if your navbar/toggles consume more vertical space */
+  --review-top-offset: 6rem;
+}
+
+/* Ensure columns align from the top */
+.testreview-split {
+  align-items: flex-start;
+}
+
+/* Make the questions column stop at the bottom of the viewport and scroll internally */
+.testreview-questions-section {
+  position: sticky;
+  top: var(--review-top-offset);
+  max-height: calc(100dvh - var(--review-top-offset) - 1.5rem);
+  overflow-y: auto !important; /* already present above but ensure it wins */
+}
+
+/* Optional: when the PDF is shorter than the viewport, keep a subtle max */
+@media (min-height: 700px) {
+  .testreview-questions-section {
+    max-height: calc(100dvh - var(--review-top-offset) - 2rem);
   }
 }

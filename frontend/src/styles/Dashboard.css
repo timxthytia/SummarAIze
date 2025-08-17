@@ -261,9 +261,9 @@
 /* Persistent fixed sidebar styles */
 .fixed-sidebar {
   position: fixed;
-  top: 1.5rem;
+  top: 0.5rem;
   left: 0;
-  width: 220px;
+  width: var(--dashboard-sidebar-width);
   height: 100vh;
   background-color: #2a2a2a;
   padding-top: 4rem;
@@ -273,6 +273,7 @@
   z-index: 900;
   backdrop-filter: blur(10px);
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+  overflow-x: hidden;
 }
 
 /* Sidebar button styles (toggle-button) */
@@ -290,6 +291,8 @@
   padding: 1.5rem 0;
   margin: 0;
   transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 .fixed-sidebar .tag-filter-input {
   width: auto;
@@ -311,19 +314,17 @@
 
 /* Sidebar button hover effects */
 .fixed-sidebar .toggle-button:hover {
-  transform: scale(1.05);
+  background-color: inherit; /* keep bg change logic in data-view specific rules */
+  transform: none;
 }
 .fixed-sidebar .toggle-button[data-view='summaries']:hover {
   background-color: #0b132b;
-  transform: scale(1.05);
 }
 .fixed-sidebar .toggle-button[data-view='mindmaps']:hover {
   background-color: #cc4c2f;
-  transform: scale(1.05);
 }
 .fixed-sidebar .toggle-button[data-view='testpapers']:hover {
   background-color: #145214;
-  transform: scale(1.05);
 }
 
 .left-sidebar {
@@ -776,5 +777,19 @@ html, body {
     height: calc((100vh - 5rem) / var(--dash-scale));
     bottom: auto;
     overflow-y: auto;
+  }
+}
+/* === Dashboard: ensure navbar matches TestModeUpload 80% scale === */
+@supports (zoom: 1) {
+  .navbar {
+    zoom: 0.8 !important;
+  }
+}
+@supports not (zoom: 1) {
+  .navbar {
+    transform: scale(0.8) !important;
+    transform-origin: top left;
+    /* Counterbalance horizontal shrink so navbar still spans visually */
+    width: 125%;
   }
 }

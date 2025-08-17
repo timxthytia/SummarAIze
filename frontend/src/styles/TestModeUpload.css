@@ -1,6 +1,10 @@
+:root {
+  --testmode-scale: 0.8; /* render Test Mode Upload at ~80% visual scale */
+}
+
 .upload-container {
   width: 100%;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 6rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(-45deg, #0b3d0b, #145214, #1f6a1f, #145214);
@@ -8,6 +12,33 @@
   animation: animatedGradient 15s ease-in-out infinite;
   color: white;
   box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Prefer zoom in Chromium/Edge for clean visual scaling */
+@supports (zoom: 1) {
+  .upload-container { /* keep container unscaled so it can scroll naturally */
+    zoom: 1;
+    width: 100%;
+    min-height: 100dvh;
+  }
+  .upload-container > * {
+    zoom: var(--testmode-scale);
+  }
+}
+
+/* Fallback for browsers without zoom (e.g., Firefox) */
+@supports not (zoom: 1) {
+  .upload-container { /* keep container unscaled so it can scroll naturally */
+    width: 100%;
+    min-height: 100dvh;
+  }
+  .upload-container > * {
+    transform: scale(var(--testmode-scale));
+    transform-origin: top center;
+    width: calc(100% / var(--testmode-scale)); /* counterbalance horizontal scale */
+  }
 }
 
 .upload-card {
