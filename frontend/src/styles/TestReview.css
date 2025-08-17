@@ -323,6 +323,7 @@
   border-radius: 18px;
   width: 100%;
   max-width: 100%;
+  min-height: var(--pdf-height, 600px); /* reserve previous page height to prevent layout collapse between swaps */
 }
 
 .testreview-pdf-container .pdf-page,
@@ -378,6 +379,8 @@
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
+  box-sizing: border-box;
+  padding-right: 12px; /* reserve space so right edges/rounded corners aren't clipped by the scrollbar */
 }
 
 .testreview-questions-section .question-stats {
@@ -386,6 +389,7 @@
   border-radius: 10px;
   margin-bottom: 1.5rem;
   color: white;
+  margin-right: 4px; /* slight breathing room from the scrollbar gutter so rounded corners stay visible */
 }
 
 /* Scrollable question list styling */
@@ -421,15 +425,55 @@
   width: 10px;
 }
 .testreview-questions-section::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.08);
+  background: transparent;
   border-radius: 10px;
 }
 .testreview-questions-section::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.35);
+  background: transparent;
   border-radius: 10px;
 }
-.testreview-questions-section::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.5);
+.testreview-questions-section:hover::-webkit-scrollbar-track,
+.testreview-questions-section:focus-within::-webkit-scrollbar-track {
+  background: transparent;
+}
+.testreview-questions-section:hover::-webkit-scrollbar-thumb,
+.testreview-questions-section:focus-within::-webkit-scrollbar-thumb {
+  background: #9e9e9e;
+}
+
+.scrollable-scores::-webkit-scrollbar {
+  width: 10px;
+}
+.scrollable-scores::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 10px;
+}
+.scrollable-scores::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+}
+.scrollable-scores:hover::-webkit-scrollbar-track,
+.scrollable-scores:focus-within::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollable-scores:hover::-webkit-scrollbar-thumb,
+.scrollable-scores:focus-within::-webkit-scrollbar-thumb {
+  background: #9e9e9e;
+}
+
+/* Firefox scrollbar styling */
+.testreview-questions-section,
+.scrollable-scores {
+  scrollbar-width: thin;                /* thinner scrollbar */
+  scrollbar-color: transparent transparent;
+}
+.testreview-questions-section:hover,
+.testreview-questions-section:focus-within {
+  scrollbar-color: #9e9e9e transparent; /* grey thumb, transparent track */
+}
+.scrollable-scores:hover,
+.scrollable-scores:focus-within {
+  scrollbar-color: #9e9e9e transparent; /* grey thumb, transparent track */
 }
 
 @media (max-width: 1100px) {
@@ -451,6 +495,7 @@
 :root {
   /* Adjust if your navbar/toggles consume more vertical space */
   --review-top-offset: 6rem;
+  --review-extra-bottom: 10rem; /* extend further below the PDF nav buttons */
 }
 
 /* Ensure columns align from the top */
@@ -462,13 +507,30 @@
 .testreview-questions-section {
   position: sticky;
   top: var(--review-top-offset);
-  max-height: calc(100dvh - var(--review-top-offset) - 1.5rem);
+  max-height: calc(100dvh - var(--review-top-offset) - 1.5rem + var(--review-extra-bottom));
   overflow-y: auto !important; /* already present above but ensure it wins */
+  padding-bottom: 1rem;
 }
 
 /* Optional: when the PDF is shorter than the viewport, keep a subtle max */
 @media (min-height: 700px) {
   .testreview-questions-section {
-    max-height: calc(100dvh - var(--review-top-offset) - 2rem);
+    max-height: calc(100dvh - var(--review-top-offset) - 2rem + var(--review-extra-bottom));
   }
+}
+
+/* Prevent scroll-anchoring jumps when PDF page content swaps */
+.test-review-container,
+.testreview-pdf-container,
+.testreview-questions-section {
+  overflow-anchor: none; /* keep viewport from jumping on dynamic content changes */
+}
+
+/* Also avoid layout shift causing scroll snap on nav button click */
+.testreview-pdf-nav button {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+.testreview-pdf-nav button:focus {
+  outline: none;
 }

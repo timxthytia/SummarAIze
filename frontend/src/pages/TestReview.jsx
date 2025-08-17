@@ -24,6 +24,7 @@ const TestReview = () => {
   const pdfPaneRef = React.useRef(null);
   const [pdfHeight, setPdfHeight] = useState(null);
   const navigate = useNavigate();
+  const [paperTitle, setPaperTitle] = useState('');
 
 
   const onDocumentLoadSuccess = ({ numPages: np }) => {
@@ -95,6 +96,7 @@ const TestReview = () => {
         const testpaperSnap = await getDoc(testpaperRef);
         if (testpaperSnap.exists()) {
           const data = testpaperSnap.data();
+          setPaperTitle(data.title || data.name || data.paperTitle || '');
           // set PDF meta for left pane
           setPdfUrl(data.fileUrl || '');
           const qb = data.questionsByPage || [];
@@ -111,6 +113,7 @@ const TestReview = () => {
           setQuestions([]);
           setQuestionsByPage([]);
           setNumPages(0);
+          setPaperTitle('');
         }
       } catch (err) {
       }
@@ -187,6 +190,9 @@ const TestReview = () => {
     <div className="test-review-container">
       <NavbarLoggedin />
       <main>
+        {!loading && paperTitle && (
+          <h2 className="testreview-paper-title">{paperTitle}</h2>
+        )}
         {!loading && (
           <div className="test-review-toggle-buttons">
             <button
@@ -273,7 +279,11 @@ const TestReview = () => {
                 {/* Layout for PDF nav and Question list */}
                 <div className="testreview-split">
                   <section className="testreview-pdf-section">
-                    <div className="testreview-pdf-container" ref={pdfPaneRef}>
+                    <div
+                      className="testreview-pdf-container"
+                      ref={pdfPaneRef}
+                      style={pdfHeight ? { ['--pdf-height']: `${pdfHeight}px` } : undefined}
+                    >
                       {pdfUrl ? (
                         <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess}>
                           <Page
@@ -296,7 +306,6 @@ const TestReview = () => {
 
                   <aside
                     className="testreview-questions-section"
-                    style={{ maxHeight: pdfHeight ? `${pdfHeight}px` : undefined, overflowY: pdfHeight ? 'auto' : undefined }}
                   >
                     {perQuestionStats.length > 0 && perQuestionStats.map(({ question, avgScore, highScore, lowScore }, idx) => (
                       <div key={idx} className="question-stats">
