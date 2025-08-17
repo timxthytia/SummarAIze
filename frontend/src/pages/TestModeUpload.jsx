@@ -6,6 +6,7 @@ import { auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import NavbarLoggedin from '../components/NavbarLoggedin';
 import '../styles/TestModeUpload.css';
+import PopupModal from '../components/PopupModal';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../services/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
@@ -77,6 +78,8 @@ const TestModeUpload = () => {
     options: '',
   });
   const [fileUrl, setFileUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -208,8 +211,10 @@ const TestModeUpload = () => {
   };
 
   const handleSubmitTestPaper = async () => {
+    setIsUploading(true);
     if (!paperTitle.trim() || !pdfData || !user) {
-      setError("Missing paper title, PDF data, or user not logged in.");
+      setError("Missing paper title or PDF data.");
+      setIsUploading(false);
       return;
     }
 
@@ -225,6 +230,7 @@ const TestModeUpload = () => {
       setFileUrl(fileUrl);
     } catch (err) {
       setError("Failed to upload test paper file.");
+      setIsUploading(false);
       return;
     }
 
@@ -286,9 +292,11 @@ const TestModeUpload = () => {
         fileUrl,
         questionsByPage: questions,
       });
-      alert("Test paper submitted successfully!");
+      setShowSuccessModal(true);
     } catch (err) {
       setError("Failed to submit test paper to Firestore.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -334,22 +342,10 @@ const TestModeUpload = () => {
         {error && <div className="error-message">{error}</div>}
         
         <div className="submit-testpaper-container">
-          <button onClick={handleSubmitTestPaper} className="submit-testpaper-button">
-            Upload Test Paper
+          <button onClick={handleSubmitTestPaper} className="submit-testpaper-button" disabled={isUploading}>
+            {isUploading ? 'Uploading...' : 'Upload Test Paper'}
           </button>
         </div>
-        {fileUrl && (
-          <div className="view-uploaded-paper-link">
-            <a
-              href={fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#1976d2', textDecoration: 'underline' }}
-            >
-              {selectedFile ? truncate(selectedFile.name) : 'View Uploaded Test Paper'}
-            </a>
-          </div>
-        )}
       </div>
       {selectedFile && pdfData && (
         <div className="pdf-and-questions">
@@ -590,6 +586,13 @@ const TestModeUpload = () => {
           </div>
         </div>
       )}
+    {showSuccessModal && (
+      <PopupModal
+        message="Test paper uploaded successfully!"
+        confirmText="OK"
+        onConfirm={() => setShowSuccessModal(false)}
+      />
+    )}
     </div>
   );
 };
