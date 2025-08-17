@@ -1,6 +1,10 @@
+:root {
+  --mindmap-scale: 0.8;
+}
+
 .mindmap-generator-container {
   width: 100%;
-  min-height: 100vh;
+  min-height: 100dvh;
   padding: 6rem 2rem 2rem;
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(-45deg, #e65c3a, #cc4c2f, #a63a1f);  
@@ -8,6 +12,19 @@
   animation: animatedGradient 15s ease-in-out infinite;
   color: white;
   box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.mindmap-generator-container > * {
+  zoom: var(--mindmap-scale);
+}
+
+@supports not (zoom: 1) {
+  .mindmap-generator-container > * {
+    transform: scale(var(--mindmap-scale));
+    transform-origin: top center;
+    width: calc(100% / var(--mindmap-scale));
+  }
 }
 
 .mindmap-card {
