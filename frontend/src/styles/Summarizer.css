@@ -8,35 +8,32 @@
   animation: animatedGradient 15s ease-in-out infinite;
   color: white;
   box-sizing: border-box;
-  /* Prevent horizontal overflow and define per-page scale */
   overflow-x: hidden;
   overflow-y: auto;
-  --summ-scale: 0.8; /* render Summarizer at ~80% visual scale by default */
+  --summ-scale: 0.8; 
 }
 
-/* Prefer zoom in Chromium/Edge for cleaner visual scaling */
 @supports (zoom: 1) {
   .summarizer-container {
-    zoom: 1;           /* keep container at native scale to preserve scrolling */
+    zoom: 1;           
     width: 100%;
     min-height: 100dvh;
   }
   .summarizer-container > * {
-    zoom: var(--summ-scale); /* visually scale all content inside */
+    zoom: var(--summ-scale); 
   }
 }
 
-/* Fallback for browsers without zoom (e.g., Firefox) */
+/* Fallback for browsers without zoom */
 @supports not (zoom: 1) {
   .summarizer-container {
-    /* keep container unscaled so it can grow naturally and scroll */
     width: 100%;
     min-height: 100dvh;
   }
   .summarizer-container > * {
     transform: scale(var(--summ-scale));
     transform-origin: top left;
-    width: calc(100% / var(--summ-scale)); /* counterbalance scale horizontally */
+    width: calc(100% / var(--summ-scale)); 
   }
 }
 

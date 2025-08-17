@@ -256,7 +256,7 @@ const MindmapDetail = () => {
           {deleteMode ? 'Exit' : 'Delete Node'}
         </button>
         {deleteMode && (
-          <p style={{ color: '#d32f2f', fontSize: '14px', marginTop: '0.5rem' }}>
+          <p style={{ color: 'white', fontSize: '14px', marginTop: '0.5rem' }}>
             Click on nodes or edges you wish to delete
           </p>
         )}

@@ -323,7 +323,7 @@
   border-radius: 18px;
   width: 100%;
   max-width: 100%;
-  min-height: var(--pdf-height, 600px); /* reserve previous page height to prevent layout collapse between swaps */
+  min-height: var(--pdf-height, 600px); 
 }
 
 .testreview-pdf-container .pdf-page,
@@ -380,7 +380,7 @@
   align-items: stretch;
   justify-content: flex-start;
   box-sizing: border-box;
-  padding-right: 12px; /* reserve space so right edges/rounded corners aren't clipped by the scrollbar */
+  padding-right: 12px; 
 }
 
 .testreview-questions-section .question-stats {
@@ -389,7 +389,7 @@
   border-radius: 10px;
   margin-bottom: 1.5rem;
   color: white;
-  margin-right: 4px; /* slight breathing room from the scrollbar gutter so rounded corners stay visible */
+  margin-right: 4px;
 }
 
 /* Scrollable question list styling */
@@ -461,19 +461,19 @@
   background: #9e9e9e;
 }
 
-/* Firefox scrollbar styling */
+/* Scrollbar styling */
 .testreview-questions-section,
 .scrollable-scores {
-  scrollbar-width: thin;                /* thinner scrollbar */
+  scrollbar-width: thin;                
   scrollbar-color: transparent transparent;
 }
 .testreview-questions-section:hover,
 .testreview-questions-section:focus-within {
-  scrollbar-color: #9e9e9e transparent; /* grey thumb, transparent track */
+  scrollbar-color: #9e9e9e transparent; 
 }
 .scrollable-scores:hover,
 .scrollable-scores:focus-within {
-  scrollbar-color: #9e9e9e transparent; /* grey thumb, transparent track */
+  scrollbar-color: #9e9e9e transparent;
 }
 
 @media (max-width: 1100px) {
@@ -491,28 +491,24 @@
 }
 
 
-/* === Keep questions list aligned with PDF height on screen === */
+/* Questions list aligned with PDF height on screen */
 :root {
-  /* Adjust if your navbar/toggles consume more vertical space */
   --review-top-offset: 6rem;
-  --review-extra-bottom: 10rem; /* extend further below the PDF nav buttons */
+  --review-extra-bottom: 10rem; 
 }
 
-/* Ensure columns align from the top */
 .testreview-split {
   align-items: flex-start;
 }
 
-/* Make the questions column stop at the bottom of the viewport and scroll internally */
 .testreview-questions-section {
   position: sticky;
   top: var(--review-top-offset);
   max-height: calc(100dvh - var(--review-top-offset) - 1.5rem + var(--review-extra-bottom));
-  overflow-y: auto !important; /* already present above but ensure it wins */
+  overflow-y: auto !important; 
   padding-bottom: 1rem;
 }
 
-/* Optional: when the PDF is shorter than the viewport, keep a subtle max */
 @media (min-height: 700px) {
   .testreview-questions-section {
     max-height: calc(100dvh - var(--review-top-offset) - 2rem + var(--review-extra-bottom));
@@ -523,10 +519,9 @@
 .test-review-container,
 .testreview-pdf-container,
 .testreview-questions-section {
-  overflow-anchor: none; /* keep viewport from jumping on dynamic content changes */
+  overflow-anchor: none; 
 }
 
-/* Also avoid layout shift causing scroll snap on nav button click */
 .testreview-pdf-nav button {
   -webkit-tap-highlight-color: transparent;
   outline: none;

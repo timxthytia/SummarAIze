@@ -1,5 +1,5 @@
 :root {
-  --testmode-scale: 0.8; /* render Test Mode Upload at ~80% visual scale */
+  --testmode-scale: 0.8;
 }
 
 .upload-container {
@@ -16,9 +16,8 @@
   overflow-y: auto;
 }
 
-/* Prefer zoom in Chromium/Edge for clean visual scaling */
 @supports (zoom: 1) {
-  .upload-container { /* keep container unscaled so it can scroll naturally */
+  .upload-container { 
     zoom: 1;
     width: 100%;
     min-height: 100dvh;
@@ -28,16 +27,16 @@
   }
 }
 
-/* Fallback for browsers without zoom (e.g., Firefox) */
+/* Fallback for browsers without zoom  */
 @supports not (zoom: 1) {
-  .upload-container { /* keep container unscaled so it can scroll naturally */
+  .upload-container { 
     width: 100%;
     min-height: 100dvh;
   }
   .upload-container > * {
     transform: scale(var(--testmode-scale));
     transform-origin: top center;
-    width: calc(100% / var(--testmode-scale)); /* counterbalance horizontal scale */
+    width: calc(100% / var(--testmode-scale)); 
   }
 }
 

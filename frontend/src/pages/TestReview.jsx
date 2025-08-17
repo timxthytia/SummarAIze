@@ -170,7 +170,7 @@ const TestReview = () => {
     });
   }, [numPages]);
 
-  // Preserve window scroll position across page flips
+  // Preserve window scroll position across pdf page flips
   const preserveScroll = (updateFn) => {
     const x = window.scrollX;
     const y = window.scrollY;

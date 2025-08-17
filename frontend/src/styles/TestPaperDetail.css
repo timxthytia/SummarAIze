@@ -1,5 +1,5 @@
 :root {
-  --paper-scale: 0.8; /* render Test Paper Detail at ~80% visual scale */
+  --paper-scale: 0.8; 
 }
 
 .paper-container {
@@ -16,36 +16,31 @@
   overflow-y: auto;
 }
 
-/* Prefer zoom in Chromium/Edge; keep container unscaled so it can scroll naturally */
 @supports (zoom: 1) {
   .paper-container {
     zoom: 1;
     width: 100%;
     min-height: 100dvh;
   }
-  /* Scale only the direct children for the 80% visual effect */
   .paper-container > * {
     zoom: var(--paper-scale);
   }
-  /* Do not scale the floating Save Changes button wrapper */
   .paper-container > .save-button-wrapper {
     zoom: 1;
   }
 }
 
-/* Fallback for browsers without zoom (e.g., Firefox) */
+/* Fallback for browsers without zoom */
 @supports not (zoom: 1) {
   .paper-container {
-    /* keep container unscaled so it can grow naturally and scroll */
     width: 100%;
     min-height: 100dvh;
   }
   .paper-container > * {
     transform: scale(var(--paper-scale));
     transform-origin: top center;
-    width: calc(100% / var(--paper-scale)); /* counterbalance horizontal scale */
+    width: calc(100% / var(--paper-scale)); 
   }
-  /* Exclude fixed-position wrapper so it stays crisp and truly fixed */
   .paper-container > .save-button-wrapper {
     transform: none;
     width: auto;
