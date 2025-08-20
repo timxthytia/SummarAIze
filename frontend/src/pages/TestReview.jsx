@@ -14,7 +14,8 @@ const TestReview = () => {
   const [loading, setLoading] = useState(true);
   const [totalMarks, setTotalMarks] = useState(0);
   const [questions, setQuestions] = useState([]);
-  const [questionsByPage, setQuestionsByPage] = useState([]);
+const [questionsByPage, setQuestionsByPage] = useState([]);
+const [questionsByPageDict, setQuestionsByPageDict] = useState({});
   // PDF state for two-pane stats layout
   const [pdfUrl, setPdfUrl] = useState('');
   const [numPages, setNumPages] = useState(0);
@@ -42,16 +43,10 @@ const TestReview = () => {
         if (h && h !== pdfHeight) setPdfHeight(h);
       }
     };
-
-    // Observe size changes
     const ro = new ResizeObserver(() => updateHeight());
     ro.observe(pdfPaneRef.current);
-
-    // Also try to observe the inner canvas when it appears
     const observer = new MutationObserver(() => updateHeight());
     observer.observe(pdfPaneRef.current, { childList: true, subtree: true });
-
-    // Initial measurement (after next paint)
     requestAnimationFrame(updateHeight);
 
     return () => {
@@ -97,14 +92,64 @@ const TestReview = () => {
         if (testpaperSnap.exists()) {
           const data = testpaperSnap.data();
           setPaperTitle(data.title || data.name || data.paperTitle || '');
-          // set PDF meta for left pane
           setPdfUrl(data.fileUrl || '');
-          const qb = data.questionsByPage || [];
-          setQuestionsByPage(qb);
-          // prefer Firestore numPages, fallback to questionsByPage length
-          const computedPages = Number(data.numPages || qb.length || 0);
+
+          const rawQb = Array.isArray(data.questionsByPage) ? data.questionsByPage : [];
+
+          const resolvePageNumber = (entry) => {
+            if (!entry) return null;
+            const toValid = (v) => {
+              const n = Number(v);
+              return Number.isFinite(n) && n > 0 ? n : null;
+            };
+            const cands = [
+              entry.pageNumber,
+              entry.pageNum,
+              entry.page,
+              typeof entry.pageIndex === 'number' ? entry.pageIndex + 1 : null,
+              typeof entry.page_index === 'number' ? entry.page_index + 1 : null,
+              typeof entry.page_index === 'string' ? Number(entry.page_index) + 1 : null,
+            ];
+            for (const v of cands) {
+              const n = toValid(v);
+              if (n) return n;
+            }
+            if (Array.isArray(entry.questions) && entry.questions.length) {
+              const q = entry.questions[0] || {};
+              const qcands = [
+                q.pageNumber,
+                q.pageNum,
+                q.page,
+                typeof q.pageIndex === 'number' ? q.pageIndex + 1 : null,
+              ];
+              for (const v of qcands) {
+                const n = toValid(v);
+                if (n) return n;
+              }
+            }
+            return null;
+          };
+
+          const normalized = rawQb
+            .map(e => ({
+              pageNo: resolvePageNumber(e),
+              questions: Array.isArray(e?.questions) ? e.questions : []
+            }))
+            .filter(e => e.pageNo !== null)
+            .sort((a, b) => a.pageNo - b.pageNo);
+
+          setQuestionsByPage(normalized.map(e => ({ pageNumber: e.pageNo, questions: e.questions })));
+          const computedPages = Number(
+            data.numPages || (normalized.length ? Math.max(...normalized.map(e => e.pageNo)) : 0) || 0
+          );
           setNumPages(computedPages);
-          const allQuestions = qb.flatMap(p => p.questions || []);
+
+          const dict = {};
+          for (let i = 1; i <= computedPages; i++) dict[i] = [];
+          normalized.forEach(e => { dict[e.pageNo] = e.questions; });
+          setQuestionsByPageDict(dict);
+
+          const allQuestions = Object.values(dict).flat();
           const total = allQuestions.reduce((sum, question) => sum + Number(question.marks || 0), 0);
           setTotalMarks(total);
           setQuestions(allQuestions);
@@ -158,7 +203,7 @@ const TestReview = () => {
     });
   };
 
-  const currentQuestions = (questionsByPage[currentPage - 1]?.questions) || [];
+  const currentQuestions = (questionsByPageDict?.[currentPage]) || [];
   const perQuestionStats = getPerQuestionStats(currentQuestions);
 
   useEffect(() => {
