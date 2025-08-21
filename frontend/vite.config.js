@@ -4,6 +4,7 @@ import nodePolyfills from 'rollup-plugin-node-polyfills';
 import { resolve } from 'path';
 
 export default defineConfig({
+  base: '/',
   plugins: [react()],
   define: {
     global: 'window',
