@@ -10,6 +10,10 @@ import io
 
 app = FastAPI()
 
+@app.get("/health") # health endpoint for local Dockerfile build
+def health():
+    return {"status": "ok"}
+
 origins = [
     "http://localhost:5173",
     "https://orbital-summaraize.vercel.app",
